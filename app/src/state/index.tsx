@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { DataProvider } from '@/state/data';
 import { DrawerProvider } from '@/state/drawer';
+import { FavoritesProvider } from '@/state/favorites';
 import { SavedBuildsProvider } from '@/state/saved';
 import { SettingsProvider } from '@/state/settings';
 
@@ -12,7 +13,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <SettingsProvider>
       <DataProvider>
         <SavedBuildsProvider>
-          <DrawerProvider>{children}</DrawerProvider>
+          <FavoritesProvider>
+            <DrawerProvider>{children}</DrawerProvider>
+          </FavoritesProvider>
         </SavedBuildsProvider>
       </DataProvider>
     </SettingsProvider>
