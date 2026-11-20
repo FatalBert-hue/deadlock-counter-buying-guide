@@ -1,14 +1,17 @@
 /**
- * Learn more about light and dark modes:
- * https://docs.expo.dev/guides/color-schemes/
+ * Theme colours for the app, resolved through Settings so the user's
+ * dark/light choice (not just the device) wins. Falls back to the device
+ * scheme when the theme mode is 'system'.
  */
-
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useSettings } from '@/state/settings';
 
 export function useTheme() {
-  const scheme = useColorScheme();
-  const theme = scheme === 'dark' ? 'dark' : 'light';
-
-  return Colors[theme];
+  const { palette } = useSettings();
+  return {
+    text: palette.ink,
+    background: palette.bg,
+    backgroundElement: palette.panel2,
+    backgroundSelected: palette.chip,
+    textSecondary: palette.muted,
+  };
 }
