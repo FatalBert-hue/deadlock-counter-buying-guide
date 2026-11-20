@@ -1,17 +1,15 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { useSettings } from '@/state/settings';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const { palette } = useSettings();
 
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      backgroundColor={palette.bg}
+      indicatorColor={palette.panel2}
+      labelStyle={{ selected: { color: palette.ink } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Full build</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
