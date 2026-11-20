@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 
 import { itemImage } from '@/data/images';
 import type { Item } from '@/data';
+import { useFavorites } from '@/state/favorites';
 import { useSettings } from '@/state/settings';
 
 type Category = 'All' | 'Weapon' | 'Vitality' | 'Spirit';
@@ -22,6 +23,7 @@ interface ItemPickerProps {
 
 export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPickerProps) {
   const { palette, accent, settings } = useSettings();
+  const { isItemFavorite, toggleItem } = useFavorites();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('All');
   const iconSize = settings.iconSize === 'small' ? 36 : settings.iconSize === 'large' ? 56 : 44;
@@ -31,8 +33,15 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
     return items
       .filter((i) => (category === 'All' ? true : i.category === category))
       .filter((i) => (!q ? true : i.name.toLowerCase().includes(q)))
-      .sort((a, b) => a.tier - b.tier || a.cost - b.cost || a.name.localeCompare(b.name));
-  }, [items, query, category]);
+      // Favourites pin to the top of their category tab, then tier/cost/name.
+      .sort(
+        (a, b) =>
+          Number(isItemFavorite(b.name)) - Number(isItemFavorite(a.name)) ||
+          a.tier - b.tier ||
+          a.cost - b.cost ||
+          a.name.localeCompare(b.name),
+      );
+  }, [items, query, category, isItemFavorite]);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -74,8 +83,8 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
             const inBuild = owned.indexOf(item.name) !== -1;
             return (
               <Pressable
-                disabled={inBuild}
                 onPress={() => {
+                  if (inBuild) return;
                   onSelect(item.name);
                   onClose();
                 }}
@@ -89,6 +98,15 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                   </Text>
                 </View>
                 {inBuild ? <Text style={[styles.inBuild, { color: palette.muted }]}>In build</Text> : null}
+                <Pressable
+                  onPress={() => toggleItem(item.name)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={isItemFavorite(item.name) ? `Unfavourite ${item.name}` : `Favourite ${item.name}`}>
+                  <Text style={[styles.star, { color: isItemFavorite(item.name) ? accent.color : palette.muted }]}>
+                    {isItemFavorite(item.name) ? '★' : '☆'}
+                  </Text>
+                </Pressable>
               </Pressable>
             );
           }}
@@ -175,6 +193,10 @@ const styles = StyleSheet.create({
   inBuild: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  star: {
+    fontSize: 22,
+    padding: 4,
   },
   clear: {
     margin: 12,
