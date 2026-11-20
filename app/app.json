@@ -12,6 +12,8 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.counterbuy.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#0a0c14",
         "foregroundImage": "./assets/images/icon.png",
@@ -33,7 +35,8 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
