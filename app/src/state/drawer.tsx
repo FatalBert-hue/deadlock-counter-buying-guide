@@ -1,5 +1,5 @@
-// Side-menu drawer state. The drawer itself is an empty shell for now —
-// no menu items inside it yet; contents come later.
+// Side-menu drawer state. The drawer holds the five main destinations;
+// tapping one navigates there and closes the drawer.
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 interface DrawerContextValue {
