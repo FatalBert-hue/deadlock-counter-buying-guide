@@ -186,6 +186,24 @@
   .warn{margin-top:14px;font-size:13.5px;background:var(--enemy-bg);border:1px solid var(--enemy);border-radius:9px;padding:10px 12px;max-width:860px}
   .warn b{color:var(--enemy)}
   .note-box{margin-top:12px;font-size:13.5px;color:var(--muted);background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;max-width:860px}
+
+  /* Layout switcher — Full build vs Quick pick */
+  .mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  @media (max-width:560px){.mode-switch{grid-template-columns:1fr}}
+  .mode-btn{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;min-height:56px;box-shadow:var(--shadow)}
+  .mode-btn:hover{border-color:var(--faint)}
+  .mode-btn:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+  .mode-btn[aria-pressed="true"]{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber),var(--shadow)}
+  .mode-btn .mode-name{font-family:"Barlow Condensed","Barlow",sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.05}
+  .mode-btn[aria-pressed="true"] .mode-name{color:var(--amber)}
+  .mode-btn .mode-sub{font-size:13px;color:var(--muted);font-weight:500}
+
+  /* Quick pick layout */
+  .quick-types{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  @media (max-width:700px){.quick-types{grid-template-columns:1fr}}
+  .type-select{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);min-height:48px;font-weight:600;cursor:pointer}
+  .type-select:hover{border-color:var(--faint)}
+  .type-select:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
   footer{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;color:var(--faint);font-size:13.5px;max-width:78ch}
   footer a{color:var(--muted)}
   footer details{margin-top:8px}
@@ -197,16 +215,28 @@
 <div class="wrap">
   <header class="intro">
     <h1>Deadlock <span class="accent">Counter Buying</span> Guide</h1>
-    <p class="lede">Pick both heroes from the dropdowns — hero icons included — then tap any of the 12 build slots: each slot is its own dropdown for picking that slot's item, just like an in-game build. Get the one item to buy next.</p>
+    <p class="lede">Two ways to use it. <b>Quick pick</b> is the fast one: just the enemy hero and the item types involved — no build to fill in. <b>Full build</b> is the detailed one: pick both heroes, then tap any of the 12 build slots — each slot is its own dropdown, just like an in-game build — for the sharpest recommendation. Either way, the picks now come from a validated set of <b>pro counter-buy rules</b> — “if they have X, buy Y” — checked against multiple current sources, with the confidence of each rule shown on the pick.</p>
     <div class="patchline">
       <span>Patch <b>Minor Update 11-04-2026</b></span>
       <span><b>44</b> heroes</span>
       <span><b>156</b> items</span>
-      <span>Shop data <b>19 Nov 2026</b></span>
+      <span>Pro rules <b>validated 20 Nov 2026</b></span>
       <span>Tiers <b>800 / 1,600 / 3,200 / 6,400</b> souls</span>
     </div>
   </header>
 
+  <div class="mode-switch" role="group" aria-label="Guide layout">
+    <button class="mode-btn" type="button" id="mode-full-btn" aria-pressed="true">
+      <span class="mode-name">Full build</span>
+      <span class="mode-sub">Both heroes + all 12 build slots, item by item.</span>
+    </button>
+    <button class="mode-btn" type="button" id="mode-quick-btn" aria-pressed="false">
+      <span class="mode-name">Quick pick</span>
+      <span class="mode-sub">Just the enemy hero and the item types — no items to enter.</span>
+    </button>
+  </div>
+
+  <div id="full-mode">
   <div class="summary-bar" id="summary-bar">
     <span class="sb-slot"><img class="sb-img" id="sb-enemy-img" alt="" hidden /><span id="sb-enemy">Enemy: not picked</span></span>
     <span class="sb-vs" aria-hidden="true">VS</span>
@@ -285,12 +315,65 @@
         <p class="empty">Pick an <b>enemy hero</b> above to get a recommendation. Adding their items sharpens it — anti-heal into lifesteal, bullet answers into gun carries, Knockdown into anything airborne.</p>
       </div>
     </aside>
+  </div><!-- /full-mode -->
+
+  <!-- QUICK PICK — hero + two item-type dropdowns, no items to enter -->
+  <div id="quick-mode" hidden>
+    <section class="side-panel enemy" aria-labelledby="quick-h">
+      <div class="side-head">
+        <h2 id="quick-h"><span class="who-enemy">Quick pick</span> — hero &amp; item types only</h2>
+        <div class="picked" id="quick-picked">No hero picked</div>
+      </div>
+      <div class="step-label">1 · Enemy hero</div>
+      <span class="field-label" id="quick-hero-label">Choose the enemy hero</span>
+      <div class="dd" id="quick-hero-dd" role="group" aria-labelledby="quick-hero-label"></div>
+      <div class="picked-card" id="quick-card" hidden>
+        <img id="quick-card-img" alt="" />
+        <div class="pc-info"><div class="pc-name" id="quick-card-name"></div><div class="pc-role" id="quick-card-role"></div></div>
+      </div>
+      <div class="hero-note" id="quick-note" hidden></div>
+      <div class="quick-types">
+        <div>
+          <div class="step-label">2 · What are they buying?</div>
+          <label class="field-label" for="quick-enemy-type">The item type they're building</label>
+          <select class="type-select" id="quick-enemy-type">
+            <option value="">Not sure / any type</option>
+            <option value="Weapon">Gun items (Weapon)</option>
+            <option value="Vitality">Health items (Vitality)</option>
+            <option value="Spirit">Spirit items</option>
+          </select>
+        </div>
+        <div>
+          <div class="step-label">3 · What do you want to buy?</div>
+          <label class="field-label" for="quick-you-type">The item type you're shopping for</label>
+          <select class="type-select" id="quick-you-type">
+            <option value="">Not sure / any type</option>
+            <option value="Weapon">Gun items (Weapon)</option>
+            <option value="Vitality">Health items (Vitality)</option>
+            <option value="Spirit">Spirit items</option>
+          </select>
+        </div>
+      </div>
+      <p class="slots-hint">That's the whole form — the recommendation below updates as you pick. Want it sharper? Switch to Full build and enter their actual items.</p>
+    </section>
+
+    <aside class="results" id="quick-results" aria-labelledby="quick-res-h" aria-live="polite">
+      <h2 id="quick-res-h">Your quick counter buy</h2>
+      <div id="quick-results-body">
+        <p class="empty">Pick an <b>enemy hero</b> above to get a recommendation — then narrow it with the two item-type dropdowns.</p>
+      </div>
+    </aside>
+  </div>
 
   <footer>
     Hero portraits and item icons from the <a href="https://deadlock.wiki/Item" target="_blank" rel="noopener">Deadlock Wiki</a>. Valve patches land roughly every five days — re-check before a ranked session.
     <details>
-      <summary>About the data &amp; patch notes</summary>
-      <p>Built on the Deadlock reference current to 19 Nov 2026 — latest balance patch Minor Update 11-04-2026 (posted 5 Nov 2026); no patch landed in the week before. Anti-heal values reflect the 30 Oct 2026 buffs (Toxic Bullets &amp; Crippling Headshot 40%, Decay 55%) and the 4 Nov Healbane stacking nerf. The item pickers list the complete shop — all 156 items: Weapon (53), Vitality (54) and Spirit (49) — cross-checked item-by-item against the Deadlock Wiki item list.</p>
+      <summary>About the pro rules, sources &amp; patch notes</summary>
+      <p><b>Patch currency — verified 20 Nov 2026:</b> Minor Update 11-04-2026 (Valve, posted 5 Nov 2026) is still the live balance patch, confirmed across Steam news, SteamDB, the Deadlock Handbook and Deadlock Builder; later builds (6860/6861) are silent with no confirmed balance changes. Roster verified at 44 heroes — Mina is a hero; Nurse Harrow is the newest; no 45th hero announced.</p>
+      <p><b>Where the pro rules come from:</b> the <a href="https://deadlockhandbook.com/items/counter-building/" target="_blank" rel="noopener">Deadlock Handbook counter-building cheat sheet</a> (match data since 5 Nov 2026); <a href="https://deadlockitembuilder.com/counter-item-helper" target="_blank" rel="noopener">Deadlock Item Builder's per-hero counter pages</a> (17 read in full, stats refreshed 11–20 Nov 2026); <a href="https://guides-factory.com/guides/deadlock-counter-items-guide" target="_blank" rel="noopener">Guides-Factory's counter-items guide</a>; <a href="https://denypick.com/counter-items/healing/" target="_blank" rel="noopener">DenyPick</a>; Valve's <a href="https://store.steampowered.com/news/app/1422450/view/680766308468391944" target="_blank" rel="noopener">11-04-2026 patch notes</a>; and two older per-hero lists kept only where corroborated and capped at Thin confidence — <a href="https://esportsinsider.com/deadlock-guide-to-counter-every-hero" target="_blank" rel="noopener">Esports Insider (Jul 2025)</a> and <a href="https://www.followchain.org/counter-each-hero-deadlock/" target="_blank" rel="noopener">Poketape (Oct 2024)</a>, with item names translated to current ones. deadlock.coach was checked and carries no counter-buy content, so nothing here cites it. “Pro” here means high-MMR / guide-author consensus — no source named an individual pro player behind a rule (the closest named creator is Ansonex's counter-items video, via Guides-Factory).</p>
+      <p><b>Confidence:</b> Strong = 2+ independent current sources agree. Moderate = 1 current source plus principle corroboration, or 2 older sources. Thin = a single older source — Infernus, Viscous and Yamato lean on these most; verify in game.</p>
+      <p><b>Caveats carried from the validation sweep:</b> no reveal/true-sight counter-buy item exists in any source searched — stealth has no item answer here, and none was invented. Toxic Bullets' healing cut is disputed between current sources (−35% vs −40%) and Decay's too (−50% vs −55%) — check the live shop tooltip before quoting a number. Healbane stacking is settled by Valve: 2 stacks ≈54.7%, 4 stacks ≈72% after 4 Nov. Anti-heal does not shrink barriers (Plot Armor, Royal Pestments) and does not prevent Victor's revive. Dispel Magic does NOT remove Pocket's Affliction — Divine Barrier is the only cleanse that does. A few item categories (Tankbuster, Escalating Exposure, Focus Lens) weren't re-confirmed in current sources; their costs and tiers were.</p>
+      <p>The item pickers list the complete shop — all 156 items: Weapon (53), Vitality (54) and Spirit (49) — cross-checked item-by-item against the Deadlock Wiki item list.</p>
     </details>
   </footer>
 </div>
@@ -514,9 +597,9 @@ function itemImg(n){ return "assets/items/" + slug(n) + ".png"; }
 /* ============ COUNTER POOL — verified effects, current patch ============ */
 /* deliver: gun = applied by your bullets, spirit = ability-scaled, active = an active slot */
 var COUNTERS = {
-  "Toxic Bullets":{cat:"Weapon",tier:3,cost:3200,deliver:"gun",desc:"Your bullets build a bleed for 1.9% of the target's max HP per second and cut their incoming healing by 40% (buffed from 35% on 30 Oct). The standard gun answer to sustain."},
-  "Decay":{cat:"Spirit",tier:3,cost:3200,deliver:"active",desc:"Active: damage over time based on the target's current health, with 55% healing reduction — the strongest percentage anti-heal you can buy at Tier 3. Melts tanks and healers alike."},
-  "Healbane":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"Cheap Tier 2 anti-heal that now stacks — but the 4 Nov patch made stacks diminish 20% more aggressively (4 stacks now 72%, was 82.2%). One per team is the play; don't stack it with teammates."},
+  "Toxic Bullets":{cat:"Weapon",tier:3,cost:3200,deliver:"gun",desc:"Your bullets build a bleed for 1.9% of the target's max HP per second and cut their incoming healing — current sources disagree on the exact cut (−35% vs −40%), so check the live shop tooltip. The standard gun answer to sustain."},
+  "Decay":{cat:"Spirit",tier:3,cost:3200,deliver:"active",desc:"Active: damage over time based on the target's current health, with the strongest targeted healing cut at Tier 3 — sources disagree on the exact figure (−50% vs −55% for 12s), so check the live shop tooltip. Melts tanks and healers alike."},
+  "Healbane":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"Cheap Tier 2 anti-heal: −35% healing for 8s on spirit damage. Stacks now diminish hard after the 4 Nov patch — Valve's numbers: 2 stacks ≈54.7%, 4 stacks ≈72%. One or two per team is enough; a third adds very little."},
   "Spirit Burn":{cat:"Spirit",tier:4,cost:6400,deliver:"spirit",desc:"Tier 4 spirit burst and the strongest anti-heal item in the current shop — an S-tier item by win rate in Nov 2026. The late-game answer when a healer is carrying fights."},
   "Crippling Headshot":{cat:"Weapon",tier:4,cost:6400,deliver:"gun",desc:"Headshots apply 40% healing reduction and cripple the target (buffed on 30 Oct). A late-game gun answer to a fed sustain carry you can reliably headshot."},
   "Metal Skin":{cat:"Vitality",tier:3,cost:3200,deliver:"active",desc:"Active (24s CD): immune to bullets for 5s. On-hit bullet effects still apply, but raw gun damage — Bullet Dance, Full Auto, a fed crossbow — simply stops. Time it for their burst window."},
@@ -548,10 +631,427 @@ var COUNTERS = {
   "Colossus":{cat:"Vitality",tier:4,cost:6400,deliver:"active",desc:"Active (37s CD): grow 20% larger for 7s with +35% Bullet and Spirit Resist, +30% Melee Damage and +25% Base Health, slowing nearby enemies. Stand your ground through their spike instead of running from it."},
   "Cheat Death":{cat:"Vitality",tier:4,cost:6400,deliver:"passive",desc:"Passive (90s CD): when you would die, you instead survive with 4.5s of death immunity and clear non-stun debuffs — at −60% damage and healing during it. Buys the one extra life a focused target needs."},
   "Divine Barrier":{cat:"Vitality",tier:4,cost:6400,deliver:"active",desc:"Active (55s CD since 30 Oct, 40m range): cleanse non-stun debuffs on a target, grant a 600 Barrier and move speed. Cooldown halved when cast on an ally. The support's save button."},
-  "Rescue Beam":{cat:"Vitality",tier:3,cost:3200,deliver:"active",desc:"Active (60s CD, 35m range): channel 2.5s to heal an ally and yourself for 20% of max HP each, and once per channel pull that ally toward you — out of the ult, out of the dive."}
+  "Rescue Beam":{cat:"Vitality",tier:3,cost:3200,deliver:"active",desc:"Active (60s CD, 35m range): channel 2.5s to heal an ally and yourself for 20% of max HP each, and once per channel pull that ally toward you — out of the ult, out of the dive."},
+  /* --- pro-rule items added from the validated pro counter-buy research (20 Nov 2026) --- */
+  "Rusted Barrel":{cat:"Spirit",tier:1,cost:800,deliver:"spirit",desc:"Tier 1: spirit damage cuts the target's fire rate by 32% for 5s. The cheapest pro answer to a gun laner — buy it in lane, before their build snowballs."},
+  "Suppressor":{cat:"Spirit",tier:2,cost:1600,deliver:"spirit",desc:"Tier 2: your spirit damage cuts enemy fire rate by 28%. The sustained version of Rusted Barrel for spirit heroes laning into gun carries."},
+  "Weapon Shielding":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"+18% Bullet Resist plus a 300 barrier. Tier 2 bullet defence the pro guides reach for against gun builds."},
+  "Battle Vest":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"+18% Bullet Resist at Tier 2 — flat, always-on gun defence."},
+  "Plated Armor":{cat:"Vitality",tier:4,cost:6400,deliver:"passive",desc:"Tier 4: 30% of bullets bounce off you and half of on-hit effects are blocked. The late, chance-based answer to rapid-fire and on-hit builds — and to Haze's Fixation stacking."},
+  "Juggernaut":{cat:"Vitality",tier:4,cost:6400,deliver:"passive",desc:"Tier 4: enemies who shoot you lose 40% fire rate. Punishes a fed gun carry for doing the only thing their build does."},
+  "Disarming Hex":{cat:"Spirit",tier:3,cost:3200,deliver:"active",desc:"Active: disarm the target for 4.25s and cut their Bullet Resist by 13%. A teammate-applied stop button for a fed gun carry — it does NOT stop a channel already running, like Haze's Bullet Dance."},
+  "Spirit Shielding":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"+15% Spirit Resist plus a 300 barrier. The Tier 2 lane answer to spirit burst and poke."},
+  "Enchanter's Emblem":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"+18% Spirit Resist at Tier 2 — flat spirit defence while you build to Spirit Resilience."},
+  "Spirit Sap":{cat:"Spirit",tier:2,cost:1600,deliver:"active",desc:"Cuts the target's Spirit Power by 30 and their Spirit Resist by 9% for 12s. Turns down a spirit build's damage at the source."},
+  "Witchmail":{cat:"Vitality",tier:4,cost:6400,deliver:"passive",desc:"+22% Spirit Resist at Tier 4 — late-game spirit defence."},
+  "Indomitable":{cat:"Vitality",tier:4,cost:6400,deliver:"passive",desc:"Automatically cleanses the next stun, sleep, silence, root or fear and grants a barrier — no reaction needed. The pro answer to surprise catches (Sleep Dagger, Lasso, Wraith's ult lift) where you can't press Unstoppable in time. Not a reliable escape from Dynamo's Singularity."},
+  "Mystic Slow":{cat:"Spirit",tier:2,cost:1600,deliver:"spirit",desc:"Your spirit damage slows. The spirit-side version of Slowing Bullets for pinning mobile heroes."},
+  "Tankbuster":{cat:"Spirit",tier:3,cost:3200,deliver:"spirit",desc:"Your abilities deal bonus spirit damage plus 7.5% of the target's current health against high-health targets. Percentage damage doesn't care how much health they bought."},
+  "Armor Piercer":{cat:"Weapon",tier:4,cost:6400,deliver:"gun",desc:"Tier 4: 60% of your bullets ignore Bullet Resist and barriers. The gun answer to a tank who stacked resist instead of health."},
+  "Siphon Bullets":{cat:"Vitality",tier:4,cost:6400,deliver:"gun",desc:"Tier 4: steal max health from enemies you hit. Shrinks a health-stack tank's bar while growing yours."},
+  "Spirit Shredder":{cat:"Weapon",tier:2,cost:1600,deliver:"gun",desc:"Tier 2 bullets shred Spirit Resist — the component that builds into Spirit Rend, and a cheap way to open a tank up for your team's spirit damage."},
+  "Ricochet":{cat:"Weapon",tier:4,cost:6400,deliver:"gun",desc:"Tier 4: your shots bounce between enemies. Late-game summon and grouped-team clear — the pro guides only suggest it on gun builds that already want it."},
+  "Monster Rounds":{cat:"Weapon",tier:1,cost:800,deliver:"gun",desc:"Tier 1 bonus damage against non-hero units — summons, ghouls, turrets, Little Helpers. The cheap early clear for summoner heroes."},
+  "Rebuttal":{cat:"Vitality",tier:1,cost:800,deliver:"passive",desc:"Tier 1: parry cooldown −1.75s, +18% melee resist, and a landed parry heals you and returns damage. The pro answer to readable melee brawlers."},
+  "Extra Stamina":{cat:"Vitality",tier:1,cost:800,deliver:"passive",desc:"Tier 1 extra stamina charge. Cheap dodges out of slows, roots, walls and telegraphed setups."},
+  "Stamina Mastery":{cat:"Vitality",tier:3,cost:3200,deliver:"passive",desc:"Tier 3 stamina upgrade — more dashes to cross portal exits, walls and zoning squares alive."},
+  "Enduring Speed":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"Tier 2 slow resistance and move speed. Keeps you moving through Scrap Grenades and slow fields."},
+  "Restorative Locket":{cat:"Vitality",tier:2,cost:1600,deliver:"passive",desc:"Tier 2 stored healing you release when you need it — sustain through a poke lane that would otherwise cost you farm."}
 };
 /* component -> upgrade, for "you already own X" logic */
 var UPGRADES = { "Healbane":["Decay","Spirit Burn"], "Spirit Shredder":["Spirit Rend"], "Slowing Hex":["Decay"] };
+
+/* ============ SIGNATURE COUNTERS — per-hero answers ============ */
+/* The generic tag read below gives the same handful of items for every
+   hero who shares a tag. These are the hero-specific answers, scored
+   above the generic buckets: [item, points, why-it-counters-THIS-hero]. */
+var SIGNATURE = {
+  "Abrams":[["Decay",10,"Siphon Life heals Abrams for the damage he deals to everyone around him — Decay's 55% healing cut plus percentage damage is the direct answer to that brawl."],["Slowing Bullets",6,"Abrams only drains what he can touch. A stacking slow keeps the melee brawler at arm's length while your team burns him down."],["Toxic Bullets",6,"Your bullets keep the anti-heal on him between Decay casts — his sustain never gets a clean window."]],
+  "Apollo":[["Capacitor",10,"Apollo's game is Riposte, dashes and stamina. Capacitor's projectile blocks Stamina and silences movement abilities — the escape kit simply stops working."],["Slowing Bullets",6,"Slowed and dash-cut, Apollo has to win a fair gunfight instead of dancing around one."],["Inhibitor",6,"Tier 4: slows him and cuts his damage — the late answer to a fed mobile carry."]],
+  "Baba":[["Escalating Exposure",10,"Baba stacks health and resists, and her Spirit Resist scaling was cut on 4 Nov — stacking spirit amplification burns through the frontline build."],["Spirit Resilience",6,"Her Brew cycles spirit damage and burns — resists blunt every rotation, not one window."],["Spirit Rend",6,"Shred her Spirit Resist with your bullets so your whole team's spirit damage lands on the tank."]],
+  "Bebop":[["Knockdown",10,"Hyper Beam is a channel, and Bebop stands still to fire it — Knockdown's delayed stun lands and ends the beam, hook combo and all."],["Ethereal Shift",6,"If the Grapple Arm lands anyway, void out for 4s and let the entire Hyper Beam fire at nothing."],["Counterspell",6,"A spell parry on the hook timing deletes his one pick play."]],
+  "Billy":[["Unstoppable",10,"Chain Gang wants to drag you into a brawl on Billy's terms — 5.5s of stun/root immunity lets you walk out of the setup."],["Slowing Bullets",6,"A slowed Billy can't force the melee range his whole kit needs."],["Colossus",6,"If the brawl happens anyway, Colossus lets you stand in it with +35% resists."]],
+  "Calico":[["Reactive Barrier",10,"Calico's whole game is one burst combo on an isolated target — the barrier eats its first second, and she's squishy once it whiffs."],["Capacitor",6,"Blocks her stamina and silences her movement abilities — the burst assassin has to stay and fight."],["Metal Skin",6,"Five seconds of bullet immunity covers her entire combo window."]],
+  "Celeste":[["Dispel Magic",10,"Dazzling Trick's silence and her dagger marks are non-ultimate debuffs — Dispel Magic purges them and heals you 250 mid-fight."],["Spirit Resilience",6,"Radiant Daggers stack Spirit Amp — resists are the always-on answer to her burst."],["Counterspell",6,"Parry the Dazzling Trick cast and her combo loses its opener."]],
+  "Deadman Danny":[["Knockdown",10,"Danny fights from a jetpack — Knockdown's stun lasts longer vs airborne targets and slams him out of the sky."],["Phantom Strike",6,"Teleport up to him, pull him to the ground and disarm him — Close The Deal can't carry a grounded Danny."],["Capacitor",6,"Blocks stamina and silences movement abilities, so the jetpack kit can't reposition out."]],
+  "The Doorman":[["Counterspell",10,"Hotel Guest is one telegraphed cast that removes a target from the fight — a spell parry eats it entirely."],["Unstoppable",6,"His Doorway setups end in crowd control — immunity lets your team play through the portal engage."],["Toxic Bullets",6,"He heals his team through long fights — anti-heal on the focus target cuts the value of every save."]],
+  "Drifter":[["Slowing Hex",10,"Drifter picks off isolated targets and slips away — Slowing Hex silences his movement abilities, so the slip-away never fires."],["Reactive Barrier",6,"The barrier eats the first second of his ambush combo — the difference between a trade and a death recap."],["Capacitor",6,"No stamina, no movement abilities: the roaming assassin has to walk home."]],
+  "Dynamo":[["Cursed Relic",10,"Singularity is a channel — Cursed Relic interrupts the best teamfight ult in the game and item-blocks the follow-up."],["Toxic Bullets",6,"Rejuvenating Aurora heals his whole team through the fight — anti-heal on your focus target cuts all of it."],["Silence Wave",6,"Fire it into his team as the fight starts so the Aurora and follow-up casts come late."]],
+  "Graves":[["Dispel Magic",10,"Graves' damage is lingering burn and ghoul pressure — Dispel Magic purges the debuffs and heals you through the attrition."],["Debuff Reducer",6,"Shorter burns, shorter marks — cheap Tier 2 relief against a DoT hero who wins long fights."],["Spirit Resilience",6,"Her lock-on damage is spirit-scaled — resists blunt the poke she wins lanes with."]],
+  "Grey Talon":[["Phantom Strike",10,"Grey Talon folds when dived — Phantom Strike teleports you onto him and disarms him. His whole game is distance; delete it."],["Warp Stone",6,"Blink out of the bow's sightline or straight into his face — either way his range advantage is gone."],["Spirit Resilience",6,"His poke is spirit-scaled — resists take the sting out of the lane."]],
+  "Haze":[["Stalker",10,"One tag reveals Haze through walls for 5s — Sleep Dagger ambushes stop working the moment she's marked."],["Cursed Relic",6,"Bullet Dance is a point-blank channel — Cursed Relic interrupts it and disarms her mid-dance."],["Hunter's Aura",6,"She has to come within 15m to kill you — inside the aura her Fire Rate and Bullet Resist are already cut."]],
+  "Holliday":[["Unstoppable",10,"Holliday's catch is the kill — stun immunity lets you play through the engage her whole kit is built around."],["Reactive Barrier",6,"Cheap insurance for the first second of her burst combo while your real answer comes online."],["Dispel Magic",6,"Purge the marks and slows her catch leaves on you — before the follow-up lands."]],
+  "Infernus":[["Dispel Magic",10,"Afterburn is a purgeable burn — Dispel Magic clears it and heals 250, and short fights are fights his Napalm lifesteal can't win."],["Toxic Bullets",6,"Napalm's Tier 2 lifesteal (20% since 30 Oct) keeps him alive while he dives — 40% anti-heal is how the dive ends."],["Debuff Reducer",6,"Shorter burns, and his delayed Concussive Combustion stun loses its setup."]],
+  "Ivy":[["Knockdown",10,"Air Drop flies a teammate — or a Stone Form — in from the sky. Knockdown grounds airborne targets with a longer stun."],["Toxic Bullets",6,"Kudzu Connection tethers heals to her ally — anti-heal cuts the save she's flying in to deliver."],["Phantom Strike",6,"Pull Ivy herself out of the sky and disarm her — the rescue pilot becomes the target."]],
+  "Kelvin":[["Toxic Bullets",10,"Frozen Shelter wins by out-healing you inside the dome — anti-heal is how dome fights actually end."],["Spirit Resilience",6,"His damage inside the dome is spirit — resists let you contest the dome instead of conceding it."],["Escalating Exposure",6,"Dome fights are long fights — stacking spirit amp melts the support who wants to stall them."]],
+  "Lady Geist":[["Decay",10,"Life Drain heals her for 100% of the damage it deals — Decay's 55% cut plus percentage damage breaks the tether maths completely."],["Ethereal Shift",6,"Void out for the Soul Exchange window — she can't swap health with a target who isn't there."],["Toxic Bullets",6,"Keeps anti-heal on her between Decay casts, so Life Drain never gets a full-value fight."]],
+  "Lash":[["Knockdown",10,"Death Slam comes from directly above — Knockdown punishes airborne targets with a longer stun and slams him down."],["Phantom Strike",6,"Teleport to him mid-air, pull him to the ground and disarm — the aerial engage becomes your engage."],["Warp Stone",6,"Blink out of the slam's landing spot as he commits — his whole combo is aimed at where you were."]],
+  "McGinnis":[["Cursed Relic",10,"Heavy Barrage is an 8-second channel from the slowest hero in the game — interrupt it and McGinnis is a turret with legs."],["Knockdown",6,"Knockdown's delayed stun lands on a stationary, channelling McGinnis every single time."],["Toxic Bullets",6,"Medicinal Specter heals her team through the barrage — anti-heal cuts the stall her turrets want."]],
+  "Mina":[["Toxic Bullets",10,"Rake slashes and heals her, Love Bites stack on every gun hit — 40% anti-heal is what makes the glass cannon stay glass."],["Capacitor",6,"Blocks her stamina and silences movement abilities — the oppressive lane bully can't dance out of a bad fight."],["Metal Skin",6,"Her burst window fits inside Metal Skin's 5 seconds of bullet immunity."]],
+  "Mirage":[["Slowing Hex",10,"Traveler is now a 3s channel — and Slowing Hex interrupts it. His escape-and-stun play just fizzles."],["Slowing Bullets",6,"Pinned and dash-cut, Mirage has to win a straight fight instead of vanishing out of one."],["Counterspell",6,"Parry the Traveler or his engage cast and his one reposition is gone."]],
+  "Mo & Krill":[["Decay",10,"Scorn heals him 1.3× from heroes and Combo keeps stacking his health — percentage damage plus 55% anti-heal answers both."],["Toxic Bullets",6,"Your bullets keep the anti-heal up through every Burrow engage, so Scorn never gets a full-value brawl."],["Slowing Bullets",6,"A slowed Mo & Krill can't force the close range Scorn and Combo need."]],
+  "Nurse Harrow":[["Toxic Bullets",10,"Leech Therapy drains you to feed her whole team — anti-heal on her target cuts every heal the drain produces."],["Dispel Magic",6,"Purge the drain and terror debuffs she leaves on your team — just don't wait until the fear has you running."],["Spirit Resilience",6,"Her damage is spirit — resists blunt the poke that builds her fear."]],
+  "Paige":[["Focus Lens",10,"Plot Armor is one button that saves her carry — silence Paige for 4.5s and the save never gets pressed. Catch her, not her carry."],["Cursed Relic",6,"Silence, disarm and item-block in one cast — Paige watches the fight she was supposed to fix."],["Slowing Hex",6,"She's low-mobility — a slowed Paige can't reposition to save anyone."]],
+  "Paradox":[["Counterspell",10,"Paradoxical Swap is one telegraphed cast — a spell parry eats it, and the pick play into his whole team disappears."],["Warp Stone",6,"If the swap lands anyway, blink 11m out of his team and pick up +30% Bullet Resist doing it."],["Unstoppable",6,"His follow-up is crowd control — immunity covers everything after the swap itself."]],
+  "Pocket":[["Capacitor",10,"Pocket's combo ends with a movement-ability escape — Capacitor silences it and blocks stamina, so the burst hero has to stay for the reply."],["Spirit Resilience",6,"His zone control and burst are spirit — resists blunt the combo he has nothing without."],["Ethereal Shift",6,"Void out the burst window; his long cooldowns mean there's no second combo coming."]],
+  "Rat King":[["Escalating Exposure",10,"Rule, Ratannia! gives his whole team damage reduction — stacking spirit amplification is how you burn through a damage-reduced frontline."],["Spirit Rend",6,"He stands in front and soaks — shred his Spirit Resist and your team's spirit damage does what bullets can't."],["Decay",6,"Percentage damage doesn't care how tanky the Rat King bought himself."]],
+  "Rem":[["Unstoppable",10,"Unstoppable's immunity list literally includes Sleep — Rem's dream setup bounces off it for 5.5s."],["Toxic Bullets",6,"Rem's team saves heal through long games — anti-heal keeps late fights from resetting."],["Focus Lens",6,"Silence the support whose utility scales with game length, before the save chain starts."]],
+  "Seven":[["Cursed Relic",10,"Storm Cloud is a channel and Seven has no mobility — Cursed Relic interrupts the ult and item-blocks the rest of his kit."],["Knockdown",6,"Knockdown's delayed stun lands on a stationary, channelling Seven every time."],["Silence Wave",6,"Fire it before the combo starts — a silenced Seven is a carry with no buttons."]],
+  "Shiv":[["Slowing Bullets",10,"Bloodletting wants a long brawl in Shiv's face — a stacking slow lets you kite the brawl he sustains through."],["Decay",6,"Percentage damage plus anti-heal — the two things a rage-fuelled sustain tank can't out-heal."],["Toxic Bullets",6,"Keeps the anti-heal on him through every trade your team takes."]],
+  "Silver":[["Spirit Rend",10,"Silver stands in front, soaks damage and shoots back — shred his Spirit Resist and let spirit damage do what his health bar stops bullets from doing."],["Decay",6,"Percentage-based damage scales with the health bar he bought."],["Escalating Exposure",6,"Long fights against a soak tank are exactly where stacking spirit amp wins."]],
+  "Sinclair":[["Counterspell",10,"Audience Participation copies an enemy ult for 9s — Sinclair is only as strong as the cast he steals, so parry the stolen ult."],["Dispel Magic",6,"Rabbit Hex turns you into a rabbit for 2s — it's a debuff, not an ult, so Dispel Magic purges it and hands you your hero back."],["Focus Lens",6,"Silence the complexity-4 hero and there's no stolen ult, no hex, no show."]],
+  "Solomon":[["Focus Lens",10,"Silence Solomon and the chessboard stops moving — no knights shielding allies, no Rook Battery, no checkmate setup."],["Spirit Resilience",6,"His zoning damage is spirit — resists let you play on his board instead of around it."],["Toxic Bullets",6,"His knights shield and sustain his team — anti-heal on the focus target cuts the value of every shield cycle."]],
+  "Venator":[["Warp Stone",10,"Blink 11m out of the crossbow's sightline — a precision duellist who can't see you can't delete you."],["Metal Skin",6,"Walk his sightline during the shot window with bullet immunity up, and close the distance for free."],["Reactive Barrier",6,"His game is one merciless pick — the barrier eats the first shot of it."]],
+  "Victor":[["Toxic Bullets",10,"Shocking Reanimation brings him back swinging — anti-heal and percentage bleed make the second life bar end like the first."],["Decay",6,"Percentage damage plus 55% anti-heal: the revive becomes a speed bump, not a reset."],["Slowing Bullets",6,"A slowed Victor can't chase down the kills his pistol carry wants after reviving."]],
+  "Vindicta":[["Knockdown",10,"Vindicta assassinates from the sky — Knockdown's stun lasts longer vs airborne targets and grounds her into a squishy sniper."],["Phantom Strike",6,"Teleport to her, pull her to the ground, disarm her — the sky stops being her safe house."],["Warp Stone",6,"Blink out of her sightline between shots; she has to reposition, you don't."]],
+  "Violet":[["Warp Stone",10,"Living Ink paints walls that block heroes and projectiles — Warp Stone blinks straight past the wall and out of the Abstract Landscape ring."],["Spirit Resilience",6,"Her late-game scaling is spirit — resists are how you survive the fights she wants to skip early."],["Counterspell",6,"Parry the silence cast and her ring loses its teeth."]],
+  "Viscous":[["Decay",10,"Viscous is a tank whose Cube resets fights — percentage damage plus anti-heal makes the health bar and the save window shrink together."],["Focus Lens",6,"Silence Viscous before the dive and The Cube never encases your target — or his carry."],["Toxic Bullets",6,"His team heals through the goo fights — anti-heal keeps the brawl honest."]],
+  "Vyper":[["Capacitor",10,"Vyper slides through fights on stamina and movement abilities — Capacitor blocks both, and a pinned Vyper is a squishy one."],["Dispel Magic",6,"Her poison is a purgeable debuff — Dispel Magic clears it and heals you through the trade."],["Slowing Bullets",6,"Stack the slow on top of her spent slide and the rapid-fire assassin has to stand still."]],
+  "Warden":[["Inhibitor",10,"Warden wants to out-trade you inside his 20–30 minute spike window — Inhibitor slows him and cuts the damage he deals, built for exactly that duellist."],["Metal Skin",6,"His flask-bind combo is a bullet burst — 5s of immunity deletes the window Last Stand sets up."],["Slowing Bullets",6,"A slowed Warden can't force the duels his kit is priced around."]],
+  "Wraith":[["Unstoppable",10,"Telekinesis lifts and stuns one target so she can delete them — CC immunity means the isolate combo has no setup."],["Metal Skin",6,"Card Trick and her gun are bullets — immunity covers the whole burst after the lift."],["Warp Stone",6,"Blink out of the teleport engage; her bullet shield doesn't follow you."]],
+  "Yamato":[["Slowing Bullets",10,"Flying Slash was cut to 23m — a slowed Yamato has to walk the rest of the way, and her self-heal doesn't matter if she never arrives."],["Toxic Bullets",6,"When she does arrive, anti-heal cuts the self-heal her relentless trades rely on."],["Capacitor",6,"Blocks stamina and silences movement abilities — the pursuer's chase simply ends."]]
+};
+
+/* Counter families — the shortlist shows at most two items per family,
+   so a heal matchup stops reading as five anti-heal items in a row. */
+var FAMILY = {
+  "Toxic Bullets":"anti-heal","Decay":"anti-heal","Healbane":"anti-heal","Spirit Burn":"anti-heal","Crippling Headshot":"anti-heal",
+  "Metal Skin":"bullet defence","Bullet Resilience":"bullet defence","Return Fire":"bullet defence",
+  "Spirit Resilience":"spirit defence","Spellbreaker":"spirit defence",
+  "Cursed Relic":"shutdown","Silence Wave":"shutdown","Focus Lens":"shutdown","Silencer":"shutdown","Counterspell":"shutdown","Knockdown":"shutdown",
+  "Dispel Magic":"cleanse","Debuff Reducer":"cleanse","Unstoppable":"cleanse",
+  "Slowing Bullets":"lockdown","Slowing Hex":"lockdown","Inhibitor":"lockdown","Capacitor":"lockdown",
+  "Reactive Barrier":"survival","Ethereal Shift":"survival","Cheat Death":"survival","Warp Stone":"survival","Colossus":"survival","Divine Barrier":"survival","Rescue Beam":"survival",
+  "Escalating Exposure":"shred","Spirit Rend":"shred","Tankbuster":"shred","Armor Piercer":"shred","Siphon Bullets":"shred","Spirit Shredder":"shred",
+  "Stalker":"reveal","Hunter's Aura":"reveal",
+  "Phantom Strike":"reach",
+  "Rusted Barrel":"fire-rate cut","Suppressor":"fire-rate cut",
+  "Weapon Shielding":"bullet defence","Battle Vest":"bullet defence","Plated Armor":"bullet defence","Juggernaut":"bullet defence","Disarming Hex":"bullet defence",
+  "Spirit Shielding":"spirit defence","Enchanter's Emblem":"spirit defence","Witchmail":"spirit defence","Spirit Sap":"spirit defence",
+  "Indomitable":"cleanse",
+  "Mystic Slow":"lockdown",
+  "Monster Rounds":"summon clear","Ricochet":"summon clear",
+  "Rebuttal":"melee answer",
+  "Extra Stamina":"survival","Stamina Mastery":"survival","Enduring Speed":"survival","Restorative Locket":"survival"
+};
+/* ============ PRO RULES — validated pro counter-buys, 20 Nov 2026 ============ */
+/* Encoded from the validated pro counter-buy research (current to Minor
+   Update 11-04-2026): per-hero rules in the form "If [hero] has [item or
+   category] then suggest [counter item(s)]", each with its confidence from
+   the validation sweep — Strong = 2+ independent current sources agree;
+   Moderate = 1 current source + principle corroboration, or 2 older
+   sources; Thin = a single older source (Oct 2024 / Jul 2025, item names
+   translated to current ones) — usable, verify in game.
+   Sources: HB = Deadlock Handbook counter-building cheat sheet (matches
+   since 5 Nov 2026); IB = deadlockitembuilder.com /counter/<hero> pages
+   (stats refreshed 11–20 Nov 2026); GF = Guides-Factory counter-items
+   guide; DP = DenyPick; ESI = Esports Insider (Jul 2025, older);
+   PK = Poketape (Oct 2024, older); VALVE = the 11-04-2026 patch notes.
+   [item, points, rule text] */
+var PRO_KIT = {
+  "Abrams":[["Decay",11,"If Abrams has sustain/lifesteal items — or his Siphon Life healing is undoing your damage — then suggest Decay: percentage damage plus the big healing cut. Pro rule · Moderate (HB + IB)"],
+    ["Healbane",8,"If Abrams has sustain, then suggest Healbane early — the cheap Tier 2 anti-heal before his brawl snowballs. Pro rule · Moderate (HB + IB)"],
+    ["Toxic Bullets",7,"If Abrams has sustain late, then suggest Toxic Bullets — gun-applied anti-heal that never lets Siphon Life get a clean window. Pro rule · Moderate (HB + IB)"],
+    ["Counterspell",7,"If Abrams has Seismic Slam, then suggest Counterspell — parry the slam as it lands. Pro rule · Moderate (GF)"],
+    ["Rebuttal",6,"If Abrams has melee/brawl items, then suggest Rebuttal — parry the brawler and punish him for it. Pro rule · Moderate (GF)"]],
+  "Apollo":[["Slowing Hex",11,"If Apollo has mobility (Flawless Advance), then suggest Slowing Hex — cast it BEFORE he starts the lunges; it silences movement abilities. Pro rule · Strong (IB + HB)"],
+    ["Counterspell",8,"If Apollo has his ult (Itani Lo Sahn), then suggest Counterspell — time it for the damaging part, not the setup. Pro rule · Strong (IB + HB)"],
+    ["Spellbreaker",7,"If Apollo has spirit-burst items, then suggest Spellbreaker — it cuts one big hit by 65%. Pro rule · Moderate (IB)"],
+    ["Spirit Resilience",6,"If Apollo has spirit-burst items, then suggest Spirit Resilience for the repeated pressure between big hits. Pro rule · Moderate (IB)"]],
+  "Baba":[["Dispel Magic",11,"If Baba has Threadsap/Brew debuffs on you, then suggest Dispel Magic — cleansing Threadsap also removes the Spirit Power she stole. Pro rule · Strong (IB + DP)"],
+    ["Rebuttal",8,"If Baba has Granny Long Legs melee, then suggest Rebuttal — parry the light kick and it stuns her. Pro rule · Strong (IB)"],
+    ["Knockdown",7,"If Baba has Feed the Birds (channeled ult), then suggest Knockdown early in the channel. Pro rule · Strong (IB)"],
+    ["Spirit Resilience",7,"If Baba has spirit-burst items, then suggest Spirit Resilience. Pro rule · Strong (IB)"],
+    ["Spirit Sap",6,"If Baba has Threadsap-enhanced spirit pressure, then suggest Spirit Sap to cut her Spirit Power at the source. Pro rule · Strong (IB)"]],
+  "Bebop":[["Dispel Magic",11,"If Bebop has Sticky Bomb on you, then suggest Dispel Magic — the bomb drops to the ground; move away, it still explodes. Pro rule · Strong (IB + ESI)"],
+    ["Reactive Barrier",8,"If Bebop has his hook combo, then suggest Reactive Barrier — a barrier the moment his stun lands. Pro rule · Moderate (PK + ESI)"],
+    ["Rescue Beam",7,"If Bebop has hooked a teammate, then suggest Rescue Beam to pull them out of the combo. Pro rule · Thin (PK)"],
+    ["Knockdown",6,"If Bebop has ult-time airtime, then suggest Knockdown to bring him down. Pro rule · Thin (single thread)"]],
+  "Billy":[["Rebuttal",11,"If Billy has melee pressure, then suggest Rebuttal — parry the readable heavy melee; don't parry every dash. Pro rule · Strong (IB)"],
+    ["Slowing Hex",8,"If Billy has Rising Ram, then suggest Slowing Hex — it disables both his engage and his exit. Pro rule · Strong (IB)"],
+    ["Dispel Magic",8,"If Billy has Wrecked stacks on you, then suggest Dispel Magic to clear them. Pro rule · Strong (IB)"],
+    ["Ethereal Shift",7,"If Billy has Chain Gang (ult), then suggest Ethereal Shift — it cancels the tether. Pro rule · Strong (IB)"],
+    ["Unstoppable",6,"If Billy has Chain Gang, then suggest Unstoppable to suppress its slow/pull — or break line of sight behind a wall for 1s. Pro rule · Strong (IB)"]],
+  "Calico":[["Slowing Hex",11,"If Calico has dive/escape, then suggest Slowing Hex the moment she commits — with allies ready to finish. Pro rule · Strong (IB + HB)"],
+    ["Spirit Resilience",8,"If Calico has spirit-burst items, then suggest Spirit Resilience for repeated dives. Pro rule · Strong (IB)"],
+    ["Spellbreaker",7,"If Calico has spirit-burst items, then suggest Spellbreaker for the one big opening hit. Pro rule · Strong (IB)"],
+    ["Ethereal Shift",7,"If Calico has her ult, then suggest Ethereal Shift timed for the final hit. Pro rule · Strong (IB)"],
+    ["Silence Wave",6,"If Calico has escape/defensive items, then suggest Silence Wave for a coordinated finish. Pro rule · Strong (IB)"]],
+  "Celeste":[["Knockdown",11,"If Celeste has airborne/hover pressure, then suggest Knockdown on an exposed elevated position — team follow-up ready. Pro rule · Strong (IB)"],
+    ["Dispel Magic",8,"If Celeste has Light Eater stacks on you, then suggest Dispel Magic to clear the setup. Pro rule · Strong (IB)"],
+    ["Disarming Hex",8,"If Celeste has gun follow-up items, then suggest Disarming Hex. Pro rule · Strong (IB)"],
+    ["Spellbreaker",7,"If Celeste has spirit-burst items, then suggest Spellbreaker for the big hit. Pro rule · Strong (IB)"],
+    ["Slowing Hex",6,"If Celeste has mobility, then suggest Slowing Hex. Pro rule · Strong (IB + HB)"]],
+  "Deadman Danny":[["Slowing Hex",11,"If Deadman Danny has his jetpack/flight, then suggest Slowing Hex — it restricts the jetpack and can deny the overheat dive. Pro rule · Strong (IB)"],
+    ["Knockdown",8,"If Deadman Danny has flight, then suggest Knockdown — the delayed anti-air stun. Pro rule · Strong (IB)"],
+    ["Dispel Magic",8,"If Deadman Danny has Strix Salvo marks on you, then suggest Dispel Magic to remove them. Pro rule · Strong (IB)"],
+    ["Spirit Resilience",6,"If Deadman Danny has spirit-burst items, then suggest Spirit Resilience. Pro rule · Strong (IB)"],
+    ["Reactive Barrier",6,"If Deadman Danny has his grab (Close The Deal), then suggest Reactive Barrier — and stay above half health near him; he bonus-damages sub-half targets. Pro rule · Moderate (IB)"]],
+  "The Doorman":[["Silence Wave",11,"If The Doorman has Doorway reset, then suggest Silence Wave BEFORE the cast — Slowing Hex is NOT a dependable Doorway shutdown. Pro rule · Strong (IB)"],
+    ["Cursed Relic",8,"If The Doorman has Doorway reset, then suggest Cursed Relic before the cast for the full shutdown. Pro rule · Strong (IB)"],
+    ["Counterspell",8,"If The Doorman has Hotel Guest, then suggest Counterspell timed for the entry or exit hit. Pro rule · Strong (IB + HB)"],
+    ["Spirit Shielding",6,"If The Doorman has Call Bell spirit poke, then suggest Spirit Shielding. Pro rule · Strong (IB)"],
+    ["Unstoppable",6,"If The Doorman has cart control, then suggest Unstoppable (pre-press) to play through it. Pro rule · Strong (IB)"]],
+  "Drifter":[["Dispel Magic",11,"If Drifter has Stalker's Mark on you, then suggest Dispel Magic — it removes the bleed AND the teleport. Pro rule · Strong (IB + DP)"],
+    ["Disarming Hex",8,"If Drifter has gun-burst items, then suggest Disarming Hex (teammate-applied) to stop the burst. Pro rule · Strong (IB)"],
+    ["Metal Skin",7,"If Drifter has gun-burst items, then suggest Metal Skin for your personal window. Pro rule · Strong (IB)"],
+    ["Counterspell",7,"If Drifter has his ult, then suggest Counterspell for the readable ult hit — and stay near allies to deny his isolation bonus. Pro rule · Strong (IB)"],
+    ["Divine Barrier",6,"If a teammate is marked by Drifter, then suggest Divine Barrier as the ally save. Pro rule · Moderate (IB)"]],
+  "Dynamo":[["Knockdown",11,"If Dynamo has Singularity (channeled ult), then suggest Knockdown cast EARLY — its delay needs the head start, and it only works if he hasn't used Unstoppable. Pro rule · Strong (IB)"],
+    ["Cursed Relic",8,"If Dynamo has Singularity, then suggest Cursed Relic pre-ult to stop the cast. Pro rule · Thin (PK)"],
+    ["Unstoppable",7,"If Dynamo has Kinetic Pulse / ult catch, then suggest Unstoppable — pre-press before the catch. Pro rule · Strong (IB)"],
+    ["Rescue Beam",7,"If Dynamo has caught an ally in Singularity, then suggest Rescue Beam to pull them out — Indomitable is NOT a reliable Singularity escape. Pro rule · Strong (IB)"]],
+  "Graves":[["Monster Rounds",11,"If Graves has summons (Deadheads/Ghouls), then suggest Monster Rounds early for the clear. Pro rule · Strong (IB)"],
+    ["Dispel Magic",8,"If Graves has Grasping Hands root on you, then suggest Dispel Magic. Pro rule · Strong (IB)"],
+    ["Spirit Burn",7,"If Graves has healing/sustain items, then suggest Spirit Burn on spirit builds. Pro rule · Strong (IB)"],
+    ["Healbane",6,"If Graves has healing/sustain items, then suggest Healbane as the cheap version. Pro rule · Strong (IB)"],
+    ["Ricochet",6,"If Graves has summons late, then suggest Ricochet — only on gun builds that already want it. Pro rule · Strong (IB)"]],
+  "Grey Talon":[["Knockdown",11,"If Grey Talon has flight, then suggest Knockdown to ground him. Pro rule · Strong (HB)"],
+    ["Dispel Magic",7,"If Grey Talon has traps on you, then suggest Dispel Magic to cleanse the trap effects. Pro rule · Thin (PK, names translated)"],
+    ["Debuff Reducer",6,"If Grey Talon has traps, then suggest Debuff Reducer to shorten them on a budget. Pro rule · Thin (PK, names translated)"],
+    ["Ethereal Shift",6,"If Grey Talon has his ult lined up, then suggest Ethereal Shift to dodge it. Pro rule · Thin (PK)"],
+    ["Spirit Resilience",6,"If Grey Talon has spirit/snipe items, then suggest Spirit Resilience. Pro rule · Moderate (HB principle)"]],
+  "Haze":[["Metal Skin",11,"If Haze has Bullet Dance (ult), then suggest Metal Skin — bullet immunity for the whole dance window. Fixation stacks still build during it, and her spirit damage bypasses it. Pro rule · Strong (IB + HB)"],
+    ["Indomitable",8,"If Haze has Sleep Dagger, then suggest Indomitable — it auto-cleanses the sleep; you can't press Dispel or Unstoppable while asleep. Pro rule · Strong (IB)"],
+    ["Dispel Magic",8,"If Haze has Fixation stacks on you, then suggest Dispel Magic to reset them — then break line of sight or she rebuilds them. Pro rule · Strong (IB + DP)"],
+    ["Knockdown",8,"If Haze has Bullet Dance, then suggest Knockdown to interrupt the channel — unless she has Unstoppable. Disarming Hex does NOT stop a dance already running. Pro rule · Strong (IB)"],
+    ["Plated Armor",6,"If Haze has Fixation stacks, then suggest Plated Armor — its on-hit block chance slows the stacking. Pro rule · Strong (IB)"]],
+  "Holliday":[["Indomitable",11,"If Holliday has Spirit Lasso, then suggest Indomitable — the auto-answer to a surprise catch. Pro rule · Strong (IB)"],
+    ["Slowing Hex",8,"If Holliday has Bounce Pad movement, then suggest Slowing Hex BEFORE the jump-pad move you need to deny. Pro rule · Strong (IB)"],
+    ["Counterspell",7,"If Holliday has Lasso and you can read it, then suggest Counterspell. Pro rule · Strong (IB)"],
+    ["Unstoppable",7,"If Holliday has Lasso and you can read it, then suggest Unstoppable (pre-press). Pro rule · Strong (IB)"],
+    ["Rescue Beam",6,"If Holliday has kidnapped a teammate with Lasso, then suggest Rescue Beam to save them. Pro rule · Strong (IB)"]],
+  "Infernus":[["Dispel Magic",11,"If Infernus has Afterburn on you, then suggest Dispel Magic to cleanse the burn. Pro rule · Thin (PK + ESI, older sources)"],
+    ["Debuff Reducer",7,"If Infernus has Afterburn, then suggest Debuff Reducer to shorten every burn. Pro rule · Thin (PK + ESI, older sources)"],
+    ["Healbane",7,"If Infernus has sustain/lifesteal items, then suggest Healbane — anti-heal matched to your damage type. Pro rule · Thin (PK + ESI, older sources)"],
+    ["Counterspell",6,"If Infernus has his ult charge, then suggest Counterspell. Pro rule · Moderate (GF)"],
+    ["Cursed Relic",6,"If Infernus has his ult charge, then suggest Cursed Relic to slow him while he charges. Pro rule · Thin (PK)"]],
+  "Ivy":[["Knockdown",11,"If Ivy has flight/Stone Form, then suggest Knockdown to ground her and pause Stone Form. Pro rule · Thin (PK, single older source)"],
+    ["Toxic Bullets",7,"If Ivy has healing/sustain, then suggest Toxic Bullets — she's on the pro anti-heal lists for Decay/Spirit Burn-class answers. Pro rule · Moderate (ESI)"],
+    ["Decay",7,"If Ivy has healing/sustain, then suggest Decay. Pro rule · Moderate (ESI)"],
+    ["Silence Wave",6,"If Ivy has flight/Stone Form, then suggest Silence Wave to cut the casts. Pro rule · Thin (PK)"],
+    ["Warp Stone",6,"If Ivy has dive, then suggest Warp Stone to escape the landing. Pro rule · Thin (PK)"]],
+  "Kelvin":[["Decay",11,"If Kelvin has healing/sustain, then suggest Decay — he's on the pro Decay/Spirit Burn lists, and dome fights end when the healing stops working. Pro rule · Moderate (ESI)"],
+    ["Spirit Burn",7,"If Kelvin has healing/sustain late, then suggest Spirit Burn. Pro rule · Moderate (ESI)"],
+    ["Extra Stamina",7,"If Kelvin has slows (Arctic Beam), then suggest Extra Stamina to escape the beam. Pro rule · Thin (PK)"],
+    ["Silence Wave",6,"If Kelvin has Frozen Shelter (ult dome), then suggest Silence Wave to prevent the cast. Pro rule · Thin (PK)"],
+    ["Ethereal Shift",6,"If Kelvin has his dome up, then suggest Ethereal Shift to wait out time inside it. Pro rule · Thin (PK)"]],
+  "Lady Geist":[["Decay",11,"If Lady Geist has sustain/lifesteal (Life Drain), then suggest Decay — she's a headline entry on the pro anti-heal lists. Pro rule · Moderate (ESI)"],
+    ["Spirit Burn",7,"If Lady Geist has sustain late, then suggest Spirit Burn. Pro rule · Moderate (ESI)"],
+    ["Silence Wave",7,"If Lady Geist has Soul Exchange (ult), then suggest Silence Wave pre-ult to prevent it. Pro rule · Thin (PK)"],
+    ["Cursed Relic",6,"If Lady Geist has her ult, then suggest Cursed Relic to prevent the cast. Pro rule · Thin (PK)"],
+    ["Spirit Resilience",6,"If Lady Geist has spirit-burst items, then suggest Spirit Resilience. Pro rule · Thin (PK, names translated)"]],
+  "Lash":[["Counterspell",11,"If Lash has Death Slam (ult), then suggest Counterspell — parry as he grabs you. Pro rule · Strong (HB)"],
+    ["Knockdown",7,"If Lash has Death Slam / aerial movement, then suggest Knockdown. Pro rule · Thin (PK)"],
+    ["Slowing Hex",7,"If Lash has mobility, then suggest Slowing Hex to shut down his movement abilities. Pro rule · Moderate (ESI)"],
+    ["Silence Wave",6,"If Lash has mobility, then suggest Silence Wave. Pro rule · Thin (PK, names translated)"],
+    ["Warp Stone",6,"If Lash has Death Slam, then suggest Warp Stone to blink out of the landing spot. Pro rule · Thin (PK)"]],
+  "McGinnis":[["Monster Rounds",11,"If McGinnis has turrets, then suggest Monster Rounds to clear them. Pro rule · Thin (PK)"],
+    ["Suppressor",8,"If McGinnis has gun items, then suggest Suppressor to cut her damage output. Pro rule · Thin (PK)"],
+    ["Rusted Barrel",7,"If McGinnis has gun items, then suggest Rusted Barrel for the lane fire-rate cut. Pro rule · Moderate (GF)"],
+    ["Knockdown",6,"If McGinnis has her ult, then suggest Knockdown pre-ult. Pro rule · Thin (ESI)"],
+    ["Reactive Barrier",6,"If McGinnis has Spectral Wall catches, then suggest Reactive Barrier. Pro rule · Thin (PK)"]],
+  "Mina":[["Counterspell",11,"If Mina has Love Bites stacking, then suggest Counterspell — it blocks the FIRST application, not existing stacks; break line of sight so stacks can't build. Pro rule · Strong (HB + GF)"],
+    ["Slowing Hex",8,"If Mina has her dash/escape (Sanguine Retreat), then suggest Slowing Hex — but force the dash/cleanse FIRST and layer a second control; Knockdown alone is unreliable against her. Pro rule · Strong (IB)"],
+    ["Spirit Shielding",7,"If Mina has spirit-burst items, then suggest Spirit Shielding in lane. Pro rule · Strong (IB)"],
+    ["Spirit Resilience",6,"If Mina has spirit-burst items late, then suggest Spirit Resilience. Pro rule · Strong (IB)"],
+    ["Silence Wave",6,"If Mina has Nox Nostra (ult), then suggest Silence Wave for a focus window before she casts — and spread out vs the swarm. Pro rule · Strong (IB)"]],
+  "Mirage":[["Healbane",11,"If Mirage has Fire Scarabs, then suggest Healbane BEFORE he gets two scarab charges online — the drain is his brawl sustain. Pro rule · Strong (DP)"],
+    ["Dispel Magic",8,"If Mirage has Djinn's Mark stacks, then suggest Dispel Magic before he consumes a large stack; break line of sight at 3+ stacks. Pro rule · Strong (DP)"],
+    ["Slowing Hex",8,"If Mirage has Traveler (ult), then suggest Slowing Hex — damage, stuns and Slowing Hex all lock the channel for 5s. Pro rule · Strong (DP)"],
+    ["Disarming Hex",6,"If Mirage has on-hit/gun items, then suggest Disarming Hex. Pro rule · Thin (ESI)"]],
+  "Mo & Krill":[["Decay",11,"If Mo & Krill has sustain (Scorn heal — buffed to 1.3× from heroes on 4 Nov), then suggest Decay. Pro rule · Moderate (ESI)"],
+    ["Toxic Bullets",7,"If Mo & Krill has sustain, then suggest Toxic Bullets as the gun-applied version. Pro rule · Moderate (ESI)"],
+    ["Slowing Hex",7,"If Mo & Krill has Burrow escape, then suggest Slowing Hex to prevent it. Pro rule · Thin (PK)"],
+    ["Silence Wave",6,"If Mo & Krill has Burrow escape, then suggest Silence Wave. Pro rule · Thin (PK)"],
+    ["Knockdown",6,"If Mo & Krill has Combo (ult), then suggest Knockdown pre-ult to cancel it. Pro rule · Moderate (ESI)"]],
+  "Nurse Harrow":[["Toxic Bullets",11,"If Nurse Harrow has healing, then suggest Toxic Bullets — and put the anti-heal ON THE HERO SHE HEALS, not on Harrow. Pro rule · Strong (IB + GG)"],
+    ["Healbane",8,"If Nurse Harrow has healing and you deal spirit damage, then suggest Healbane on her heal target instead. Pro rule · Strong (IB + GG)"],
+    ["Knockdown",8,"If Nurse Harrow has Lurking Terrors (ult), then suggest Knockdown to interrupt the channel — she can be damaged while channeling; turn away from the fear cone. Pro rule · Strong (IB)"],
+    ["Dispel Magic",7,"If Nurse Harrow has leeches attached to you, then suggest Dispel Magic — it removes leeches, but NOT Lurking Terrors fear or collected leech stacks. Pro rule · Strong (IB)"]],
+  "Paige":[["Cursed Relic",11,"If Paige has Plot Armor, then suggest Cursed Relic to deny the cast — or bait the barrier with a small commitment and switch targets. Do NOT dump burst into the protected target; anti-heal does NOT shrink Plot Armor. Pro rule · Strong (IB)"],
+    ["Dispel Magic",8,"If Paige has Captivating Read root on you, then suggest Dispel Magic — it clears the root, but does NOT strip Plot Armor from her target. Pro rule · Strong (IB)"],
+    ["Silence Wave",7,"If Paige has defensive casts, then suggest Silence Wave BEFORE the rescue cast — a late silence doesn't undo an applied barrier. Pro rule · Strong (IB)"],
+    ["Unstoppable",6,"If Paige has chained control, then suggest Unstoppable (pre-press). Pro rule · Strong (IB)"],
+    ["Reactive Barrier",6,"If Paige has chained control, then suggest Reactive Barrier to soak the follow-up. Pro rule · Strong (IB)"]],
+  "Paradox":[["Dispel Magic",11,"If Paradox has Kinetic Carbine amp on you, then suggest Dispel Magic — the Handbook names Paradox's damage amp as THE Dispel Magic case. Pro rule · Strong (HB)"],
+    ["Ethereal Shift",7,"If Paradox has Paradoxical Swap (ult), then suggest Ethereal Shift to wait it out. Pro rule · Thin (PK)"],
+    ["Rescue Beam",7,"If Paradox has swapped an ally into his team, then suggest Rescue Beam to save them. Pro rule · Thin (PK)"],
+    ["Warp Stone",6,"If Paradox has swapped you, then suggest Warp Stone to teleport out. Pro rule · Moderate (IB helper)"],
+    ["Disarming Hex",6,"If Paradox has on-hit/gun items, then suggest Disarming Hex. Pro rule · Thin (ESI)"]],
+  "Pocket":[["Slowing Hex",11,"If Pocket has Flying Cloak/Briefcase escape, then suggest Slowing Hex — it denies the cloak; cover the cloak destination AND his current position, and commit after Briefcase is spent. Pro rule · Strong (IB)"],
+    ["Divine Barrier",9,"If Pocket has Affliction (ult) on you, then suggest Divine Barrier — it is the ONLY cleanse that removes it. Dispel Magic does NOT remove Affliction. Pro rule · Strong (IB)"],
+    ["Counterspell",8,"If Pocket has Affliction, then suggest Counterspell timed BEFORE application — it blocks the cast but does not cleanse it once it's on. Pro rule · Strong (IB)"],
+    ["Silence Wave",7,"If Pocket has Briefcase/defensive casts, then suggest Silence Wave before the cast. Pro rule · Strong (IB)"],
+    ["Spirit Resilience",6,"If Pocket has spirit items, then suggest Spirit Resilience for the repeated pressure. Pro rule · Strong (IB)"]],
+  "Rat King":[["Dispel Magic",11,"If Rat King has Rat Swarm on you, then suggest Dispel Magic to clear the attached rats and the bullet-resist shred — dashes also remove one rat each, so save stamina. Pro rule · Strong (IB)"],
+    ["Decay",8,"If Rat King has high-health/tank items, then suggest Decay — percentage current-health damage. Pro rule · Strong (IB)"],
+    ["Siphon Bullets",8,"If Rat King has high-health/tank items, then suggest Siphon Bullets to steal max health. Pro rule · Strong (IB)"],
+    ["Tankbuster",7,"If Rat King has tank items, then suggest Tankbuster for %current-health spirit damage. Pro rule · Strong (IB)"],
+    ["Cursed Relic",6,"If Rat King has Royal Pestments, then suggest Cursed Relic to strip eligible non-ult protection — it does NOT remove an active banner, and anti-heal does NOT shrink the barrier. Pro rule · Strong (IB)"]],
+  "Rem":[["Slowing Hex",11,"If Rem has Tag Along escape, then suggest Slowing Hex BEFORE the jump. Pro rule · Strong (IB)"],
+    ["Counterspell",9,"If Rem has Naptime (ult), then suggest Counterspell for the telegraphed hit — you CANNOT activate items while asleep, and Dispel Magic does NOT remove ult sleep. Pro rule · Strong (IB)"],
+    ["Healbane",7,"If Rem has healing, then suggest Healbane (spirit) on the heal target. Pro rule · Strong (IB)"],
+    ["Toxic Bullets",6,"If Rem has healing and you deal gun damage, then suggest Toxic Bullets instead. Pro rule · Strong (IB)"],
+    ["Monster Rounds",6,"If Rem has Little Helpers, then suggest Monster Rounds to clear them. Pro rule · Strong (IB)"]],
+  "Seven":[["Knockdown",11,"If Seven has Storm Cloud (channeled ult), then suggest Knockdown to interrupt it. Pro rule · Moderate (PK + community)"],
+    ["Cursed Relic",8,"If Seven has Storm Cloud, then suggest Cursed Relic as the faster interrupt. Pro rule · Thin (PK)"],
+    ["Spirit Resilience",7,"If Seven has Unstoppable, then suggest Spirit Resilience instead — Knockdown and Cursed Relic stop working on him; pivot to resists and mobility. Pro rule · Moderate (GF)"],
+    ["Healbane",6,"If Seven has lifesteal/sustain, then suggest Healbane matched to your damage type. Pro rule · Thin (PK)"]],
+  "Shiv":[["Dispel Magic",11,"If Shiv has Serrated Knives stacks on you, then suggest Dispel Magic to cleanse them. Pro rule · Moderate (ESI)"],
+    ["Debuff Reducer",7,"If Shiv has Serrated Knives, then suggest Debuff Reducer to shorten the stacks. Note: Counterspell blocks only the FIRST knife application, not existing stacks. Pro rule · Thin (PK)"],
+    ["Slowing Hex",7,"If Shiv has dash/jump-in, then suggest Slowing Hex to lock down his movement. Pro rule · Moderate (ESI)"],
+    ["Knockdown",6,"If Shiv has dash/jump-in, then suggest Knockdown to punish the jump-in. Pro rule · Thin (PK)"],
+    ["Decay",6,"If Shiv has sustain/lifesteal, then suggest Decay. Pro rule · Moderate (ESI)"]],
+  "Silver":[["Metal Skin",11,"If Silver has wolf-form weapon pressure, then suggest Metal Skin for the commit window — wolf primary attacks ARE weapon damage. Mauling Leap and Go For The Throat are ability threats Metal Skin does not stop. Pro rule · Strong (IB)"],
+    ["Disarming Hex",8,"If Silver has wolf-form weapon pressure, then suggest Disarming Hex (teammate-applied) to stop the weapon attacks. Pro rule · Strong (IB)"],
+    ["Slowing Hex",7,"If Silver has dash/chase, then suggest Slowing Hex to deny the dash. Pro rule · Strong (IB)"],
+    ["Return Fire",6,"If Silver has human-form gun, then suggest Return Fire if you're durable enough to take the shots. Pro rule · Strong (IB)"],
+    ["Healbane",6,"If Silver has sustain (Go For The Throat / lifesteal), then suggest Healbane if the recovery blocks the finish. Pro rule · Strong (IB)"]],
+  "Sinclair":[["Slowing Hex",11,"If Sinclair has Vexing Bolt setup / assistant teleport, then suggest Slowing Hex before the reposition — and cover Sinclair AND the assistant with separate players; don't chase one teleport as a group. Pro rule · Strong (IB)"],
+    ["Spirit Shielding",8,"If Sinclair has Vexing Bolt burst, then suggest Spirit Shielding. Pro rule · Strong (IB)"],
+    ["Counterspell",7,"If Sinclair has a copied ult, then suggest Counterspell — but check WHICH ult was stolen first, and answer that ult (Knockdown only for vulnerable airborne/channeled copies). Pro rule · Strong (IB)"]],
+  "Solomon":[["Spirit Shielding",11,"If Solomon has Bishop/Rook ground control, then suggest Spirit Shielding for the damaging squares. Note: there is NO verified universal anti-Solomon purchase — his counters are positional: change angle/elevation, bait a piece move, attack in the repositioning gap. Pro rule · Moderate (IB, positional)"],
+    ["Spirit Resilience",8,"If Solomon has Bishop/Rook ground control, then suggest Spirit Resilience for the sustained version. Pro rule · Moderate (IB, positional)"],
+    ["Unstoppable",6,"If Solomon has Rook Battery immobilize lines, then suggest Unstoppable as control protection. Pro rule · Moderate (IB, positional)"]],
+  "Venator":[["Metal Skin",11,"If Venator has gun items, then suggest Metal Skin for the commit window. Pro rule · Strong (IB)"],
+    ["Disarming Hex",8,"If Venator has gun items, then suggest Disarming Hex (teammate-applied) to stop him shooting. Pro rule · Strong (IB)"],
+    ["Rusted Barrel",7,"If Venator has fire-rate/lane pressure, then suggest Rusted Barrel early. Pro rule · Strong (IB)"],
+    ["Suppressor",7,"If Venator has fire-rate pressure and you apply spirit damage repeatedly, then suggest Suppressor. Pro rule · Strong (IB)"],
+    ["Plated Armor",6,"If Venator has repeated gun pressure, then suggest Plated Armor (chance-based). Pro rule · Strong (IB)"],
+    ["Warp Stone",6,"If Venator has wall/trap setups, then suggest Warp Stone to leave the setup. Pro rule · Strong (IB)"]],
+  "Victor":[["Healbane",11,"If Victor has Jumpstart/Pain Battery sustain, then suggest Healbane — keep anti-heal applied for the WHOLE focus; one reliable source beats everyone buying their own. Pro rule · Strong (IB)"],
+    ["Toxic Bullets",8,"If Victor has sustain and you deal gun damage, then suggest Toxic Bullets. Pro rule · Strong (IB)"],
+    ["Decay",8,"If Victor has sustain and you deal spirit damage, then suggest Decay. Pro rule · Strong (IB)"],
+    ["Spirit Burn",7,"If Victor has sustain late, then suggest Spirit Burn. Pro rule · Strong (IB)"],
+    ["Slowing Hex",6,"If Victor has Shocking Reanimation (revive), then suggest Slowing Hex to stop the half-health walk-away — anti-heal does NOT prevent the revive: back out of the stun area during the 3s channel, re-apply anti-heal, finish him after. Pro rule · Strong (IB)"]],
+  "Vindicta":[["Knockdown",11,"If Vindicta has flight, then suggest Knockdown to ground her. Pro rule · Strong (HB)"],
+    ["Spirit Resilience",7,"If Vindicta has Crow/ult snipe, then suggest Spirit Resilience. Pro rule · Thin (PK)"],
+    ["Divine Barrier",6,"If Vindicta has her ult snipe lined up on you, then suggest Divine Barrier. Pro rule · Thin (PK)"],
+    ["Rusted Barrel",6,"If Vindicta has gun items, then suggest Rusted Barrel — she's on the pro fire-rate-cut lists for gun heroes. Pro rule · Moderate (ESI)"]],
+  "Violet":[["Dispel Magic",11,"If Violet has Still Life / Flow State effects on you, then suggest Dispel Magic — it helps with both, NOT the ultimate. Break her sightline when Still Life starts; distance alone is not enough. Pro rule · Moderate (IB, single current source)"],
+    ["Reactive Barrier",7,"If Violet has control into lethal follow-up, then suggest Reactive Barrier. Pro rule · Moderate (IB)"],
+    ["Spirit Shielding",6,"If Violet has spirit bursts costing you lane farm, then suggest Spirit Shielding. Pro rule · Moderate (IB)"],
+    ["Extra Stamina",6,"If Violet has walls/strokes zoning you, then suggest Extra Stamina to reach cover. Pro rule · Moderate (IB)"]],
+  "Viscous":[["Silence Wave",11,"If Viscous has Cube/escape casts, then suggest Silence Wave to prevent the ability use. Pro rule · Moderate (ESI)"],
+    ["Cursed Relic",8,"If Viscous has Cube/escape casts late, then suggest Cursed Relic. Pro rule · Thin (PK)"],
+    ["Tankbuster",7,"If Viscous has Goo Ball (rolling ult), then suggest Tankbuster — resist shredders are the listed answer. Pro rule · Thin (PK)"],
+    ["Knockdown",6,"If Viscous has Goo Ball, then suggest Knockdown — it slows him, but the source itself rates it 'not great'. Pro rule · Thin (PK)"],
+    ["Extra Stamina",6,"If Viscous has dive, then suggest Extra Stamina to dodge. Pro rule · Thin (PK)"]],
+  "Vyper":[["Dispel Magic",11,"If Vyper has Lethal Venom, then suggest Dispel Magic for the important removable venom effect before its payoff. Pro rule · Strong (IB + ESI)"],
+    ["Return Fire",7,"If Vyper has rapid-fire gun, then suggest Return Fire if you're durable enough to take the shots — it doesn't clear venom. Pro rule · Strong (IB)"],
+    ["Metal Skin",7,"If Vyper has rapid-fire gun, then suggest Metal Skin for bullet protection — it doesn't clear venom either. Pro rule · Strong (IB)"]],
+  "Warden":[["Debuff Reducer",11,"If Warden has Binding Word stun / Alchemical Flask, then suggest Debuff Reducer to shorten both. Pro rule · Thin (PK)"],
+    ["Dispel Magic",8,"If Warden has flask + stun debuffs on you, then suggest Dispel Magic. Pro rule · Thin (PK)"],
+    ["Extra Stamina",7,"If Warden has Binding Word, then suggest Extra Stamina to escape it. Pro rule · Thin (PK)"],
+    ["Unstoppable",6,"If Warden has dive/jump-in on you, then suggest Unstoppable. Pro rule · Thin (PK)"],
+    ["Slowing Hex",6,"If Warden has escape, then suggest Slowing Hex to stop him running away. Pro rule · Thin (PK)"]],
+  "Wraith":[["Unstoppable",11,"If Wraith has Murder (ult lift), then suggest Unstoppable (pre-press) — safer than Counterspell, which cannot parry the lift. Pro rule · Strong (HB)"],
+    ["Indomitable",9,"If Wraith has Murder (ult lift), then suggest Indomitable as the auto-cleanse version. Pro rule · Strong (HB)"],
+    ["Ethereal Shift",7,"If Wraith has Murder, then suggest Ethereal Shift timed just before it hits. Pro rule · Thin (PK)"],
+    ["Disarming Hex",6,"If Wraith has gun items, then suggest Disarming Hex. Pro rule · Moderate (ESI + community)"],
+    ["Silence Wave",6,"If Wraith has Telekinesis/cards, then suggest Silence Wave — she relies on cards/abilities for damage. Pro rule · Thin (PK)"]],
+  "Yamato":[["Slowing Hex",11,"If Yamato has Flying Strike, then suggest Slowing Hex to slow it. Pro rule · Thin (PK)"],
+    ["Knockdown",7,"If Yamato has Shadow Transformation (ult), then suggest Knockdown to waste her ult uptime. Pro rule · Thin (PK)"],
+    ["Silence Wave",7,"If Yamato has Shadow Transformation, then suggest Silence Wave timed just before she pops it. Pro rule · Thin (PK)"],
+    ["Decay",6,"If Yamato has sustain (ult regen / lifesteal), then suggest Decay. Pro rule · Moderate (ESI)"]]
+};
+function applySignature(add, eh){
+  var sig = PRO_KIT[eh[0]] || SIGNATURE[eh[0]];
+  if (!sig) return;
+  sig.forEach(function(s){ add(s[0], s[1], s[2]); });
+}
+/* ============ PRO SHARED MATRIX — §1b of the validated research ============ */
+/* Applies to EVERY hero unless a hero rule above says otherwise. Triggered
+   by what the enemy actually bought (Full build) or the item type picked
+   (Quick pick), so different enemy builds give different suggestions.
+   ctx: {sustain:[names], gun:n, spirit:n, tank:n, mobility:n,
+         unstoppable:bool, counterspell:bool, metalSkin:bool, lockItems:[names]} */
+function applyProMatrix(add, ctx){
+  var first;
+  if (ctx.sustain && ctx.sustain.length){
+    first = ctx.sustain[0];
+    add("Healbane",6,"PRO MATRIX — If they have sustain/healing/lifesteal items ("+first+" etc.), then suggest Healbane if you deal spirit damage — anti-heal matched to YOUR damage type. Pro rule · Strong (HB + IB)");
+    add("Toxic Bullets",6,"PRO MATRIX — If they have sustain items ("+first+"), then suggest Toxic Bullets if you deal gun damage. Pro rule · Strong (HB + IB)");
+    add("Decay",5,"PRO MATRIX — If they have sustain items ("+first+"), then suggest Decay as the either-damage targeted active. Pro rule · Strong (HB + IB)");
+    add("Spirit Burn",4,"PRO MATRIX — If they have heavy sustain late, then suggest Spirit Burn, the Tier 4 finisher. Pro rule · Strong (HB + IB)");
+    add("Inhibitor",4,"PRO MATRIX — If they have sustain and you deal gun damage, then suggest Inhibitor: −40% healing plus −30% of their damage. Pro rule · Strong (HB)");
+  }
+  if (ctx.gun){
+    add("Metal Skin",6,"PRO MATRIX — If they have gun/bullet-damage items, then suggest Metal Skin for commits: 5s of bullet immunity. Pro rule · Strong (HB)");
+    add("Disarming Hex",5,"PRO MATRIX — If they have gun items and a carry is fed, then suggest Disarming Hex to stop them shooting for 4.25s. Pro rule · Strong (HB)");
+    add("Rusted Barrel",4,"PRO MATRIX — If they have gun items, then suggest Rusted Barrel/Suppressor-class fire-rate cuts in lane. Pro rule · Strong (HB)");
+    add("Suppressor",4,"PRO MATRIX — If they have high-fire-rate gun items and you deal spirit damage, then suggest Suppressor. Pro rule · Strong (HB)");
+    add("Bullet Resilience",4,"PRO MATRIX — If they have gun items, then suggest Bullet Resilience for always-on resist. Pro rule · Strong (HB)");
+    add("Weapon Shielding",3,"PRO MATRIX — If they have gun items early, then suggest Weapon Shielding (+18% bullet resist + barrier). Pro rule · Strong (HB)");
+  }
+  if (ctx.spirit){
+    add("Spirit Resilience",6,"PRO MATRIX — If they have spirit/burst items, then suggest Spirit Resilience for repeated pressure. Pro rule · Strong (HB)");
+    add("Spellbreaker",5,"PRO MATRIX — If they have spirit burst items, then suggest Spellbreaker for one big hit (≥175 cut by 65%). Pro rule · Strong (HB)");
+    add("Spirit Shielding",4,"PRO MATRIX — If they have spirit items in lane, then suggest Spirit Shielding for the burst window. Pro rule · Strong (HB)");
+    add("Spirit Sap",4,"PRO MATRIX — If they have spirit items, then suggest Spirit Sap to cut their Spirit Power. Pro rule · Strong (HB)");
+  }
+  if (ctx.tank){
+    add("Armor Piercer",6,"PRO MATRIX — If they have tank/health/bullet-resist items, then suggest Armor Piercer: 60% of bullets ignore bullet resist and barriers. Pro rule · Moderate (HB)");
+    add("Tankbuster",5,"PRO MATRIX — If they have tank items, then suggest Tankbuster: +7.5% current-health spirit damage. Pro rule · Moderate (HB)");
+    add("Escalating Exposure",5,"PRO MATRIX — If they have tank items, then suggest Escalating Exposure: stacking spirit damage taken. Pro rule · Moderate (HB)");
+    add("Siphon Bullets",4,"PRO MATRIX — If they have tank items, then suggest Siphon Bullets to steal max health. Pro rule · Moderate (HB)");
+    add("Toxic Bullets",4,"PRO MATRIX — If they have tank items, then suggest Toxic Bullets: the bleed scales with max health. Pro rule · Moderate (HB)");
+  }
+  if (ctx.mobility){
+    add("Slowing Hex",6,"PRO MATRIX — If they have mobility items (Warp Stone, movement actives), then suggest Slowing Hex — it silences movement abilities AND items. Pro rule · Strong (HB)");
+    add("Slowing Bullets",4,"PRO MATRIX — If they have mobility items and you deal gun damage, then suggest Slowing Bullets. Pro rule · Moderate (HB)");
+    add("Mystic Slow",4,"PRO MATRIX — If they have mobility items and you deal spirit damage, then suggest Mystic Slow. Pro rule · Moderate (HB)");
+  }
+  if (ctx.unstoppable){
+    add("Spirit Resilience",3,"PRO MATRIX — If they have Unstoppable, then Knockdown and Cursed Relic will NOT work on them: pivot to resistances/mobility and wait it out. Pro rule · Moderate (GF + HB)");
+    add("Warp Stone",3,"PRO MATRIX — If they have Unstoppable, don't spend on CC they'll shrug off — mobility and resists are the honest answer. Pro rule · Moderate (GF + HB)");
+  }
+  if (ctx.counterspell){
+    add("Slowing Bullets",3,"PRO MATRIX — If they have Counterspell, do NOT open with your telegraphed ability: bait the parry with a light attack/gunfire first — it blocks only the first application of stacking effects. Pro rule · Strong (HB)");
+  }
+  if (ctx.metalSkin){
+    add("Decay",3,"PRO MATRIX — If they have Metal Skin, do not feed gun damage into its 5s window: use spirit damage or disengage until it ends. Pro rule · Thin (single thread, principle-level)");
+    add("Escalating Exposure",3,"PRO MATRIX — If they have Metal Skin, spirit damage ignores it entirely. Pro rule · Thin (principle-level)");
+  }
+  if (ctx.lockItems && ctx.lockItems.length){
+    add("Unstoppable",4,"PRO MATRIX — If they have "+ctx.lockItems[0]+" and you channel an ult, then suggest Unstoppable to protect your own channel. Pro rule · Moderate (HB + GF)");
+  }
+}
+/* The general threat read from a hero's tags — shared by both engines.
+   Deliberately scored below the signature answers and the enemy's actual
+   items, so it fills out a shortlist instead of deciding it. */
+function applyHeroKit(add, eh){
+  var tags = eh[3];
+  var T = function(t){ return tags.indexOf(t)!==-1; };
+  if (T("heal")){ add("Toxic Bullets",4,eh[0]+" sustains through fights — cutting their healing by 40% is how the brawl actually ends."); add("Decay",3,"Percentage damage plus 55% healing reduction is built for a self-healing frontliner like "+eh[0]+"."); add("Healbane",2,"Budget anti-heal while you save for a bigger answer."); add("Spirit Burn",3,"The late-game anti-heal finisher if "+eh[0]+" is still unkillable at Tier 4."); add("Crippling Headshot",2,"Headshots stack 40% anti-heal on a target who wants long fights."); }
+  if (T("teamheal")){ add("Toxic Bullets",2,eh[0]+" heals their whole team — anti-heal on the target you're focusing cuts the value of every heal they throw."); add("Healbane",3,eh[0]+" is a healing support: Healbane is the cheap, early answer supports buy into other supports."); add("Decay",2,"Decay on their carry makes "+eh[0]+"'s heals land at 45% value."); add("Spirit Burn",2,"If their healing is winning teamfights late, Spirit Burn is the strongest anti-heal in the shop."); }
+  if (T("gun")){ add("Metal Skin",3,eh[0]+"'s damage is bullets — 5 seconds of bullet immunity deletes their burst window."); add("Bullet Resilience",3,"+35% Bullet Resist works in every fight against a gun hero, not just one window."); add("Return Fire",2,"Rapid gunfire means constant Return Fire procs — they punish themselves for shooting you."); }
+  if (T("spirit")){ add("Spirit Resilience",3,eh[0]+"'s damage is spirit — +30% Spirit Resist (45% below half health) blunts every combo."); add("Counterspell",2,"One well-timed parry can eat "+eh[0]+"'s key ability entirely."); add("Spellbreaker",2,"The Tier 4 step-up if their spirit damage is still deleting you late."); }
+  if (T("cc")){ add("Unstoppable",4,eh[0]+"'s kit is crowd control — 5.5s of stun/silence/root immunity lets you play through the engage."); add("Dispel Magic",3,"Purge the slows, hexes and marks "+eh[0]+" leaves on you — just don't wait until you're stunned."); add("Debuff Reducer",2,"Cheap Tier 2 insurance against their debuffs while you build to Unstoppable."); add("Reactive Barrier",1,"A barrier eats the first hit of their catch."); }
+  if (T("air")){ add("Knockdown",4,eh[0]+" fights from the air — Knockdown's stun lasts longer vs airborne targets and slams them down with extra gravity."); add("Phantom Strike",3,"Teleport to them, pull them to the ground, disarm them. The sky stops being safe."); add("Capacitor",2,"Capacitor's projectile blocks stamina and silences movement abilities — no dashing out after landing."); }
+  if (T("stealth")){ add("Hunter's Aura",2,"No verified reveal/true-sight counter-buy exists in the pro sources checked — don't buy one expecting it. Up close, Hunter's Aura cuts their Fire Rate by 15% and Bullet Resist by 10%, and a stealther must come close to kill you."); }
+  if (T("channel")){ add("Cursed Relic",3,eh[0]+" has a channelled threat — Cursed Relic interrupts it and silences, disarms and item-blocks them for 3.25s."); add("Knockdown",3,"Knockdown's delayed stun lands on a stationary, channelling target."); add("Silence Wave",2,"Fire Silence Wave before the combo starts — it won't interrupt a channel already running, so timing is everything."); add("Focus Lens",2,"A 4.5s targeted silence takes their big ability out of the fight entirely."); }
+  if (T("mobile")){ add("Slowing Bullets",2,"Your bullets build −24% Move Speed and cut dash distance — mobility only works if they can move."); add("Slowing Hex",2,"Slowing Hex also silences movement items and abilities, so there's no Warp Stone out."); add("Inhibitor",2,"Tier 4: slows them and reduces their damage when you hit them."); add("Capacitor",1,"Blocks stamina use entirely — no dashes, no extra jumps."); }
+  if (T("tank")){ add("Decay",2,"Decay deals damage based on current health — the bigger "+eh[0]+"'s health bar, the harder it hits."); add("Escalating Exposure",2,"Stacking spirit amplification melts a hero who bought health instead of resists."); add("Spirit Rend",2,"Shred their Spirit Resist with your bullets so your team's spirit damage lands."); add("Toxic Bullets",1,"Bleed is percentage-based (1.9% max HP/s) — it scales with their health bar."); }
+  if (T("burst")){ add("Reactive Barrier",2,"A barrier for the first second of "+eh[0]+"'s combo is often the difference between living and the death recap."); add("Ethereal Shift",2,"Void out for 4s and let the burst combo whiff."); add("Cheat Death",1,"If you're always the focus target, Cheat Death buys one more life per 90s."); }
+  if (T("dot")){ add("Dispel Magic",3,"Burns and poisons are non-ultimate debuffs — Dispel Magic purges them and heals you for 250."); add("Debuff Reducer",2,"Shorter burns, shorter problems."); }
+  if (T("sniper")){ add("Warp Stone",2,"Blink 11m out of the sightline and pick up +30% Bullet Resist doing it."); add("Metal Skin",1,"Walk the sightline during their shot window with bullet immunity up."); }
+  if (T("melee")){ add("Slowing Bullets",1,"A slowed melee hero is a kited melee hero."); add("Colossus",1,"If they insist on brawling you, Colossus lets you brawl back with +35% resists."); }
+}
+/* Take the top `max` of a ranked list with at most two items per counter
+   family; deferred same-family items only backfill a short list. */
+function pickDiverse(rankedList, max){
+  var famCount = {}, picked = [], deferred = [];
+  rankedList.forEach(function(r){
+    var fam = FAMILY[r.name] || r.name;
+    if ((famCount[fam]||0) < 2){ famCount[fam] = (famCount[fam]||0)+1; picked.push(r); }
+    else deferred.push(r);
+  });
+  var out = picked.slice(0, max);
+  for (var i=0; out.length < max && i < deferred.length; i++) out.push(deferred[i]);
+  return out;
+}
 
 /* ============ STATE + CUSTOM DROPDOWNS + 12 SLOT-DROPDOWNS ============ */
 /* Each of the 12 build slots is its own dropdown. Hero pickers are custom
@@ -867,6 +1367,190 @@ document.getElementById("budget-row").addEventListener("click", function(ev){
   recommend();
 });
 
+/* ============ QUICK PICK MODE ============ */
+/* No items to enter: just the enemy hero and two item-type dropdowns —
+   what they're buying, and what you want to buy. */
+var quickState = { hero:null, enemyType:"", youType:"" };
+var TYPE_NAMES = { "Weapon":"Gun items", "Vitality":"Health items", "Spirit":"Spirit items" };
+function renderQuickHeroDropdown(){
+  var wrap = document.getElementById("quick-hero-dd");
+  var current = quickState.hero;
+  var h = current ? heroByName(current) : null;
+  wrap.innerHTML = "";
+  var trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "dd-trigger";
+  trigger.setAttribute("aria-haspopup","listbox");
+  trigger.setAttribute("aria-expanded","false");
+  trigger.setAttribute("aria-label","Enemy hero (quick pick)");
+  if (h){
+    trigger.innerHTML = "<img class='dd-hero-icon' src='"+heroImg(h[0])+"' alt=''>"
+      + "<span class='dd-trigger-txt'><span class='dd-trigger-name'>"+esc(h[0])+"</span>"
+      + "<span class='dd-trigger-sub'>"+esc(h[1])+" · "+esc(h[2])+"</span></span>";
+  } else {
+    trigger.innerHTML = "<span class='dd-placeholder'>Select enemy hero…</span>";
+  }
+  var panel = document.createElement("div");
+  panel.className = "dd-panel";
+  panel.setAttribute("role","listbox");
+  panel.setAttribute("aria-label","Enemy hero options (quick pick)");
+  var list = document.createElement("div");
+  list.className = "dd-list";
+  if (current){
+    var clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "dd-option dd-clear-option";
+    clear.textContent = "✕ Clear hero selection";
+    clear.addEventListener("click", function(){
+      quickState.hero = null;
+      closeDropdown(false); renderQuickHeroDropdown(); syncQuickSide(); quickRecommend();
+    });
+    list.appendChild(clear);
+  }
+  HEROES.forEach(function(hero){
+    var o = document.createElement("button");
+    o.type = "button";
+    o.className = "dd-option";
+    o.setAttribute("role","option");
+    o.setAttribute("aria-selected", hero[0]===current ? "true" : "false");
+    o.innerHTML = "<img src='"+heroImg(hero[0])+"' alt=''>"
+      + "<span class='dd-opt-txt'><span class='dd-opt-name'>"+esc(hero[0])+"</span>"
+      + "<span class='dd-opt-sub'>"+esc(hero[1])+" · "+esc(hero[2])+"</span></span>";
+    o.addEventListener("click", function(){
+      quickState.hero = hero[0];
+      closeDropdown(false); renderQuickHeroDropdown(); syncQuickSide(); quickRecommend();
+    });
+    list.appendChild(o);
+  });
+  panel.appendChild(list);
+  trigger.addEventListener("click", function(){ openDropdown(wrap, trigger, panel); });
+  wrap.appendChild(trigger);
+  wrap.appendChild(panel);
+}
+function syncQuickSide(){
+  var name = quickState.hero;
+  var picked = document.getElementById("quick-picked");
+  var note = document.getElementById("quick-note");
+  var card = document.getElementById("quick-card");
+  if (name){
+    var h = heroByName(name);
+    picked.innerHTML = "Picked: <b>"+esc(name)+"</b>";
+    note.hidden = false;
+    note.innerHTML = "<b>Watch for:</b> " + h[4];
+    var img = document.getElementById("quick-card-img");
+    img.src = heroImg(name); img.alt = name + " portrait";
+    document.getElementById("quick-card-name").textContent = name;
+    document.getElementById("quick-card-role").textContent = h[1] + " · " + h[2];
+    card.hidden = false;
+  } else {
+    picked.textContent = "No hero picked";
+    note.hidden = true;
+    card.hidden = true;
+  }
+}
+function quickRecommend(){
+  var body = document.getElementById("quick-results-body");
+  var eh = quickState.hero ? heroByName(quickState.hero) : null;
+  if (!eh){
+    body.innerHTML = "<p class='empty'>Pick an <b>enemy hero</b> above to get a recommendation — then narrow it with the two item-type dropdowns.</p>";
+    return;
+  }
+  var tags = eh[3].slice();
+  var scores = {}, reasons = {}, peaks = {};
+  function add(name, pts, why){
+    if (!COUNTERS[name]) return;
+    scores[name] = (scores[name]||0) + pts;
+    if (pts > (peaks[name]||0)) peaks[name] = pts;
+    (reasons[name] = reasons[name]||[]).push(why);
+  }
+  var T = function(t){ return tags.indexOf(t)!==-1; };
+
+  /* --- this hero's signature answers, then the general threat read --- */
+  applySignature(add, eh);
+  applyHeroKit(add, eh);
+
+  /* --- what they're buying: the validated pro shared matrix (§1b) --- */
+  var et = quickState.enemyType;
+  if (et === "Weapon"){
+    applyProMatrix(add, { sustain:[], gun:1, spirit:0, tank:0, mobility:0, unstoppable:false, counterspell:false, metalSkin:false, lockItems:[] });
+  } else if (et === "Vitality"){
+    applyProMatrix(add, { sustain:["their health/sustain items"], gun:0, spirit:0, tank:1, mobility:0, unstoppable:false, counterspell:false, metalSkin:false, lockItems:[] });
+  } else if (et === "Spirit"){
+    applyProMatrix(add, { sustain:[], gun:0, spirit:1, tank:0, mobility:0, unstoppable:false, counterspell:false, metalSkin:false, lockItems:[] });
+  }
+
+  /* --- rank, then narrow to the type you want to buy --- */
+  var ranked = Object.keys(scores)
+    .map(function(n){ return { name:n, score:scores[n], peak:peaks[n]||0, why:reasons[n], c:COUNTERS[n] }; })
+    .sort(function(a,b){ return b.score - a.score || b.peak - a.peak || a.c.cost - b.c.cost; });
+  var threatLabels = [];
+  if (T("heal")) threatLabels.push("Sustain / healing");
+  if (T("teamheal")) threatLabels.push("Team healing");
+  if (T("gun")) threatLabels.push("Gun damage");
+  if (T("spirit")) threatLabels.push("Spirit damage");
+  if (T("cc")) threatLabels.push("Crowd control");
+  if (T("air")) threatLabels.push("Airborne");
+  if (T("stealth")) threatLabels.push("Stealth");
+  if (T("mobile")) threatLabels.push("Mobility");
+  if (T("tank")) threatLabels.push("Tanky");
+  if (T("channel")) threatLabels.push("Channelled ult");
+  if (et) threatLabels.push("Buying: " + TYPE_NAMES[et]);
+
+  var html = "";
+  html += "<p class='empty' style='margin-top:8px'><img class='counter-img' src='"+heroImg(eh[0])+"' alt=''>Countering <b>"+eh[0]+"</b> — "+eh[1]+" · "+eh[2]
+    + (et ? " · they're buying <b>"+TYPE_NAMES[et]+"</b>" : "")
+    + (quickState.youType ? " · you're shopping <b>"+TYPE_NAMES[quickState.youType]+"</b>" : "") + ".</p>";
+  if (threatLabels.length) html += "<div class='threat-chips'>"+threatLabels.map(function(t){return "<span>"+t+"</span>";}).join("")+"</div>";
+  if (!ranked.length){
+    html += "<p class='empty'>No strong counter read for this hero yet — try Full build mode and enter what they're actually building.</p>";
+  } else {
+    var pool = ranked, narrowed = false;
+    if (quickState.youType){
+      var filtered = ranked.filter(function(r){ return r.c.cat === quickState.youType; });
+      if (filtered.length){ pool = filtered; narrowed = true; }
+    }
+    var shortlist = pickDiverse(pool, 4);
+    var top = shortlist[0];
+    var rest = shortlist.slice(1);
+    html += "<div class='top-pick'><div class='tp-label'>★ Buy this next"+(narrowed ? " — best "+TYPE_NAMES[quickState.youType]+" answer" : "")+"</div>"
+      + "<div class='pick-head'><img class='pick-img' src='"+itemImg(top.name)+"' alt=''><h3>"+top.name+"</h3></div>"
+      + "<div class='meta-line'><span>"+top.c.cat+"</span><span>Tier "+top.c.tier+"</span><span>"+fmt(top.c.cost)+" souls</span><span>"+(top.c.deliver==="gun"?"Applied by your bullets":top.c.deliver==="spirit"?"Scales with your spirit":top.c.deliver==="active"?"Active item":"Passive")+"</span></div>"
+      + "<p class='desc'>"+top.c.desc+"</p>"
+      + "<ul class='why'>"+top.why.map(function(w){return "<li>"+w+"</li>";}).join("")+"</ul></div>";
+    if (quickState.youType && !narrowed){
+      html += "<div class='note-box'>No strong <b>"+TYPE_NAMES[quickState.youType]+"</b> counter for this matchup — the pick above is the best answer overall. Switch your item type to “Not sure / any type” to see the full shortlist.</div>";
+    }
+    rest.forEach(function(r,i){
+      html += "<div class='alt'><div class='alt-head'><img class='alt-img' src='"+itemImg(r.name)+"' alt=''><h3>"+r.name+"</h3><span class='rank'>Also strong · #"+(i+2)+"</span></div>"
+        + "<div class='meta-line'><span>"+r.c.cat+"</span><span>Tier "+r.c.tier+"</span><span>"+fmt(r.c.cost)+" souls</span></div>"
+        + "<p class='desc'>"+r.c.desc+"</p>"
+        + "<ul class='why'>"+r.why.slice(0,2).map(function(w){return "<li>"+w+"</li>";}).join("")+"</ul></div>";
+    });
+  }
+  if (T("stealth")){
+    html += "<div class='note-box'><b>Stealth gap — stated plainly:</b> no reveal / true-sight counter-buy item was found in any pro source checked. Nothing above is sold as a reveal item.</div>";
+  }
+  html += "<div class='note-box'>Picks tagged <b>Pro rule</b> come from the validated pro rule set (sources in the footer). <b>Thin</b> picks rest on a single older source — verify in game.</div>";
+  body.innerHTML = html;
+}
+renderQuickHeroDropdown();
+syncQuickSide();
+document.getElementById("quick-enemy-type").addEventListener("change", function(){ quickState.enemyType = this.value; quickRecommend(); });
+document.getElementById("quick-you-type").addEventListener("change", function(){ quickState.youType = this.value; quickRecommend(); });
+quickRecommend();
+
+/* ============ LAYOUT SWITCHER ============ */
+function setMode(mode){
+  var quick = mode === "quick";
+  document.getElementById("full-mode").hidden = quick;
+  document.getElementById("quick-mode").hidden = !quick;
+  document.getElementById("mode-full-btn").setAttribute("aria-pressed", quick ? "false" : "true");
+  document.getElementById("mode-quick-btn").setAttribute("aria-pressed", quick ? "true" : "false");
+  closeDropdown(false);
+}
+document.getElementById("mode-full-btn").addEventListener("click", function(){ setMode("full"); });
+document.getElementById("mode-quick-btn").addEventListener("click", function(){ setMode("quick"); });
+
 /* ============ RECOMMENDATION ENGINE ============ */
 function recommend(){
   var body = document.getElementById("results-body");
@@ -877,43 +1561,48 @@ function recommend(){
   }
   var tags = eh[3].slice();
   var yh = state.youHero ? heroByName(state.youHero) : null;
-  var scores = {}, reasons = {};
+  var scores = {}, reasons = {}, peaks = {};
   function add(name, pts, why){
     if (!COUNTERS[name]) return;
     scores[name] = (scores[name]||0) + pts;
+    if (pts > (peaks[name]||0)) peaks[name] = pts;
     (reasons[name] = reasons[name]||[]).push(why);
   }
   var T = function(t){ return tags.indexOf(t)!==-1; };
 
-  /* --- enemy hero kit --- */
-  if (T("heal")){ add("Toxic Bullets",4,eh[0]+" sustains through fights — cutting their healing by 40% is how the brawl actually ends."); add("Decay",4,"Percentage damage plus 55% healing reduction is built for a self-healing frontliner like "+eh[0]+"."); add("Healbane",2,"Budget anti-heal while you save for a bigger answer."); add("Spirit Burn",3,"The late-game anti-heal finisher if "+eh[0]+" is still unkillable at Tier 4."); add("Crippling Headshot",2,"Headshots stack 40% anti-heal on a target who wants long fights."); }
-  if (T("teamheal")){ add("Toxic Bullets",2,eh[0]+" heals their whole team — anti-heal on the target you're focusing cuts the value of every heal they throw."); add("Healbane",3,eh[0]+" is a healing support: Healbane is the cheap, early answer supports buy into other supports."); add("Decay",2,"Decay on their carry makes "+eh[0]+"'s heals land at 45% value."); add("Spirit Burn",2,"If their healing is winning teamfights late, Spirit Burn is the strongest anti-heal in the shop."); }
-  if (T("gun")){ add("Metal Skin",4,eh[0]+"'s damage is bullets — 5 seconds of bullet immunity deletes their burst window."); add("Bullet Resilience",3,"+35% Bullet Resist works in every fight against a gun hero, not just one window."); add("Return Fire",2,"Rapid gunfire means constant Return Fire procs — they punish themselves for shooting you."); }
-  if (T("spirit")){ add("Spirit Resilience",4,eh[0]+"'s damage is spirit — +30% Spirit Resist (45% below half health) blunts every combo."); add("Counterspell",2,"One well-timed parry can eat "+eh[0]+"'s key ability entirely."); add("Spellbreaker",2,"The Tier 4 step-up if their spirit damage is still deleting you late."); }
-  if (T("cc")){ add("Unstoppable",4,eh[0]+"'s kit is crowd control — 5.5s of stun/silence/root immunity lets you play through the engage."); add("Dispel Magic",3,"Purge the slows, hexes and marks "+eh[0]+" leaves on you — just don't wait until you're stunned."); add("Debuff Reducer",2,"Cheap Tier 2 insurance against their debuffs while you build to Unstoppable."); add("Reactive Barrier",1,"A barrier eats the first hit of their catch."); }
-  if (T("air")){ add("Knockdown",4,eh[0]+" fights from the air — Knockdown's stun lasts longer vs airborne targets and slams them down with extra gravity."); add("Phantom Strike",3,"Teleport to them, pull them to the ground, disarm them. The sky stops being safe."); add("Capacitor",2,"Capacitor's projectile blocks stamina and silences movement abilities — no dashing out after landing."); }
-  if (T("stealth")){ add("Stalker",3,"Tag "+eh[0]+" once and they're revealed through walls for 5s — stealth stops mattering."); add("Hunter's Aura",2,"Up close, Hunter's Aura cuts their Fire Rate by 15% and Bullet Resist by 10% — and a stealther must come close to kill you."); }
-  if (T("channel")){ add("Cursed Relic",3,eh[0]+" has a channelled threat — Cursed Relic interrupts it and silences, disarms and item-blocks them for 3.25s."); add("Knockdown",3,"Knockdown's delayed stun lands on a stationary, channelling target."); add("Silence Wave",2,"Fire Silence Wave before the combo starts — it won't interrupt a channel already running, so timing is everything."); add("Focus Lens",2,"A 4.5s targeted silence takes their big ability out of the fight entirely."); }
-  if (T("mobile")){ add("Slowing Bullets",2,"Your bullets build −24% Move Speed and cut dash distance — mobility only works if they can move."); add("Slowing Hex",2,"Slowing Hex also silences movement items and abilities, so there's no Warp Stone out."); add("Inhibitor",2,"Tier 4: slows them and reduces their damage when you hit them."); add("Capacitor",1,"Blocks stamina use entirely — no dashes, no extra jumps."); }
-  if (T("tank")){ add("Decay",2,"Decay deals damage based on current health — the bigger "+eh[0]+"'s health bar, the harder it hits."); add("Escalating Exposure",2,"Stacking spirit amplification melts a hero who bought health instead of resists."); add("Spirit Rend",2,"Shred their Spirit Resist with your bullets so your team's spirit damage lands."); add("Toxic Bullets",1,"Bleed is percentage-based (1.9% max HP/s) — it scales with their health bar."); }
-  if (T("burst")){ add("Reactive Barrier",2,"A barrier for the first second of "+eh[0]+"'s combo is often the difference between living and the death recap."); add("Ethereal Shift",2,"Void out for 4s and let the burst combo whiff."); add("Cheat Death",1,"If you're always the focus target, Cheat Death buys one more life per 90s."); }
-  if (T("dot")){ add("Dispel Magic",3,"Burns and poisons are non-ultimate debuffs — Dispel Magic purges them and heals you for 250."); add("Debuff Reducer",2,"Shorter burns, shorter problems."); }
-  if (T("sniper")){ add("Warp Stone",2,"Blink 11m out of the sightline and pick up +30% Bullet Resist doing it."); add("Metal Skin",1,"Walk the sightline during their shot window with bullet immunity up."); }
-  if (T("melee")){ add("Slowing Bullets",1,"A slowed melee hero is a kited melee hero."); add("Colossus",1,"If they insist on brawling you, Colossus lets you brawl back with +35% resists."); }
+  /* --- this hero's signature answers, then the general threat read --- */
+  applySignature(add, eh);
+  applyHeroKit(add, eh);
 
-  /* --- enemy items --- */
+  /* --- enemy items: the validated pro shared matrix (§1b) first --- */
   var enemyItemNames = state.enemyItems.slice();
+  (function(){
+    var ctx = { sustain:[], gun:0, spirit:0, tank:0, mobility:0,
+      unstoppable: enemyItemNames.indexOf("Unstoppable")!==-1,
+      counterspell: enemyItemNames.indexOf("Counterspell")!==-1,
+      metalSkin: enemyItemNames.indexOf("Metal Skin")!==-1,
+      lockItems: enemyItemNames.filter(function(n){ return n==="Knockdown" || n==="Cursed Relic"; }) };
+    enemyItemNames.forEach(function(n){
+      var it = ITEM_BY_NAME[n]; if (!it) return;
+      if (it[4].indexOf("heal")!==-1) ctx.sustain.push(n);
+      if (it[1]==="Weapon") ctx.gun++;
+      if (it[1]==="Spirit") ctx.spirit++;
+      if (it[4].indexOf("tank")!==-1) ctx.tank++;
+      if (it[4].indexOf("mobility")!==-1) ctx.mobility++;
+    });
+    applyProMatrix(add, ctx);
+  })();
   var threatSet = {};
   enemyItemNames.forEach(function(n){
     var it = ITEM_BY_NAME[n]; if (!it) return;
     it[4].forEach(function(t){ threatSet[t] = true; });
-    if (it[4].indexOf("heal")!==-1){ add("Toxic Bullets",3,"They bought "+n+" — that's healing you have to cut, or it never dies."); add("Decay",3,n+" plus a healing kit means Decay's 55% reduction earns its slot."); add("Healbane",2,n+" is exactly what Healbane exists for — just don't stack it with a teammate's."); add("Spirit Burn",2,"Against "+n+"-level sustain, Spirit Burn is the late-game finisher."); }
+    if (it[4].indexOf("heal")!==-1){ add("Toxic Bullets",4,"They bought "+n+" — that's healing you have to cut, or it never dies."); add("Decay",4,n+" plus a healing kit means Decay's 55% reduction earns its slot."); add("Healbane",2,n+" is exactly what Healbane exists for — just don't stack it with a teammate's."); add("Spirit Burn",2,"Against "+n+"-level sustain, Spirit Burn is the late-game finisher."); }
     if (it[4].indexOf("antiheal")!==-1){ add("Cheat Death",1,"They bought "+n+", so your own healing is cut — answers that don't rely on healing (barriers, Cheat Death) go up in value."); add("Colossus",1,"With "+n+" cutting your sustain, resist-based defence beats lifesteal-based defence."); }
     if (n==="Glass Cannon" || n==="Sharpshooter" || n==="Intensifying Magazine"){ add("Metal Skin",3,"They bought "+n+" — a glass cannon's whole window fits inside Metal Skin's 5 seconds."); add("Bullet Resilience",2,n+" is pure bullet damage; resist it permanently."); }
-    if (it[4].indexOf("spirit")!==-1 && it[1]==="Spirit"){ add("Spirit Resilience",2,"They're investing in Spirit ("+n+") — resists scale against the whole build, not one ability."); add("Counterspell",1,n+" powers one big ability — parry it."); }
-    if (it[4].indexOf("tank")!==-1){ add("Decay",2,"They bought "+n+" to get tankier — percentage damage doesn't care how big the health bar is."); add("Escalating Exposure",1,n+" means long fights; escalating spirit amp wins long fights."); add("Spirit Rend",1,"Shred the resists "+n+" represents."); }
+    if (it[4].indexOf("spirit")!==-1 && it[1]==="Spirit"){ add("Spirit Resilience",3,"They're investing in Spirit ("+n+") — resists scale against the whole build, not one ability."); add("Counterspell",1,n+" powers one big ability — parry it."); }
+    if (it[4].indexOf("tank")!==-1){ add("Decay",3,"They bought "+n+" to get tankier — percentage damage doesn't care how big the health bar is."); add("Escalating Exposure",1,n+" means long fights; escalating spirit amp wins long fights."); add("Spirit Rend",1,"Shred the resists "+n+" represents."); }
     if (it[4].indexOf("mobility")!==-1){ add("Slowing Hex",2,"They bought "+n+" — Slowing Hex silences movement items, so the escape simply doesn't fire."); add("Slowing Bullets",2,"Keep them slowed and "+n+" never gets its value."); add("Knockdown",1,"Ground them after the leap — Knockdown punishes airborne targets."); }
-    if (it[4].indexOf("stealth")!==-1){ add("Stalker",3,"They bought "+n+" for stealth — one tag reveals them through walls and ends the ambush game."); add("Hunter's Aura",2,"Shadow Weave's ambush now needs 6s stealthed to reach full +50% damage (30 Oct rework) — force fights in the open, where your aura is live."); }
+    if (it[4].indexOf("stealth")!==-1){ add("Hunter's Aura",2,"They bought "+n+" for stealth — no verified reveal/true-sight counter-buy exists in any pro source checked, so don't buy one expecting it; Hunter's Aura at least cuts their fire rate once they have to come within 15m and into the open to hit you (Shadow Weave's ambush needs 6s stealthed for full value since the 30 Oct rework)."); }
     if (n==="Unstoppable"){ add("Slowing Bullets",2,"They bought Unstoppable — don't spend on CC they'll shrug off. Slows applied by bullets and raw damage are the honest answer."); add("Inhibitor",1,"Inhibitor's slow and damage cut aren't a stun — Unstoppable doesn't cleanse your problem away."); }
     if (n==="Metal Skin"){ add("Decay",2,"They bought Metal Skin — it blocks bullets, not spirit. Decay and spirit damage go straight through it."); add("Escalating Exposure",1,"Spirit damage ignores Metal Skin entirely."); }
     if (n==="Refresher"){ add("Cursed Relic",2,"They bought Refresher — two ults per fight. Cursed Relic's item-block stops the second one from ever being pressed."); }
@@ -934,8 +1623,8 @@ function recommend(){
 
   /* --- rank, exclude owned, apply budget --- */
   var ranked = Object.keys(scores).filter(function(n){ return state.youItems.indexOf(n)===-1; })
-    .map(function(n){ return { name:n, score:scores[n], why:reasons[n], c:COUNTERS[n] }; })
-    .sort(function(a,b){ return b.score - a.score || a.c.cost - b.c.cost; });
+    .map(function(n){ return { name:n, score:scores[n], peak:peaks[n]||0, why:reasons[n], c:COUNTERS[n] }; })
+    .sort(function(a,b){ return b.score - a.score || b.peak - a.peak || a.c.cost - b.c.cost; });
   var threatLabels = [];
   if (T("heal")||threatSet.heal) threatLabels.push("Sustain / healing");
   if (T("gun")||threatSet.gun) threatLabels.push("Gun damage");
@@ -955,8 +1644,10 @@ function recommend(){
     html += "<p class='empty'>You've already marked every strong answer to this matchup as owned. Next lever: play around their cooldowns — most counter-actives and ults in this matchup run 35–60s.</p>";
   } else {
     var inBudget = state.budget ? ranked.filter(function(r){ return r.c.cost<=state.budget; }) : ranked;
-    var top = inBudget.length ? inBudget[0] : ranked[0];
-    var rest = ranked.filter(function(r){ return r!==top; }).slice(0,4);
+    var firstPick = inBudget.length ? inBudget[0] : ranked[0];
+    var shortlist = pickDiverse([firstPick].concat(ranked.filter(function(r){ return r!==firstPick; })), 5);
+    var top = shortlist[0];
+    var rest = shortlist.slice(1);
     html += "<div class='top-pick'><div class='tp-label'>★ Buy this next"+(state.budget && top.c.cost>state.budget ? " — over your stated budget, it's the save-up target":"")+"</div>"
       + "<div class='pick-head'><img class='pick-img' src='"+itemImg(top.name)+"' alt=''><h3>"+top.name+"</h3></div>"
       + "<div class='meta-line'><span>"+top.c.cat+"</span><span>Tier "+top.c.tier+"</span><span>"+fmt(top.c.cost)+" souls</span><span>"+(top.c.deliver==="gun"?"Applied by your bullets":top.c.deliver==="spirit"?"Scales with your spirit":"Active"===top.c.deliver||top.c.deliver==="active"?"Active item":"Passive")+"</span></div>"
@@ -973,8 +1664,12 @@ function recommend(){
     html += "<div class='note-box'><b>You already own "+ownedAntiheal.join(", ")+".</b> Anti-heal doesn't stack cleanly — Healbane's stacks were nerfed on 4 Nov — so your next souls are better spent on the resists or CC answers above than on a second anti-heal item.</div>";
   }
   if (state.enemyItems.indexOf("Healbane")!==-1 && state.youItems.indexOf("Healbane")!==-1){
-    html += "<div class='warn'><b>Healbane on both sides:</b> theirs cuts your healing, yours cuts theirs — but stacking more anti-heal has hard diminishing returns since 4 Nov. Spend elsewhere.</div>";
+    html += "<div class='warn'><b>Healbane on both sides:</b> theirs cuts your healing, yours cuts theirs — but stacking more anti-heal has hard diminishing returns since 4 Nov (Valve: 2 stacks ≈54.7%, 4 stacks ≈72%). Spend elsewhere.</div>";
   }
+  if (T("stealth") || threatSet.stealth){
+    html += "<div class='note-box'><b>Stealth gap — stated plainly:</b> no reveal / true-sight counter-buy item was found in any pro source checked (Handbook, Item Builder, Wiki, guides). Stealthed heroes are partially visible to close enemies, and taking damage reveals Haze for 1.5s — that's the whole answer the pros have. Nothing above is sold as a reveal item.</div>";
+  }
+  html += "<div class='note-box'><b>How the pros frame it:</b> core first — roughly 80% of your build stays core, with room for two or three counter slots; buy cheap lane counters (800/1,600) before the problem snowballs and Tier 3/4 ult answers before the Mid Boss fight (~18–20 min); one team answer per problem — five anti-heals or three Knockdowns waste slots. Picks tagged <b>Pro rule</b> come from the validated rule set in the footer; <b>Thin</b> ones rest on a single older source — verify in game.</div>";
   body.innerHTML = html;
 }
 recommend();
