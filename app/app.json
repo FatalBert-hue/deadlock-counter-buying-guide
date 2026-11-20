@@ -2,7 +2,7 @@
   "expo": {
     "name": "DCB",
     "slug": "counter-buy",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Counter-buy guide for Deadlock \u2014 pick the enemy hero and their items, get the counter-buy. Unofficial fan companion, not affiliated with Valve. Working title; final name to be decided.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.counterbuy.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#0a0c14",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -34,8 +34,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ],
-      "expo-sharing"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
