@@ -1,20 +1,25 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AppDrawer } from '@/components/app-drawer';
-import AppTabs from '@/components/app-tabs';
 import { AppProviders } from '@/state';
 import { useAppScheme } from '@/state/settings';
 
 SplashScreen.preventAutoHideAsync();
 
-function RootTabs() {
+function RootStack() {
   const scheme = useAppScheme();
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
-      <AppTabs />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="quick-pick" />
+        <Stack.Screen name="counter-sheet" />
+        <Stack.Screen name="patch" />
+        <Stack.Screen name="saved" />
+      </Stack>
       <AppDrawer />
     </ThemeProvider>
   );
@@ -23,7 +28,7 @@ function RootTabs() {
 export default function RootLayout() {
   return (
     <AppProviders>
-      <RootTabs />
+      <RootStack />
     </AppProviders>
   );
 }
