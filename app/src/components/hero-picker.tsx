@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 
 import { heroImage } from '@/data/images';
 import type { Hero } from '@/data';
+import { useFavorites } from '@/state/favorites';
 import { useSettings } from '@/state/settings';
 
 interface HeroPickerProps {
@@ -17,14 +18,18 @@ interface HeroPickerProps {
 
 export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: HeroPickerProps) {
   const { palette, accent } = useSettings();
+  const { isHeroFavorite, toggleHero } = useFavorites();
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return heroes;
-    return heroes.filter(
-      (h) => h.name.toLowerCase().includes(q) || h.role.toLowerCase().includes(q) || h.cls.toLowerCase().includes(q),
-    );
-  }, [heroes, query]);
+    const list = !q
+      ? heroes
+      : heroes.filter(
+          (h) => h.name.toLowerCase().includes(q) || h.role.toLowerCase().includes(q) || h.cls.toLowerCase().includes(q),
+        );
+    // Favourites pin to the top, in their original order.
+    return [...list].sort((a, b) => Number(isHeroFavorite(b.name)) - Number(isHeroFavorite(a.name)));
+  }, [heroes, query, isHeroFavorite]);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -63,6 +68,15 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
                   </Text>
                 </View>
                 {isSelected ? <Text style={[styles.check, { color: accent.color }]}>✓</Text> : null}
+                <Pressable
+                  onPress={() => toggleHero(item.name)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={isHeroFavorite(item.name) ? `Unfavourite ${item.name}` : `Favourite ${item.name}`}>
+                  <Text style={[styles.star, { color: isHeroFavorite(item.name) ? accent.color : palette.muted }]}>
+                    {isHeroFavorite(item.name) ? '★' : '☆'}
+                  </Text>
+                </Pressable>
               </Pressable>
             );
           }}
@@ -131,6 +145,10 @@ const styles = StyleSheet.create({
   check: {
     fontSize: 18,
     fontWeight: '700',
+  },
+  star: {
+    fontSize: 22,
+    padding: 4,
   },
   clear: {
     margin: 12,
