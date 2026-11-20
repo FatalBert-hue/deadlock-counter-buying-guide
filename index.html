@@ -228,11 +228,9 @@
   <div class="mode-switch" role="group" aria-label="Guide layout">
     <button class="mode-btn" type="button" id="mode-full-btn" aria-pressed="true">
       <span class="mode-name">Full build</span>
-      <span class="mode-sub">Both heroes + all 12 build slots, item by item.</span>
     </button>
     <button class="mode-btn" type="button" id="mode-quick-btn" aria-pressed="false">
       <span class="mode-name">Quick pick</span>
-      <span class="mode-sub">Just the enemy hero and the item types — no items to enter.</span>
     </button>
   </div>
 
@@ -260,7 +258,6 @@
         </div>
         <div class="hero-note" id="enemy-note" hidden></div>
         <div class="step-label">2 · What are they building?</div>
-        <p class="slots-instruction">Each slot below is a dropdown — tap a slot and pick its item from the menu. Tap a filled slot to change it, or pick “Empty slot” in its menu to clear it.</p>
         <p class="slot-msg" id="enemy-msg" aria-live="polite"></p>
         <div class="slots-head">
           <span class="slots-title" id="enemy-slots-label">Their build · 0 / 12 slots</span>
@@ -268,7 +265,6 @@
           <button class="clear-btn" id="enemy-clear" type="button">Clear build</button>
         </div>
         <div class="slots-grid" id="enemy-slots" aria-label="Enemy build — 12 slots, each a dropdown"></div>
-        <p class="slots-hint">The 12 slots of an in-game build. Every slot has the full 156-item shop in its dropdown, with item icons, cost and tier; an item already used in another slot is marked and can't be picked twice.</p>
       </section>
 
       <div class="vs-badge" aria-hidden="true">VS</div>
@@ -288,7 +284,6 @@
         </div>
         <div class="hero-note" id="you-note" hidden></div>
         <div class="step-label">4 · What do you already own?</div>
-        <p class="slots-instruction">Each slot below is a dropdown — tap a slot and pick its item from the menu. Owned items won't be suggested twice. Tap a filled slot to change it, or pick “Empty slot” in its menu to clear it.</p>
         <p class="slot-msg" id="you-msg" aria-live="polite"></p>
         <div class="slots-head">
           <span class="slots-title" id="you-slots-label">Your build · 0 / 12 slots</span>
@@ -296,7 +291,6 @@
           <button class="clear-btn" id="you-clear" type="button">Clear build</button>
         </div>
         <div class="slots-grid" id="you-slots" aria-label="Your build — 12 slots, each a dropdown"></div>
-        <p class="slots-hint">The 12 slots of an in-game build. Every slot has the full 156-item shop in its dropdown, with item icons, cost and tier; an item already used in another slot is marked and can't be picked twice.</p>
         <div class="step-label">5 · Souls you can spend right now (optional)</div>
         <div class="budget-row" id="budget-row" role="group" aria-label="Souls budget">
           <button class="budget-btn" type="button" data-budget="0" aria-pressed="true">Any</button>
@@ -354,7 +348,6 @@
           </select>
         </div>
       </div>
-      <p class="slots-hint">That's the whole form — the recommendation below updates as you pick. Want it sharper? Switch to Full build and enter their actual items.</p>
     </section>
 
     <aside class="results" id="quick-results" aria-labelledby="quick-res-h" aria-live="polite">
