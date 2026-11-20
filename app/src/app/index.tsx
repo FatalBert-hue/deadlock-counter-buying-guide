@@ -26,7 +26,7 @@ function emptySlots(): (string | null)[] {
 export default function FullBuildScreen() {
   const { data } = useGuideData();
   const { palette, accent, settings } = useSettings();
-  const { addBuild, loadRequest, consumeLoadRequest } = useSavedBuilds();
+  const { addBuild, loadRequest, consumeLoadRequest, lastAuthor } = useSavedBuilds();
   const [enemyHero, setEnemyHero] = useState<string | null>(null);
   const [youHero, setYouHero] = useState<string | null>(null);
   const [enemySlots, setEnemySlots] = useState<(string | null)[]>(emptySlots());
@@ -35,7 +35,13 @@ export default function FullBuildScreen() {
   const [heroPickerFor, setHeroPickerFor] = useState<'enemy' | 'you' | null>(null);
   const [itemPickerFor, setItemPickerFor] = useState<{ side: 'enemy' | 'you'; index: number } | null>(null);
   const [saveName, setSaveName] = useState('');
+  const [saveAuthor, setSaveAuthor] = useState('');
+  const [authorTouched, setAuthorTouched] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+
+  // Author input shows the last-used author until the user edits it
+  // (first time: "Mikel").
+  const authorValue = authorTouched ? saveAuthor : lastAuthor;
 
   useFocusEffect(
     useCallback(() => {
@@ -89,12 +95,15 @@ export default function FullBuildScreen() {
     }
     addBuild({
       name: saveName.trim() || `vs ${enemyHero}`,
+      author: authorValue.trim() || lastAuthor,
       enemyHero,
       enemyItems,
       youHero,
       youItems,
     });
     setSaveName('');
+    setSaveAuthor('');
+    setAuthorTouched(false);
     setSaveMessage('Saved. Find it on the Saved tab.');
   };
 
@@ -178,6 +187,17 @@ export default function FullBuildScreen() {
           onChangeText={setSaveName}
           placeholder="Name this build (optional)"
           placeholderTextColor={palette.faint}
+          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
+        />
+        <TextInput
+          value={authorValue}
+          onChangeText={(text) => {
+            setAuthorTouched(true);
+            setSaveAuthor(text);
+          }}
+          placeholder="Your name (author)"
+          placeholderTextColor={palette.faint}
+          autoCapitalize="words"
           style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
         />
         <Pressable
