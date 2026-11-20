@@ -1,5 +1,6 @@
 // Generated from assets/images — Metro needs static require() calls,
 // so hero/item images are referenced through this map, never a dynamic path.
+import type { ImageSource } from 'expo-image';
 import type { ImageSourcePropType } from 'react-native';
 
 export const heroImages: Record<string, ImageSourcePropType> = {
@@ -208,12 +209,14 @@ export const itemImages: Record<string, ImageSourcePropType> = {
   "vortex-web": require('@/assets/images/items/vortex-web.png'),
 };
 
-export function heroImage(name: string): ImageSourcePropType | undefined {
-  return heroImages[slug(name)];
+export function heroImage(name: string): ImageSource | undefined {
+  // Cast: the map holds react-native's ImageSourcePropType; expo-image only
+  // reads the value, and require() assets resolve to numbers at runtime.
+  return heroImages[slug(name)] as unknown as ImageSource | undefined;
 }
 
-export function itemImage(name: string): ImageSourcePropType | undefined {
-  return itemImages[slug(name)];
+export function itemImage(name: string): ImageSource | undefined {
+  return itemImages[slug(name)] as unknown as ImageSource | undefined;
 }
 
 function slug(name: string): string {
