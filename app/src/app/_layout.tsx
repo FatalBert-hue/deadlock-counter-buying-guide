@@ -21,6 +21,7 @@ function RootStack() {
         <Stack.Screen name="patch" />
         <Stack.Screen name="builds" />
         <Stack.Screen name="import" />
+        <Stack.Screen name="dcb/build" />
       </Stack>
       <DeepLinkHandler />
       <AppDrawer />
