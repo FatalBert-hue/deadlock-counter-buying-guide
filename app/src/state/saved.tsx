@@ -1,4 +1,4 @@
-// Saved builds — builds saved on this phone, stored locally in
+// Builds store — builds saved on this phone, stored locally in
 // AsyncStorage. No accounts, no logins, nothing uploaded.
 //
 // Shared build file format (formatVersion 1) — a plain .json file the
@@ -14,6 +14,11 @@
 // by an older app version) import with author "Unknown" instead of
 // failing. Unknown hero/item names in an imported file are dropped,
 // never a crash.
+//
+// Builds saved from Quick pick also carry an OPTIONAL "quickPick"
+// record of the two item-type choices (they have no item-by-item
+// lists): { "enemyType": "Weapon" | "Vitality" | "Spirit" | "",
+// "youType": "..." }. It is ignored by anything that does not use it.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -29,11 +34,22 @@ export interface SavedBuild {
   youHero: string | null;
   youItems: string[];
   dataPatch: string;
+  /** Quick pick only: the two item-type choices (no item lists). */
+  quickPick?: { enemyType: string; youType: string };
 }
 
+/** The Full build screen's current draft, published here so the Builds
+ *  tab can save it too (name + author inputs there). */
+export interface CurrentBuild {
+  enemyHero: string | null;
+  enemyItems: string[];
+  youHero: string | null;
+  youItems: string[];
+}
+
+const EMPTY_CURRENT_BUILD: CurrentBuild = { enemyHero: null, enemyItems: [], youHero: null, youItems: [] };
+
 const STORAGE_KEY = 'counter-buy:saved-builds:v1';
-const LAST_AUTHOR_KEY = 'counter-buy:last-author:v1';
-export const DEFAULT_AUTHOR = 'Mikel';
 export const UNKNOWN_AUTHOR = 'Unknown';
 
 /** Serialise a build to the shared file format. Always includes author. */
@@ -50,6 +66,7 @@ export function buildToFile(build: SavedBuild): Record<string, unknown> {
     enemyItems: build.enemyItems,
     youHero: build.youHero,
     youItems: build.youItems,
+    ...(build.quickPick ? { quickPick: build.quickPick } : {}),
   };
 }
 
@@ -67,6 +84,11 @@ export function parseBuildFile(value: unknown): SavedBuild | null {
   const enemyHero = typeof v.enemyHero === 'string' && heroNames.has(v.enemyHero) ? v.enemyHero : null;
   const youHero = typeof v.youHero === 'string' && heroNames.has(v.youHero) ? v.youHero : null;
   const author = typeof v.author === 'string' && v.author.trim() ? v.author.trim() : UNKNOWN_AUTHOR;
+  const qp = v.quickPick && typeof v.quickPick === 'object' ? (v.quickPick as Record<string, unknown>) : null;
+  const quickPick =
+    qp && typeof qp.enemyType === 'string' && typeof qp.youType === 'string'
+      ? { enemyType: qp.enemyType, youType: qp.youType }
+      : undefined;
   return {
     id: `imported-${Date.now()}`,
     name: typeof v.name === 'string' && v.name.trim() ? v.name.trim() : 'Imported build',
@@ -77,6 +99,7 @@ export function parseBuildFile(value: unknown): SavedBuild | null {
     youHero,
     youItems: cleanItems(v.youItems),
     dataPatch: typeof v.dataPatch === 'string' ? v.dataPatch : DATA_PATCH,
+    ...(quickPick ? { quickPick } : {}),
   };
 }
 
@@ -88,8 +111,9 @@ interface SavedBuildsContextValue {
   loadRequest: { build: SavedBuild; nonce: number } | null;
   requestLoad: (build: SavedBuild) => void;
   consumeLoadRequest: () => void;
-  /** Author used on the last saved build (persisted); prefilled next time. */
-  lastAuthor: string;
+  /** The Full build screen's current draft, for saving from the Builds tab. */
+  currentBuild: CurrentBuild;
+  setCurrentBuild: (build: CurrentBuild) => void;
 }
 
 const SavedBuildsContext = createContext<SavedBuildsContextValue>({
@@ -101,13 +125,27 @@ const SavedBuildsContext = createContext<SavedBuildsContextValue>({
   loadRequest: null,
   requestLoad: () => {},
   consumeLoadRequest: () => {},
-  lastAuthor: DEFAULT_AUTHOR,
+  currentBuild: EMPTY_CURRENT_BUILD,
+  setCurrentBuild: () => {},
 });
 
 export function SavedBuildsProvider({ children }: { children: ReactNode }) {
   const [builds, setBuilds] = useState<SavedBuild[]>([]);
   const [loadRequest, setLoadRequest] = useState<{ build: SavedBuild; nonce: number } | null>(null);
-  const [lastAuthor, setLastAuthor] = useState<string>(DEFAULT_AUTHOR);
+  const [currentBuild, setCurrentBuildState] = useState<CurrentBuild>(EMPTY_CURRENT_BUILD);
+
+  const setCurrentBuild = useCallback((build: CurrentBuild) => {
+    setCurrentBuildState((prev) =>
+      prev.enemyHero === build.enemyHero &&
+      prev.youHero === build.youHero &&
+      prev.enemyItems.length === build.enemyItems.length &&
+      prev.enemyItems.every((n, i) => n === build.enemyItems[i]) &&
+      prev.youItems.length === build.youItems.length &&
+      prev.youItems.every((n, i) => n === build.youItems[i])
+        ? prev
+        : build,
+    );
+  }, []);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
@@ -134,11 +172,6 @@ export function SavedBuildsProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => {});
-    AsyncStorage.getItem(LAST_AUTHOR_KEY)
-      .then((raw) => {
-        if (raw && raw.trim()) setLastAuthor(raw.trim());
-      })
-      .catch(() => {});
   }, []);
 
   const persist = useCallback((next: SavedBuild[]) => {
@@ -148,7 +181,9 @@ export function SavedBuildsProvider({ children }: { children: ReactNode }) {
 
   const addBuild = useCallback(
     (build: Omit<SavedBuild, 'id' | 'savedAt' | 'dataPatch'>) => {
-      const author = build.author.trim() || DEFAULT_AUTHOR;
+      // Author starts blank every time — no default, nothing remembered.
+      // A build saved with no author shows as "Unknown".
+      const author = build.author.trim() || UNKNOWN_AUTHOR;
       const full: SavedBuild = {
         ...build,
         author,
@@ -157,8 +192,6 @@ export function SavedBuildsProvider({ children }: { children: ReactNode }) {
         dataPatch: DATA_PATCH,
       };
       persist([full, ...builds]);
-      setLastAuthor(author);
-      AsyncStorage.setItem(LAST_AUTHOR_KEY, author).catch(() => {});
       return full;
     },
     [builds, persist],
@@ -178,8 +211,8 @@ export function SavedBuildsProvider({ children }: { children: ReactNode }) {
   const consumeLoadRequest = useCallback(() => setLoadRequest(null), []);
 
   const value = useMemo(
-    () => ({ builds, addBuild, removeBuild, loadRequest, requestLoad, consumeLoadRequest, lastAuthor }),
-    [builds, addBuild, removeBuild, loadRequest, requestLoad, consumeLoadRequest, lastAuthor],
+    () => ({ builds, addBuild, removeBuild, loadRequest, requestLoad, consumeLoadRequest, currentBuild, setCurrentBuild }),
+    [builds, addBuild, removeBuild, loadRequest, requestLoad, consumeLoadRequest, currentBuild, setCurrentBuild],
   );
   return <SavedBuildsContext.Provider value={value}>{children}</SavedBuildsContext.Provider>;
 }
