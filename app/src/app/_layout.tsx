@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AppDrawer } from '@/components/app-drawer';
+import { DeepLinkHandler } from '@/components/deep-link-handler';
 import { AppProviders } from '@/state';
 import { useAppScheme } from '@/state/settings';
 
@@ -18,8 +19,10 @@ function RootStack() {
         <Stack.Screen name="quick-pick" />
         <Stack.Screen name="counter-sheet" />
         <Stack.Screen name="patch" />
-        <Stack.Screen name="saved" />
+        <Stack.Screen name="builds" />
+        <Stack.Screen name="import" />
       </Stack>
+      <DeepLinkHandler />
       <AppDrawer />
     </ThemeProvider>
   );
