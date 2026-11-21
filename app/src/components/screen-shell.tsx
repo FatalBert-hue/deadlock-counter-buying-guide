@@ -1,5 +1,5 @@
 // Shared screen shell: safe area, scroll view, header (menu button top-left
-// + Settings), and the one-line intro. No long descriptions anywhere.
+// + AI Chat), and the one-line intro. No long descriptions anywhere.
 //
 // The ScrollView sits inside a KeyboardAvoidingView so the keyboard
 // never covers the text input a user is typing in (the build name /
@@ -8,21 +8,22 @@
 // pairs with android.softwareKeyboardLayoutMode "resize" in app.json,
 // which makes Android shrink the window instead of panning it — that
 // part is a native setting, so it only takes effect in a fresh build.
-import { useState, type ReactNode } from 'react';
+//
+// The Settings modal is NOT rendered here: it lives once at the root
+// (see src/app/_layout.tsx) so the drawer can open it over any screen.
+import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
-import { SettingsModal } from '@/components/settings-modal';
 import { useSettings } from '@/state/settings';
 
 export function ScreenShell({ title, children }: { title: string; children: ReactNode }) {
   const { palette } = useSettings();
-  const [settingsOpen, setSettingsOpen] = useState(false);
   return (
     <View style={[styles.root, { backgroundColor: palette.bg }]}>
       <SafeAreaView style={styles.safe}>
-        <ScreenHeader title={title} onOpenSettings={() => setSettingsOpen(true)} />
+        <ScreenHeader title={title} />
         <KeyboardAvoidingView
           style={styles.keyboard}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -37,7 +38,6 @@ export function ScreenShell({ title, children }: { title: string; children: Reac
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-      <SettingsModal visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </View>
   );
 }

@@ -23,10 +23,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccentButton } from '@/components/accent-button';
 import { ScreenHeader } from '@/components/screen-header';
-import { SettingsModal } from '@/components/settings-modal';
 import { cardShadow, lighten, pillShadow, Radii } from '@/constants/palette';
 import { useAI } from '@/state/ai';
 import { useSettings } from '@/state/settings';
+import { useSettingsModal } from '@/state/settings-modal';
 import type { ChatMessage, StoredChatMessage } from '@/ai/types';
 
 const HISTORY_KEY = 'counter-buy:ai-chat:v1';
@@ -47,7 +47,10 @@ function toChatMessages(stored: StoredChatMessage[]): ChatMessage[] {
 export default function AIChatScreen() {
   const { palette, accent } = useSettings();
   const { keyConfigured, ready, sendChat } = useAI();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Settings opens from the shared root modal (see _layout.tsx) —
+  // the "Open Settings" button here and the drawer's Settings item
+  // both use this same hook.
+  const { openSettings } = useSettingsModal();
   const [messages, setMessages] = useState<StoredChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -110,7 +113,7 @@ export default function AIChatScreen() {
   return (
     <View style={[styles.root, { backgroundColor: palette.bg }]}>
       <SafeAreaView style={styles.safe}>
-        <ScreenHeader title="AI Chat" onOpenSettings={() => setSettingsOpen(true)} />
+        <ScreenHeader title="AI Chat" />
         <KeyboardAvoidingView
           style={styles.keyboard}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -122,7 +125,7 @@ export default function AIChatScreen() {
                   Pick an AI in Settings — Gemini, ChatGPT, Claude, or another service — paste your own API key,
                   and you can chat about Deadlock right here. Your key stays on this phone.
                 </Text>
-                <AccentButton label="Open Settings" onPress={() => setSettingsOpen(true)} />
+                <AccentButton label="Open Settings" onPress={openSettings} />
               </View>
             </View>
           ) : (
@@ -214,7 +217,6 @@ export default function AIChatScreen() {
           )}
         </KeyboardAvoidingView>
       </SafeAreaView>
-      <SettingsModal visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </View>
   );
 }

@@ -8,7 +8,12 @@
 //
 // Request shapes were verified against the providers' current docs
 // (Nov 2026): Gemini generateContent REST, OpenAI chat completions,
-// Anthropic Messages API.
+// Anthropic Messages API. Re-checked 2026-11-21 against
+// ai.google.dev: `gemini-3.8-flash` is a real Stable model (so the
+// Gemini default is correct), `generateContent` remains fully
+// supported (now labelled legacy beside the new Interactions API),
+// and `systemInstruction: { parts: [{ text }] }` matches the
+// GenerateContentRequest reference — no model or shape change needed.
 import type { AIConfig, ChatMessage } from './types';
 import { sendGemini } from './providers/gemini';
 import { sendOpenAI } from './providers/openai';
@@ -41,7 +46,9 @@ export async function sendChatMessage(options: SendChatOptions): Promise<string>
 
 /** Map an HTTP status / network failure to a short plain-language
     message. `context` names the provider so the message can say where
-    the problem is. No request or response body is ever included. */
+    the problem is. The HTTP status is included in the text (e.g.
+    "error 500") so a failure can be diagnosed from the message alone.
+    No request or response body is ever included. */
 export function friendlyError(status: number | null, context: string): Error {
   if (status === null) {
     return new Error(`Couldn't reach ${context} — check your connection and try again.`);
@@ -49,46 +56,63 @@ export function friendlyError(status: number | null, context: string): Error {
   switch (status) {
     case 400:
       return new Error(
-        `That request was rejected by ${context} — the model name may be wrong, or the message too long. Check the model in Settings.`,
+        `That request was rejected by ${context} (error 400) — the model name may be wrong, or the message too long. Check the model in Settings.`,
       );
     case 401:
     case 403:
       return new Error(
-        `Your API key was rejected by ${context}. Check the key in Settings — make sure you copied the whole thing.`,
+        `Your API key was rejected by ${context} (error ${status}). Check the key in Settings — make sure you copied the whole thing.`,
       );
     case 404:
       return new Error(
-        `That model wasn't found on ${context}. Check the model name in Settings.`,
+        `That model wasn't found on ${context} (error 404). Check the model name in Settings.`,
       );
     case 429:
       return new Error(
-        `You're being rate-limited by ${context} — wait a bit and try again. (Free tiers cap how often you can ask.)`,
+        `You're being rate-limited by ${context} (error 429) — wait a bit and try again. (Free tiers cap how often you can ask.)`,
       );
     default:
       if (status >= 500) {
-        return new Error(`${context} is having trouble right now — try again in a bit.`);
+        return new Error(
+          `${context} returned error ${status} — it's having trouble right now, try again in a bit.`,
+        );
       }
       return new Error(`Something went wrong talking to ${context} (error ${status}). Try again.`);
   }
 }
 
+/** How long a provider request may run before it is aborted. React
+    Native's fetch has no built-in timeout, so without this a stalled
+    request could hang the UI's "Testing…" / "Thinking…" state forever
+    — which is exactly what happened to Mikel on 0.1.11. */
+export const REQUEST_TIMEOUT_MS = 30_000;
+
 /** Run a fetch and turn HTTP errors into friendly errors. Throws the
-    friendly error; returns the parsed JSON body on success. */
+    friendly error; returns the parsed JSON body on success. The request
+    is aborted after REQUEST_TIMEOUT_MS so this always settles. */
 export async function postJson(
   url: string,
   headers: Record<string, string>,
   body: unknown,
   context: string,
 ): Promise<Record<string, any>> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   let res: Response;
   try {
     res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new Error('That took too long — check your connection and try again.');
+    }
     throw friendlyError(null, context);
+  } finally {
+    clearTimeout(timer);
   }
   if (!res.ok) {
     throw friendlyError(res.status, context);

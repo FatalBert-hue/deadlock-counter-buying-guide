@@ -5,14 +5,20 @@ import { useEffect, useState } from 'react';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AppDrawer } from '@/components/app-drawer';
 import { DeepLinkHandler } from '@/components/deep-link-handler';
+import { SettingsModal } from '@/components/settings-modal';
 import { AppProviders } from '@/state';
 import { useAppScheme } from '@/state/settings';
+import { useSettingsModal } from '@/state/settings-modal';
 import { wipeIfVersionChanged } from '@/state/version-wipe';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootStack() {
   const scheme = useAppScheme();
+  // The Settings modal lives here, at the root, so the drawer (also
+  // mounted here) can open it over any screen. Its open/closed state
+  // is shared via SettingsModalProvider.
+  const { settingsOpen, closeSettings } = useSettingsModal();
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
@@ -28,6 +34,7 @@ function RootStack() {
       </Stack>
       <DeepLinkHandler />
       <AppDrawer />
+      <SettingsModal visible={settingsOpen} onClose={closeSettings} />
     </ThemeProvider>
   );
 }

@@ -1,6 +1,10 @@
 // Side menu drawer, opened by the ☰ button top-left of every screen.
-// Holds the six main destinations — Full build, Quick pick, Counter sheet,
-// Patch, Builds, AI Chat. Tapping one navigates there and closes the drawer.
+// Holds the five main destinations — Full build, Quick pick, Counter sheet,
+// Patch, Builds — plus a Settings item that opens the Settings modal.
+// AI Chat moved out of the drawer: it now lives in the top-right header
+// button on every screen. Tapping a destination navigates there and
+// closes the drawer; tapping Settings closes the drawer and opens the
+// modal over the current screen.
 import { useEffect, useState } from 'react';
 import {
   Animated,
@@ -17,13 +21,16 @@ import { usePathname, useRouter, type Href } from 'expo-router';
 import { pillShadow, Radii } from '@/constants/palette';
 import { useDrawer } from '@/state/drawer';
 import { useSettings } from '@/state/settings';
+import { useSettingsModal } from '@/state/settings-modal';
 
 const DRAWER_WIDTH = Math.min(300, Dimensions.get('window').width * 0.85);
 
 interface MenuItem {
   label: string;
-  href: Href;
+  href?: Href;
   icon: ImageSourcePropType;
+  /** Non-route items (Settings) run this instead of navigating. */
+  action?: 'settings';
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -36,12 +43,13 @@ const MENU_ITEMS: MenuItem[] = [
   },
   { label: 'Patch', href: '/patch', icon: require('@/assets/images/tabIcons/patch.png') },
   { label: 'Builds', href: '/builds', icon: require('@/assets/images/tabIcons/saved.png') },
-  { label: 'AI Chat', href: '/ai-chat', icon: require('@/assets/images/tabIcons/ai-chat.png') },
+  { label: 'Settings', icon: require('@/assets/images/tabIcons/settings.png'), action: 'settings' },
 ];
 
 export function AppDrawer() {
   const { isOpen, closeDrawer } = useDrawer();
   const { palette, accent } = useSettings();
+  const { openSettings } = useSettingsModal();
   const router = useRouter();
   const pathname = usePathname();
   // Stable animated value, created once via lazy state init (no ref read
@@ -80,15 +88,19 @@ export function AppDrawer() {
         </View>
         <View style={styles.menu}>
           {MENU_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href !== undefined && pathname === item.href;
             return (
               <Pressable
                 key={item.label}
                 onPress={() => {
-                  if (!isActive) {
+                  // Close the drawer first, then either navigate or open
+                  // the Settings modal over the current screen.
+                  closeDrawer();
+                  if (item.action === 'settings') {
+                    openSettings();
+                  } else if (item.href && !isActive) {
                     router.push(item.href);
                   }
-                  closeDrawer();
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={item.label}

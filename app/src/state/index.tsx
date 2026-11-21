@@ -7,6 +7,7 @@ import { DataProvider } from '@/state/data';
 import { DrawerProvider } from '@/state/drawer';
 import { FavoritesProvider } from '@/state/favorites';
 import { SavedBuildsProvider } from '@/state/saved';
+import { SettingsModalProvider } from '@/state/settings-modal';
 import { SettingsProvider } from '@/state/settings';
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -16,7 +17,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <DataProvider>
           <SavedBuildsProvider>
             <FavoritesProvider>
-              <DrawerProvider>{children}</DrawerProvider>
+              <DrawerProvider>
+                <SettingsModalProvider>{children}</SettingsModalProvider>
+              </DrawerProvider>
             </FavoritesProvider>
           </SavedBuildsProvider>
         </DataProvider>
