@@ -1,6 +1,6 @@
 // Builds — the hub for saving, sharing, and importing builds.
 // Everything about a build lives here: the saved list, Share as a .json
-// file, Share as a dcb:// link (plain text, so it goes through phone
+// file, Share as an https App Link (plain text, so it goes through phone
 // Messages), Import a .json file, and a save box for the current Full
 // build draft (name + author). No accounts, no logins, nothing uploaded
 // — a build is just passed along however the user likes.
@@ -9,6 +9,7 @@ import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-nativ
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { router } from 'expo-router';
 
 import { buildImportLink } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
@@ -51,6 +52,15 @@ export default function BuildsScreen() {
     setSaveName('');
     setSaveAuthor('');
     setSaveMessage('Saved.');
+  };
+
+  // Load the build into Full build AND go there, so the heroes and
+  // items show immediately. requestLoad only stages the build in the
+  // store — Full build applies it when it gains focus, so without this
+  // navigation the user would stay on this tab and see nothing change.
+  const loadBuild = (build: SavedBuild) => {
+    requestLoad(build);
+    router.push('/');
   };
 
   const shareBuild = async (build: SavedBuild) => {
@@ -138,7 +148,7 @@ export default function BuildsScreen() {
       {!builds.length ? (
         <View style={[styles.card, { backgroundColor: palette.panel }]}>
           <Text style={[styles.empty, { color: palette.muted }]}>
-            No saved builds yet. Save one from Full build or Quick pick and it shows up here — then share it as a
+            No saved builds yet. Save one from Full build and it shows up here — then share it as a
             file or a link, or import one someone sent you.
           </Text>
         </View>
@@ -164,7 +174,7 @@ export default function BuildsScreen() {
           <Text style={[styles.meta, { color: palette.muted }]}>{new Date(b.savedAt).toLocaleDateString()}</Text>
           <View style={styles.actions}>
             <Pressable
-              onPress={() => requestLoad(b)}
+              onPress={() => loadBuild(b)}
               style={[styles.action, { backgroundColor: accent.color }]}
               accessibilityRole="button"
               accessibilityLabel={`Load ${b.name} into Full build`}>
