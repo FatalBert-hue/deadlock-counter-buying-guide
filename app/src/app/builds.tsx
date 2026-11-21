@@ -6,6 +6,7 @@
 // — a build is just passed along however the user likes.
 import { useState } from 'react';
 import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image } from 'expo-image';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -13,6 +14,7 @@ import { router } from 'expo-router';
 
 import { buildImportLink } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
+import { heroImage, itemImage } from '@/data/images';
 import { buildToFile, parseBuildFile, useSavedBuilds, type SavedBuild } from '@/state/saved';
 import { useSettings } from '@/state/settings';
 
@@ -158,18 +160,54 @@ export default function BuildsScreen() {
         <View key={b.id} style={[styles.card, { backgroundColor: palette.panel }]}>
           <Text style={[styles.name, { color: palette.ink }]}>{b.name}</Text>
           <Text style={[styles.meta, { color: palette.muted }]}>by {b.author}</Text>
-          <Text style={[styles.meta, { color: palette.muted }]}>
-            vs {b.enemyHero ?? '—'}
-            {b.youHero ? ` · you on ${b.youHero}` : ''}
-          </Text>
+          {/* The matchup, as it reads in-game: enemy hero vs the hero
+              you played — portraits, not a backwards sentence. */}
+          <View style={styles.matchup}>
+            <View style={styles.matchupHero}>
+              <Image
+                source={b.enemyHero ? heroImage(b.enemyHero) : undefined}
+                style={styles.heroIcon}
+                contentFit="cover"
+              />
+              <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
+                {b.enemyHero ?? '—'}
+              </Text>
+            </View>
+            <Text style={[styles.vs, { color: palette.ink }]}>vs</Text>
+            <View style={styles.matchupHero}>
+              <Image
+                source={b.youHero ? heroImage(b.youHero) : undefined}
+                style={styles.heroIcon}
+                contentFit="cover"
+              />
+              <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
+                {b.youHero ?? '—'}
+              </Text>
+            </View>
+          </View>
           {b.quickPick ? (
             <Text style={[styles.meta, { color: palette.muted }]}>
               Quick pick · they buy {typeLabel(b.quickPick.enemyType)} · you buy {typeLabel(b.quickPick.youType)}
             </Text>
           ) : (
-            <Text style={[styles.meta, { color: palette.muted }]}>
-              {b.enemyItems.length} enemy items · {b.youItems.length} your items
-            </Text>
+            <>
+              {b.youItems.length ? (
+                <View style={styles.itemRow}>
+                  <Text style={[styles.itemLabel, { color: palette.muted }]}>You</Text>
+                  {b.youItems.map((name, i) => (
+                    <Image key={`${name}-${i}`} source={itemImage(name)} style={styles.itemIcon} contentFit="cover" />
+                  ))}
+                </View>
+              ) : null}
+              {b.enemyItems.length ? (
+                <View style={styles.itemRow}>
+                  <Text style={[styles.itemLabel, { color: palette.muted }]}>Them</Text>
+                  {b.enemyItems.map((name, i) => (
+                    <Image key={`${name}-${i}`} source={itemImage(name)} style={styles.itemIcon} contentFit="cover" />
+                  ))}
+                </View>
+              ) : null}
+            </>
           )}
           <Text style={[styles.meta, { color: palette.muted }]}>{new Date(b.savedAt).toLocaleDateString()}</Text>
           <View style={styles.actions}>
@@ -265,6 +303,47 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  matchup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  matchupHero: {
+    alignItems: 'center',
+    gap: 4,
+    maxWidth: 120,
+  },
+  heroIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+  },
+  matchupName: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  vs: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  itemRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  itemLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginRight: 4,
+  },
+  itemIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
   },
   actions: {
     flexDirection: 'row',
