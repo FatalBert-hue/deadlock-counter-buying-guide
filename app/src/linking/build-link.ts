@@ -280,6 +280,24 @@ export function buildImportLink(build: SavedBuild): string {
   return `${APP_LINK_BASE}?data=${encodeCompactBuild(build)}`;
 }
 
+/**
+ * Decode a bare link payload (the `data` query param) back to a build
+ * (null if not one). Accepts both payload shapes: the compact "c1."
+ * payload and the old full-JSON payload, so links already shared keep
+ * working. This is what the import screens use — they only have the
+ * param, not the whole URL — and parseImportLink() below uses it too,
+ * so there is exactly one place that knows both payload shapes.
+ */
+export function parseImportPayload(data: string): SavedBuild | null {
+  if (!data) return null;
+  if (data.startsWith(COMPACT_PREFIX)) return decodeCompactBuild(data);
+  try {
+    return parseBuildFile(JSON.parse(base64UrlDecode(data)) as unknown);
+  } catch {
+    return null;
+  }
+}
+
 /** The dcb:// fallback link — used only inside the build.html page a
  *  browser shows when the app is not installed. Never shared directly:
  *  Messages does not linkify custom schemes. Same compact payload. */
@@ -308,12 +326,7 @@ export function parseImportLink(url: string): SavedBuild | null {
   }
   const data = parsed.queryParams?.data;
   if (typeof data !== 'string' || !data) return null;
-  if (data.startsWith(COMPACT_PREFIX)) return decodeCompactBuild(data);
-  try {
-    return parseBuildFile(JSON.parse(base64UrlDecode(data)) as unknown);
-  } catch {
-    return null;
-  }
+  return parseImportPayload(data);
 }
 
 export type IncomingUrlOutcome =
