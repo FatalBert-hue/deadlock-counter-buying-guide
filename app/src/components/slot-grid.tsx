@@ -30,9 +30,11 @@ export function SlotGrid({ slots, onPickSlot }: SlotGridProps) {
               styles.slot,
               pillShadow(palette),
               {
-                // Empty slots sit on the soft violet tint, like the
-                // reference's tinted icon tiles; filled slots stay panel.
-                backgroundColor: name ? palette.panel : palette.heroSoft,
+                // Every slot is a clearly coloured tile, like the
+                // reference's pastel icon tiles: filled slots sit on a
+                // cycling pastel tile, empty slots are the tile itself
+                // with a bold plus — no more pale, invisible slots.
+                backgroundColor: palette.tileTints[i % palette.tileTints.length],
                 borderColor: palette.line,
                 width: size + 16,
                 height: size + 16,
@@ -41,7 +43,7 @@ export function SlotGrid({ slots, onPickSlot }: SlotGridProps) {
             {name ? (
               <Image source={itemImage(name)} style={{ width: size, height: size, borderRadius: 12 }} contentFit="cover" />
             ) : (
-              <Text style={[styles.plus, { color: palette.faint }]}>+</Text>
+              <Text style={[styles.plus, { color: palette.ink }]}>+</Text>
             )}
           </Pressable>
         );
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   plus: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '800',
   },
 });

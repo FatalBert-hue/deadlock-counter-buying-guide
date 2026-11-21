@@ -2,7 +2,6 @@
 // State lives here; saved builds load in through the load request on focus.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
 
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
@@ -12,6 +11,7 @@ import { ItemPicker } from '@/components/item-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
 import { SlotGrid } from '@/components/slot-grid';
+import { TileImage } from '@/components/tile-image';
 import { heroImage } from '@/data/images';
 import { scoreFull } from '@/engine/score';
 import { useGuideData } from '@/state/data';
@@ -113,14 +113,22 @@ export default function FullBuildScreen() {
       onPress={() => setHeroPickerFor(side)}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={[styles.heroButton, cardShadow(palette), { backgroundColor: palette.panel, borderColor: palette.line }]}>
+      style={[
+        styles.heroButton,
+        cardShadow(palette),
+        // The two sides read at a glance: the enemy button is a violet
+        // tint with a violet edge, yours is a teal tint with a teal
+        // edge — like the reference's colour-coded tiles. The portrait
+        // sits on a white tile so it pops off the tint.
+        {
+          backgroundColor: side === 'enemy' ? palette.heroSoft : palette.chipTints[0].bg,
+          borderColor: side === 'enemy' ? palette.hero : palette.you,
+          borderWidth: 2,
+        },
+      ]}>
       {hero ? (
         <>
-          <Image
-            source={heroImage(hero)}
-            style={[{ width: 52, height: 52, borderRadius: Radii.tile }, pillShadow(palette)]}
-            contentFit="cover"
-          />
+          <TileImage source={heroImage(hero)} size={52} palette={palette} bg="#ffffff" />
           <Text style={[styles.heroName, { color: palette.ink }]}>{hero}</Text>
           <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
         </>
@@ -172,7 +180,11 @@ export default function FullBuildScreen() {
                   style={[
                     styles.budget,
                     active ? pillShadow(palette) : null,
-                    { backgroundColor: active ? accent.color : palette.panel },
+                    {
+                      backgroundColor: active ? accent.color : palette.panel2,
+                      borderColor: palette.line,
+                      borderWidth: active ? 0 : 1,
+                    },
                   ]}>
                   <Text style={[styles.budgetText, { color: active ? palette.onAccent : palette.ink }]}>
                     {b === 0 ? 'Any' : b.toLocaleString('en-US')}
@@ -196,8 +208,9 @@ export default function FullBuildScreen() {
           onChangeText={setSaveName}
           placeholder="Name this build (optional)"
           placeholderTextColor={palette.faint}
-          // Soft pill input: pale fill, fully round, no hard border.
-          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
+          // Soft pill input: pale fill, fully round, no hard border,
+          // soft shadow so it lifts off the card.
+          style={[styles.saveInput, pillShadow(palette), { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
         <TextInput
           value={saveAuthor}
@@ -205,7 +218,7 @@ export default function FullBuildScreen() {
           placeholder="Your name (author)"
           placeholderTextColor={palette.faint}
           autoCapitalize="words"
-          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
+          style={[styles.saveInput, pillShadow(palette), { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
         <AccentButton label="Save build" onPress={saveCurrent} accessibilityLabel="Save this build" />
         {saveMessage ? <Text style={[styles.saveMessage, { color: palette.muted }]}>{saveMessage}</Text> : null}
@@ -248,7 +261,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   heroButton: {
-    borderWidth: 1,
     borderRadius: Radii.card,
     borderCurve: 'continuous',
     padding: 12,
@@ -259,7 +271,7 @@ const styles = StyleSheet.create({
   },
   heroName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   heroChange: {
     fontSize: 12,

@@ -1,9 +1,9 @@
 // Hero picker — searchable list of all 44 heroes with portraits.
 import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Image } from 'expo-image';
 
 import { pillShadow, Radii } from '@/constants/palette';
+import { TileImage } from '@/components/tile-image';
 import { heroImage } from '@/data/images';
 import type { Hero } from '@/data';
 import { useFavorites } from '@/state/favorites';
@@ -47,14 +47,15 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
           placeholder="Search heroes"
           placeholderTextColor={palette.faint}
           // Soft pill search like the reference's search bar: pale fill,
-          // fully round, no hard border.
-          style={[styles.search, { backgroundColor: palette.panel2, color: palette.ink }]}
+          // fully round, no hard border, soft shadow so it lifts off
+          // the background.
+          style={[styles.search, pillShadow(palette), { backgroundColor: palette.panel2, color: palette.ink }]}
         />
         <FlatList
           data={filtered}
           keyExtractor={(h) => h.name}
           keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             const isSelected = item.name === selected;
             return (
               <Pressable
@@ -64,20 +65,17 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
                 }}
                 style={[
                   styles.row,
-                  // The selected row is a soft tinted rounded row, not a
-                  // hairline list entry — like the reference's chunky tiles.
+                  // The selected row is a saturated violet tile, not a
+                  // hairline list entry — like the reference's chunky
+                  // tiles. Unselected rows keep their divider.
                   {
                     borderBottomColor: palette.line,
                     borderBottomWidth: isSelected ? 0 : 1,
-                    backgroundColor: isSelected ? palette.heroSoft : 'transparent',
+                    backgroundColor: isSelected ? palette.chipTints[1].bg : 'transparent',
                     borderRadius: isSelected ? Radii.tile : 0,
                   },
                 ]}>
-                <Image
-                  source={heroImage(item.name)}
-                  style={[{ width: 44, height: 44, borderRadius: Radii.tile }, pillShadow(palette)]}
-                  contentFit="cover"
-                />
+                <TileImage source={heroImage(item.name)} size={44} palette={palette} tint={index} />
                 <View style={styles.rowText}>
                   <Text style={[styles.name, { color: palette.ink }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: palette.muted }]}>
@@ -103,8 +101,12 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
             onSelect(null);
             onClose();
           }}
-          style={[styles.clear, pillShadow(palette), { backgroundColor: palette.panel }]}>
-          <Text style={[styles.clearText, { color: palette.ink }]}>No hero</Text>
+          style={[
+            styles.clear,
+            pillShadow(palette),
+            { backgroundColor: palette.chipTints[1].bg },
+          ]}>
+          <Text style={[styles.clearText, { color: palette.chipTints[1].ink }]}>No hero</Text>
         </Pressable>
       </View>
     </Modal>

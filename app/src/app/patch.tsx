@@ -1,6 +1,8 @@
 // Patch tab — the patch the data is current to, where the data came from,
-// and a manual data-update check. No long descriptions.
+// and a manual data-update check. No long descriptions. The app version
+// is shown here too, so it's always visible which build is installed.
 import { StyleSheet, Text, View } from 'react-native';
+import Constants from 'expo-constants';
 
 import { cardShadow, Radii } from '@/constants/palette';
 import { AccentButton } from '@/components/accent-button';
@@ -11,6 +13,8 @@ import { useSettings } from '@/state/settings';
 export default function PatchScreen() {
   const { data, source, checking, lastCheckAt, refresh } = useGuideData();
   const { palette } = useSettings();
+  const appVersion = Constants.expoConfig?.version ?? '';
+  const appBuild = Constants.expoConfig?.android?.versionCode;
 
   const sourceLabel =
     source === 'remote'
@@ -21,11 +25,22 @@ export default function PatchScreen() {
 
   return (
     <ScreenShell title="Patch">
-      <View style={[styles.card, cardShadow(palette), { backgroundColor: palette.panel }]}>
+      <View
+        style={[
+          styles.card,
+          cardShadow(palette),
+          { backgroundColor: palette.panel, borderColor: palette.hero, borderWidth: 2 },
+        ]}>
         <Text style={[styles.patch, { color: palette.ink }]}>{data.patch}</Text>
         <Text style={[styles.meta, { color: palette.muted }]}>
           {data.heroes.length} heroes · {data.items.length} items · Data version {data.version}
         </Text>
+        {appVersion ? (
+          <Text style={[styles.meta, { color: palette.muted }]}>
+            DCB {appVersion}
+            {appBuild ? ` · build ${appBuild}` : ''}
+          </Text>
+        ) : null}
         <Text style={[styles.meta, { color: palette.muted }]}>Data: {sourceLabel}</Text>
         {lastCheckAt ? (
           <Text style={[styles.meta, { color: palette.muted }]}>

@@ -2,12 +2,12 @@
 // does, and the reasons it was picked. The top pick shows all its reasons;
 // alternates show the first two.
 import { StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { cardShadow, pillShadow, Radii } from '@/constants/palette';
+import { cardShadow, Radii } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import { deliverLabel, type RankedPick } from '@/engine/score';
+import { TileImage } from '@/components/tile-image';
 import { useSettings } from '@/state/settings';
 
 export function PickCard({
@@ -22,29 +22,27 @@ export function PickCard({
   const { palette, accent, settings } = useSettings();
   const size = settings.iconSize === 'small' ? 48 : settings.iconSize === 'large' ? 72 : 60;
   const reasons = top ? pick.reasons : pick.reasons.slice(0, 2);
-  // The top pick is the hero panel: a soft diagonal violet gradient
-  // (hero tint -> panel) like the reference's violet hero panel. Ink
-  // text stays on it at full contrast — a strong violet fill would
-  // have dropped the small text below 4.5:1.
+  // The top pick is the hero panel: a SATURATED violet gradient like
+  // the reference's big violet hero panel, with white text on it.
+  // White on both gradient stops is 4.5:1 or better (WCAG AA), so the
+  // small text stays readable on the strong fill.
+  const ink = top ? palette.heroOnGradient : palette.ink;
+  const sub = top ? palette.heroOnGradient : palette.muted;
   const body = (
     <>
       <View style={styles.head}>
-        <Image
-          source={itemImage(pick.name)}
-          style={[{ width: size, height: size, borderRadius: Radii.tile }, pillShadow(palette)]}
-          contentFit="cover"
-        />
+        <TileImage source={itemImage(pick.name)} size={size} palette={palette} bg="#ffffff" />
         <View style={styles.headText}>
-          <Text style={[styles.name, { color: palette.ink }]}>{pick.name}</Text>
-          <Text style={[styles.meta, { color: palette.muted }]}>
+          <Text style={[styles.name, { color: ink }]}>{pick.name}</Text>
+          <Text style={[styles.meta, { color: sub }, top ? styles.metaOnHero : null]}>
             {top ? '★ Buy this next' : `Also strong · #${rank}`} · {pick.info.cat} · Tier {pick.info.tier}
             {settings.showSouls ? ` · ${pick.info.cost.toLocaleString('en-US')} souls` : ''} · {deliverLabel(pick.info.deliver)}
           </Text>
         </View>
       </View>
-      <Text style={[styles.desc, { color: palette.ink }]}>{pick.info.desc}</Text>
+      <Text style={[styles.desc, { color: ink }]}>{pick.info.desc}</Text>
       {reasons.map((r, i) => (
-        <Text key={i} style={[styles.reason, { color: palette.muted }]}>
+        <Text key={i} style={[styles.reason, { color: sub }, top ? styles.metaOnHero : null]}>
           • {r}
         </Text>
       ))}
@@ -53,7 +51,7 @@ export function PickCard({
   if (top) {
     return (
       <LinearGradient
-        colors={[palette.heroSoft, palette.panel]}
+        colors={palette.heroGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.card, cardShadow(palette), { borderColor: accent.color, borderWidth: 2 }]}>
@@ -68,7 +66,7 @@ export function PickCard({
         cardShadow(palette),
         {
           backgroundColor: palette.panel,
-          borderColor: palette.line,
+          borderColor: palette.heroSoft,
           borderWidth: 1,
         },
       ]}>
@@ -94,11 +92,16 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   meta: {
     fontSize: 13,
     marginTop: 2,
+  },
+  // Secondary text on the violet hero panel: white at 85% opacity so
+  // it reads as clearly secondary without dropping below contrast.
+  metaOnHero: {
+    opacity: 0.85,
   },
   desc: {
     fontSize: 15,

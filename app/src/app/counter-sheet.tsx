@@ -2,12 +2,12 @@
 // one to open mid-match when there's no time to fill in builds.
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { Image } from 'expo-image';
 
-import { cardShadow, pillShadow, Radii } from '@/constants/palette';
+import { cardShadow, Radii } from '@/constants/palette';
 import { HeroPicker } from '@/components/hero-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
+import { TileImage } from '@/components/tile-image';
 import { heroImage } from '@/data/images';
 import { scoreCounterSheet } from '@/engine/score';
 import { useGuideData } from '@/state/data';
@@ -27,14 +27,16 @@ export default function CounterSheetScreen() {
         onPress={() => setHeroPickerOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Choose the enemy hero"
-        style={[styles.heroButton, cardShadow(palette), { backgroundColor: palette.panel, borderColor: palette.line }]}>
+        style={[
+          styles.heroButton,
+          cardShadow(palette),
+          // Violet tint with a violet edge, like the enemy side of Full
+          // build — the enemy hero reads at a glance.
+          { backgroundColor: palette.heroSoft, borderColor: palette.hero, borderWidth: 2 },
+        ]}>
         {enemyHero ? (
           <>
-            <Image
-              source={heroImage(enemyHero)}
-              style={[{ width: 52, height: 52, borderRadius: Radii.tile }, pillShadow(palette)]}
-              contentFit="cover"
-            />
+            <TileImage source={heroImage(enemyHero)} size={52} palette={palette} bg="#ffffff" />
             <Text style={[styles.heroName, { color: palette.ink }]}>{enemyHero}</Text>
             <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
           </>
@@ -59,7 +61,6 @@ export default function CounterSheetScreen() {
 
 const styles = StyleSheet.create({
   heroButton: {
-    borderWidth: 1,
     borderRadius: Radii.card,
     borderCurve: 'continuous',
     padding: 12,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   },
   heroName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   heroChange: {
     fontSize: 12,

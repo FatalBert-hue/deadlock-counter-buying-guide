@@ -94,17 +94,24 @@ export function AppDrawer() {
                 accessibilityState={{ selected: isActive }}
                 style={[
                   styles.item,
-                  // The active destination is a soft violet pill, like the
-                  // reference's raised circular action — lifted, tinted,
-                  // fully round. Inactive items stay flat and quiet.
+                  // The active destination is a solid accent pill — the
+                  // same treatment as the primary buttons — so the
+                  // current screen is unmistakable at a glance. The
+                  // label and icon use onAccent (dark ink on the accent,
+                  // readable like the button text). Inactive items stay
+                  // flat and quiet.
                   isActive ? pillShadow(palette) : null,
-                  { backgroundColor: isActive ? palette.heroSoft : 'transparent' },
+                  { backgroundColor: isActive ? accent.color : 'transparent' },
                 ]}>
                 <Image
                   source={item.icon}
-                  style={[styles.itemIcon, { tintColor: isActive ? accent.color : palette.ink }]}
+                  style={[styles.itemIcon, { tintColor: isActive ? palette.onAccent : palette.ink }]}
                 />
-                <Text style={[styles.itemLabel, { color: isActive ? accent.color : palette.ink }]}>
+                <Text
+                  style={[
+                    styles.itemLabel,
+                    { color: isActive ? palette.onAccent : palette.ink, fontWeight: isActive ? '800' : '600' },
+                  ]}>
                   {item.label}
                 </Text>
               </Pressable>

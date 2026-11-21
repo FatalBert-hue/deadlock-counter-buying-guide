@@ -15,8 +15,8 @@ export function ScreenHeader({ title, onOpenSettings }: { title: string; onOpenS
         onPress={openDrawer}
         accessibilityRole="button"
         accessibilityLabel="Open menu"
-        style={[styles.iconButton, pillShadow(palette), { backgroundColor: palette.panel }]}>
-        <Text style={[styles.icon, { color: palette.ink }]}>☰</Text>
+        style={[styles.iconButton, pillShadow(palette), { backgroundColor: accent.color }]}>
+        <Text style={[styles.icon, { color: palette.onAccent }]}>☰</Text>
       </Pressable>
       <Text style={[styles.title, { color: palette.ink }]} numberOfLines={1}>
         {title}
@@ -25,7 +25,11 @@ export function ScreenHeader({ title, onOpenSettings }: { title: string; onOpenS
         onPress={onOpenSettings}
         accessibilityRole="button"
         accessibilityLabel="Open settings"
-        style={[styles.settingsButton, pillShadow(palette), { backgroundColor: palette.panel }]}>
+        style={[
+          styles.settingsButton,
+          pillShadow(palette),
+          { backgroundColor: palette.panel, borderColor: accent.color, borderWidth: 2 },
+        ]}>
         <Text style={[styles.settingsText, { color: palette.ink }]}>Settings</Text>
       </Pressable>
     </View>
@@ -52,7 +56,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   title: {
     flex: 1,

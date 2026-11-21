@@ -12,6 +12,13 @@
 // tiles, pastel-tinted chips, pill-shaped inputs, gradient hero panel
 // and gradient primary buttons. Positions and sizes are unchanged;
 // only radii, shadows, borders, fills, and gradients changed.
+//
+// Third styling round (OTA, after 0.1.10): BOLD, unmistakable at a
+// glance — the top pick is a saturated violet gradient panel with
+// white text, icon tiles sit on clearly coloured pastel tiles, chips
+// are saturated, shadows are stronger, and the header/drawer active
+// states use the accent as a solid fill. Same placements as before;
+// only visual treatment changed.
 import type { ImageStyle, ViewStyle } from 'react-native';
 
 export interface ChipTint {
@@ -34,14 +41,24 @@ export interface Palette {
   good: string;
   chip: string;
   /** Pastel tints for threat chips, cycling teal / violet / amber like
-      the reference's coloured pills. Ink on each is 4.5:1 or better. */
+      the reference's coloured pills. Saturated enough to read at a
+      glance; ink on each is 4.5:1 or better (WCAG AA). */
   chipTints: [ChipTint, ChipTint, ChipTint];
+  /** Pastel icon-tile tints, cycling orange / blue / violet / mint like
+      the reference's coloured tiles. */
+  tileTints: [string, string, string, string];
   /** Scrim behind modals/drawers. */
   overlay: string;
   /** Violet hero colour — the bold violet moment (top pick card tint). */
   hero: string;
   /** Soft violet tint surface for the top pick card. */
   heroSoft: string;
+  /** Saturated violet gradient for the top pick (hero) panel — the
+      reference's big violet hero panel. White text on both stops is
+      4.5:1 or better. */
+  heroGradient: [string, string];
+  /** Text colour on the hero gradient. */
+  heroOnGradient: string;
   /** Text colour on top of an accent-coloured button. Dark ink on the
       accent in both themes — pale text on gold was ~1.9:1, unreadable. */
   onAccent: string;
@@ -77,26 +94,29 @@ export const darkPalette: Palette = {
   good: '#7bc47f',
   chip: '#2d2450',
   chipTints: [
-    { bg: '#134e4a', ink: '#5eead4' },
-    { bg: '#332a5e', ink: '#c4b5fd' },
-    { bg: '#451a03', ink: '#fcd34d' },
+    { bg: '#0f766e', ink: '#ccfbf1' },
+    { bg: '#6d28d9', ink: '#ede9fe' },
+    { bg: '#b45309', ink: '#fef3c7' },
   ],
+  tileTints: ['#6b3d05', '#1d3a66', '#3a2a6b', '#0e4a38'],
   overlay: 'rgba(0,0,0,0.6)',
-  hero: '#6d5bd0',
+  hero: '#8b5cf6',
   heroSoft: '#332a5e',
+  heroGradient: ['#7c3aed', '#5b21b6'],
+  heroOnGradient: '#ffffff',
   onAccent: '#171226',
   radiusCard: 28,
   radiusTile: 16,
   shadowColor: '#000000',
-  shadowOpacity: 0.35,
-  shadowRadius: 16,
-  shadowOffsetY: 6,
-  elevation: 4,
+  shadowOpacity: 0.5,
+  shadowRadius: 20,
+  shadowOffsetY: 8,
+  elevation: 6,
   pillShadowColor: '#000000',
-  pillShadowOpacity: 0.3,
-  pillShadowRadius: 8,
-  pillShadowOffsetY: 3,
-  pillElevation: 2,
+  pillShadowOpacity: 0.45,
+  pillShadowRadius: 10,
+  pillShadowOffsetY: 4,
+  pillElevation: 3,
 };
 
 export const lightPalette: Palette = {
@@ -114,26 +134,29 @@ export const lightPalette: Palette = {
   good: '#2e7d32',
   chip: '#e4e6fa',
   chipTints: [
-    { bg: '#ccfbf1', ink: '#0f766e' },
-    { bg: '#ede9fe', ink: '#6d28d9' },
-    { bg: '#fef3c7', ink: '#b45309' },
+    { bg: '#5eead4', ink: '#134e4a' },
+    { bg: '#c4b5fd', ink: '#4c1d95' },
+    { bg: '#fcd34d', ink: '#78350f' },
   ],
+  tileTints: ['#ffe3b3', '#d7e6ff', '#e4dbff', '#c8f2df'],
   overlay: 'rgba(35,32,58,0.45)',
   hero: '#8b7cf6',
   heroSoft: '#ede9fe',
+  heroGradient: ['#7c3aed', '#5b21b6'],
+  heroOnGradient: '#ffffff',
   onAccent: '#23203a',
   radiusCard: 28,
   radiusTile: 16,
   shadowColor: '#5b54a6',
-  shadowOpacity: 0.16,
-  shadowRadius: 16,
-  shadowOffsetY: 6,
-  elevation: 3,
+  shadowOpacity: 0.28,
+  shadowRadius: 20,
+  shadowOffsetY: 8,
+  elevation: 5,
   pillShadowColor: '#5b54a6',
-  pillShadowOpacity: 0.12,
-  pillShadowRadius: 8,
-  pillShadowOffsetY: 3,
-  pillElevation: 2,
+  pillShadowOpacity: 0.22,
+  pillShadowRadius: 10,
+  pillShadowOffsetY: 4,
+  pillElevation: 3,
 };
 
 /** Corner radii as static tokens, for StyleSheet.create (which can't see

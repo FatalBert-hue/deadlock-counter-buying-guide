@@ -1,10 +1,10 @@
 // Primary action button — one shared component so every main action in
-// the app looks the same: a chunky pill with a soft shadow and a subtle
-// vertical gradient built from the user's chosen accent (accent -> a
-// lighter stop of the same accent), like the reference's gradient CTA
-// card. The dark onAccent text stays readable on both gradient stops.
-// Secondary actions stay flat panel buttons (see the screens) — only
-// the primary action on a screen uses this.
+// the app looks the same: a chunky pill with a soft shadow and a
+// clearly visible gradient built from the user's chosen accent (accent
+// -> a much lighter stop of the same accent), like the reference's
+// gradient CTA card. The dark onAccent text stays readable on both
+// gradient stops. Secondary actions stay flat panel buttons (see the
+// screens) — only the primary action on a screen uses this.
 import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -31,7 +31,7 @@ export function AccentButton({ label, onPress, accessibilityLabel, disabled, com
       accessibilityLabel={accessibilityLabel ?? label}
       style={[styles.press, { opacity: disabled ? 0.6 : 1 }, style]}>
       <LinearGradient
-        colors={[accent.color, lighten(accent.color, 0.18)]}
+        colors={[accent.color, lighten(accent.color, 0.35)]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.gradient, pillShadow(palette), compact ? styles.compact : styles.regular]}>
@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

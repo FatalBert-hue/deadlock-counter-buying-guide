@@ -16,6 +16,7 @@ import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { AccentButton } from '@/components/accent-button';
 import { buildImportLink } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
+import { TileImage } from '@/components/tile-image';
 import { heroImage, itemImage } from '@/data/images';
 import { buildToFile, parseBuildFile, useSavedBuilds, type SavedBuild } from '@/state/saved';
 import { useSettings } from '@/state/settings';
@@ -120,8 +121,9 @@ export default function BuildsScreen() {
           onChangeText={setSaveName}
           placeholder="Name this build (optional)"
           placeholderTextColor={palette.faint}
-          // Soft pill input: pale fill, fully round, no hard border.
-          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
+          // Soft pill input: pale fill, fully round, no hard border,
+          // soft shadow so it lifts off the card.
+          style={[styles.saveInput, pillShadow(palette), { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
         <TextInput
           value={saveAuthor}
@@ -129,7 +131,7 @@ export default function BuildsScreen() {
           placeholder="Your name (author)"
           placeholderTextColor={palette.faint}
           autoCapitalize="words"
-          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
+          style={[styles.saveInput, pillShadow(palette), { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
         <AccentButton label="Save build" onPress={saveCurrent} accessibilityLabel="Save the current Full build" />
         {saveMessage ? <Text style={[styles.saveMessage, { color: palette.muted }]}>{saveMessage}</Text> : null}
@@ -155,10 +157,11 @@ export default function BuildsScreen() {
               you played — portraits, not a backwards sentence. */}
           <View style={styles.matchup}>
             <View style={styles.matchupHero}>
-              <Image
+              <TileImage
                 source={b.enemyHero ? heroImage(b.enemyHero) : undefined}
-                style={[styles.heroIcon, pillShadow(palette)]}
-                contentFit="cover"
+                size={56}
+                palette={palette}
+                tint={2}
               />
               <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
                 {b.enemyHero ?? '—'}
@@ -166,10 +169,11 @@ export default function BuildsScreen() {
             </View>
             <Text style={[styles.vs, { color: palette.ink }]}>vs</Text>
             <View style={styles.matchupHero}>
-              <Image
+              <TileImage
                 source={b.youHero ? heroImage(b.youHero) : undefined}
-                style={[styles.heroIcon, pillShadow(palette)]}
-                contentFit="cover"
+                size={56}
+                palette={palette}
+                tint={0}
               />
               <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
                 {b.youHero ?? '—'}
@@ -211,24 +215,36 @@ export default function BuildsScreen() {
             />
             <Pressable
               onPress={() => void shareBuild(b)}
-              style={[styles.action, pillShadow(palette), { backgroundColor: palette.panel2 }]}
+              style={[
+                styles.action,
+                pillShadow(palette),
+                { backgroundColor: palette.chipTints[0].bg },
+              ]}
               accessibilityRole="button"
               accessibilityLabel={`Download ${b.name} as a file`}>
-              <Text style={[styles.actionText, { color: palette.ink }]}>Download</Text>
+              <Text style={[styles.actionText, { color: palette.chipTints[0].ink }]}>Download</Text>
             </Pressable>
             <Pressable
               onPress={() => void shareBuildAsLink(b)}
-              style={[styles.action, pillShadow(palette), { backgroundColor: palette.panel2 }]}
+              style={[
+                styles.action,
+                pillShadow(palette),
+                { backgroundColor: palette.chipTints[1].bg },
+              ]}
               accessibilityRole="button"
               accessibilityLabel={`Share ${b.name} as a link`}>
-              <Text style={[styles.actionText, { color: palette.ink }]}>Share</Text>
+              <Text style={[styles.actionText, { color: palette.chipTints[1].ink }]}>Share</Text>
             </Pressable>
             <Pressable
               onPress={() => removeBuild(b.id)}
-              style={[styles.action, pillShadow(palette), { backgroundColor: palette.panel2 }]}
+              style={[
+                styles.action,
+                pillShadow(palette),
+                { backgroundColor: palette.chipTints[2].bg },
+              ]}
               accessibilityRole="button"
               accessibilityLabel={`Delete ${b.name}`}>
-              <Text style={[styles.actionText, { color: palette.ink }]}>Delete</Text>
+              <Text style={[styles.actionText, { color: palette.chipTints[2].ink }]}>Delete</Text>
             </Pressable>
           </View>
         </View>
@@ -289,11 +305,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     maxWidth: 120,
-  },
-  heroIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: Radii.tile,
   },
   matchupName: {
     fontSize: 13,

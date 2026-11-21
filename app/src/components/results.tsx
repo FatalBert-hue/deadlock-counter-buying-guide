@@ -31,7 +31,8 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
         <View style={styles.chips}>
           {result.threatLabels.map((t, i) => {
             // Chunky coloured pills like the reference's teal / pink /
-            // orange chips — pastel tints cycling, bold short labels.
+            // orange chips — saturated tints cycling, bold short labels,
+            // big enough to read at a glance.
             const tint = palette.chipTints[i % palette.chipTints.length];
             return (
               <Text key={t} style={[styles.chip, pillShadow(palette), { backgroundColor: tint.bg, color: tint.ink }]}>
@@ -50,7 +51,13 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
         </Text>
       ) : null}
       {result.notes.map((n, i) => (
-        <View key={i} style={[styles.noteBox, cardShadow(palette), { backgroundColor: palette.panel }]}>
+        <View
+          key={i}
+          style={[
+            styles.noteBox,
+            cardShadow(palette),
+            { backgroundColor: palette.panel, borderColor: palette.heroSoft, borderWidth: 1 },
+          ]}>
           <Text style={[styles.note, { color: palette.muted }]}>{n.text}</Text>
         </View>
       ))}
@@ -77,10 +84,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   chip: {
-    fontSize: 12,
-    fontWeight: '700',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
+    fontSize: 13,
+    fontWeight: '800',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 999,
   },
   noteBox: {

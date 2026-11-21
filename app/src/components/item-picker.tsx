@@ -2,9 +2,9 @@
 // build show as "In build" and can't be picked twice.
 import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Image } from 'expo-image';
 
-import { pillShadow, Radii } from '@/constants/palette';
+import { pillShadow } from '@/constants/palette';
+import { TileImage } from '@/components/tile-image';
 import { itemImage } from '@/data/images';
 import type { Item } from '@/data';
 import { useFavorites } from '@/state/favorites';
@@ -59,8 +59,9 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
           placeholder="Search items"
           placeholderTextColor={palette.faint}
           // Soft pill search like the reference's search bar: pale fill,
-          // fully round, no hard border.
-          style={[styles.search, { backgroundColor: palette.panel2, color: palette.ink }]}
+          // fully round, no hard border, soft shadow so it lifts off
+          // the background.
+          style={[styles.search, pillShadow(palette), { backgroundColor: palette.panel2, color: palette.ink }]}
         />
         <View style={styles.tabs}>
           {CATEGORIES.map((c) => {
@@ -83,7 +84,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
           data={filtered}
           keyExtractor={(i) => i.name}
           keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             const inBuild = owned.indexOf(item.name) !== -1;
             return (
               <Pressable
@@ -93,11 +94,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                   onClose();
                 }}
                 style={[styles.row, { borderBottomColor: palette.line, opacity: inBuild ? 0.45 : 1 }]}>
-                <Image
-                  source={itemImage(item.name)}
-                  style={[{ width: iconSize, height: iconSize, borderRadius: Radii.tile }, pillShadow(palette)]}
-                  contentFit="cover"
-                />
+                <TileImage source={itemImage(item.name)} size={iconSize} palette={palette} tint={index} />
                 <View style={styles.rowText}>
                   <Text style={[styles.name, { color: palette.ink }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: palette.muted }]}>
@@ -124,8 +121,12 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
             onSelect(null);
             onClose();
           }}
-          style={[styles.clear, pillShadow(palette), { backgroundColor: palette.panel }]}>
-          <Text style={[styles.clearText, { color: palette.ink }]}>Empty slot</Text>
+          style={[
+            styles.clear,
+            pillShadow(palette),
+            { backgroundColor: palette.chipTints[1].bg },
+          ]}>
+          <Text style={[styles.clearText, { color: palette.chipTints[1].ink }]}>Empty slot</Text>
         </Pressable>
       </View>
     </Modal>

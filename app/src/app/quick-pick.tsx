@@ -2,12 +2,12 @@
 // want to buy. No item-by-item input.
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
 
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { HeroPicker } from '@/components/hero-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
+import { TileImage } from '@/components/tile-image';
 import { heroImage } from '@/data/images';
 import { scoreQuick, typeDisplayName } from '@/engine/score';
 import { useGuideData } from '@/state/data';
@@ -48,7 +48,11 @@ export default function QuickPickScreen() {
               style={[
                 styles.option,
                 active ? pillShadow(palette) : null,
-                { backgroundColor: active ? accent.color : palette.panel },
+                {
+                  backgroundColor: active ? accent.color : palette.panel2,
+                  borderColor: palette.line,
+                  borderWidth: active ? 0 : 1,
+                },
               ]}>
               <Text style={[styles.optionText, { color: active ? palette.onAccent : palette.ink }]}>{o.label}</Text>
             </Pressable>
@@ -64,14 +68,16 @@ export default function QuickPickScreen() {
         onPress={() => setHeroPickerOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Choose the enemy hero"
-        style={[styles.heroButton, cardShadow(palette), { backgroundColor: palette.panel, borderColor: palette.line }]}>
+        style={[
+          styles.heroButton,
+          cardShadow(palette),
+          // Violet tint with a violet edge, like the enemy side of Full
+          // build — the enemy hero reads at a glance.
+          { backgroundColor: palette.heroSoft, borderColor: palette.hero, borderWidth: 2 },
+        ]}>
         {enemyHero ? (
           <>
-            <Image
-              source={heroImage(enemyHero)}
-              style={[{ width: 52, height: 52, borderRadius: Radii.tile }, pillShadow(palette)]}
-              contentFit="cover"
-            />
+            <TileImage source={heroImage(enemyHero)} size={52} palette={palette} bg="#ffffff" />
             <Text style={[styles.heroName, { color: palette.ink }]}>{enemyHero}</Text>
             <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
           </>
@@ -109,7 +115,6 @@ export default function QuickPickScreen() {
 
 const styles = StyleSheet.create({
   heroButton: {
-    borderWidth: 1,
     borderRadius: Radii.card,
     borderCurve: 'continuous',
     padding: 12,
@@ -120,7 +125,7 @@ const styles = StyleSheet.create({
   },
   heroName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   heroChange: {
     fontSize: 12,
