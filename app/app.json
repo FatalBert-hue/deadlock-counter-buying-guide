@@ -2,24 +2,60 @@
   "expo": {
     "name": "DCB",
     "slug": "counter-buy",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": "Counter-buy guide for Deadlock \u2014 pick the enemy hero and their items, get the counter-buy. Unofficial fan companion, not affiliated with Valve. Working title; final name to be decided.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "counter-buy",
+    "scheme": [
+      "counter-buy",
+      "dcb"
+    ],
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
     },
     "android": {
       "package": "com.counterbuy.app",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#0a0c14",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": [
+            {
+              "scheme": "content",
+              "mimeType": "application/json",
+              "pathPattern": ".*\\.json"
+            },
+            {
+              "scheme": "file",
+              "mimeType": "application/json",
+              "pathPattern": ".*\\.json"
+            }
+          ]
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": [
+            {
+              "scheme": "dcb"
+            }
+          ]
+        }
+      ]
     },
     "web": {
       "output": "server",
