@@ -3,8 +3,9 @@
 // alternates show the first two.
 import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { cardShadow, Radii } from '@/constants/palette';
+import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import { deliverLabel, type RankedPick } from '@/engine/score';
 import { useSettings } from '@/state/settings';
@@ -21,19 +22,18 @@ export function PickCard({
   const { palette, accent, settings } = useSettings();
   const size = settings.iconSize === 'small' ? 48 : settings.iconSize === 'large' ? 72 : 60;
   const reasons = top ? pick.reasons : pick.reasons.slice(0, 2);
-  return (
-    <View
-      style={[
-        styles.card,
-        cardShadow(palette),
-        {
-          backgroundColor: top ? palette.heroSoft : palette.panel,
-          borderColor: top ? accent.color : palette.line,
-          borderWidth: top ? 2 : 1,
-        },
-      ]}>
+  // The top pick is the hero panel: a soft diagonal violet gradient
+  // (hero tint -> panel) like the reference's violet hero panel. Ink
+  // text stays on it at full contrast — a strong violet fill would
+  // have dropped the small text below 4.5:1.
+  const body = (
+    <>
       <View style={styles.head}>
-        <Image source={itemImage(pick.name)} style={{ width: size, height: size, borderRadius: Radii.tile }} contentFit="cover" />
+        <Image
+          source={itemImage(pick.name)}
+          style={[{ width: size, height: size, borderRadius: Radii.tile }, pillShadow(palette)]}
+          contentFit="cover"
+        />
         <View style={styles.headText}>
           <Text style={[styles.name, { color: palette.ink }]}>{pick.name}</Text>
           <Text style={[styles.meta, { color: palette.muted }]}>
@@ -48,6 +48,31 @@ export function PickCard({
           • {r}
         </Text>
       ))}
+    </>
+  );
+  if (top) {
+    return (
+      <LinearGradient
+        colors={[palette.heroSoft, palette.panel]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.card, cardShadow(palette), { borderColor: accent.color, borderWidth: 2 }]}>
+        {body}
+      </LinearGradient>
+    );
+  }
+  return (
+    <View
+      style={[
+        styles.card,
+        cardShadow(palette),
+        {
+          backgroundColor: palette.panel,
+          borderColor: palette.line,
+          borderWidth: 1,
+        },
+      ]}>
+      {body}
     </View>
   );
 }

@@ -1,15 +1,16 @@
 // Patch tab — the patch the data is current to, where the data came from,
 // and a manual data-update check. No long descriptions.
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { cardShadow, Radii } from '@/constants/palette';
+import { AccentButton } from '@/components/accent-button';
 import { ScreenShell } from '@/components/screen-shell';
 import { useGuideData } from '@/state/data';
 import { useSettings } from '@/state/settings';
 
 export default function PatchScreen() {
   const { data, source, checking, lastCheckAt, refresh } = useGuideData();
-  const { palette, accent } = useSettings();
+  const { palette } = useSettings();
 
   const sourceLabel =
     source === 'remote'
@@ -33,16 +34,12 @@ export default function PatchScreen() {
         ) : null}
       </View>
 
-      <Pressable
+      <AccentButton
+        label={checking ? 'Checking…' : 'Check for a data update'}
         onPress={() => void refresh()}
         disabled={checking}
-        style={[styles.button, { backgroundColor: accent.color, opacity: checking ? 0.6 : 1 }]}
-        accessibilityRole="button"
-        accessibilityLabel="Check for a data update">
-        <Text style={[styles.buttonText, { color: palette.onAccent }]}>
-          {checking ? 'Checking…' : 'Check for a data update'}
-        </Text>
-      </Pressable>
+        accessibilityLabel="Check for a data update"
+      />
 
       <View style={[styles.card, cardShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.body, { color: palette.muted }]}>
@@ -72,16 +69,6 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 14,
     lineHeight: 20,
-  },
-  button: {
-    paddingVertical: 12,
-    borderRadius: Radii.tile,
-    borderCurve: 'continuous',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '700',
   },
   body: {
     fontSize: 14,

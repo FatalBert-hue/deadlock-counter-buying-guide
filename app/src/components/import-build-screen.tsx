@@ -7,10 +7,10 @@
 // (unknown hero/item names dropped, never a crash), saved, and the author
 // is shown so the receiver knows who made the build.
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
-import { Radii } from '@/constants/palette';
+import { AccentButton } from '@/components/accent-button';
 import { parseImportPayload } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
 import { useSavedBuilds, type SavedBuild } from '@/state/saved';
@@ -23,7 +23,7 @@ type ImportResult =
 export default function ImportBuildScreen() {
   const { data } = useLocalSearchParams<{ data?: string }>();
   const { addBuild } = useSavedBuilds();
-  const { palette, accent } = useSettings();
+  const { palette } = useSettings();
 
   // The link payload is parsed once, during render — it is pure
   // computation, not an effect. The only effect below saves the parsed
@@ -52,24 +52,12 @@ export default function ImportBuildScreen() {
       {result.status === 'done' ? (
         <View style={styles.body}>
           <Text style={[styles.text, { color: palette.ink }]}>{label}</Text>
-          <Pressable
-            onPress={() => router.push('/builds')}
-            style={[styles.button, { backgroundColor: accent.color }]}
-            accessibilityRole="button"
-            accessibilityLabel="View Builds">
-            <Text style={[styles.buttonText, { color: palette.onAccent }]}>View Builds</Text>
-          </Pressable>
+          <AccentButton label="View Builds" onPress={() => router.push('/builds')} accessibilityLabel="View Builds" />
         </View>
       ) : (
         <View style={styles.body}>
           <Text style={[styles.text, { color: palette.ink }]}>That link is not a DCB build.</Text>
-          <Pressable
-            onPress={() => router.push('/builds')}
-            style={[styles.button, { backgroundColor: accent.color }]}
-            accessibilityRole="button"
-            accessibilityLabel="Go to Builds">
-            <Text style={[styles.buttonText, { color: palette.onAccent }]}>Go to Builds</Text>
-          </Pressable>
+          <AccentButton label="Go to Builds" onPress={() => router.push('/builds')} accessibilityLabel="Go to Builds" />
         </View>
       )}
     </ScreenShell>
@@ -83,15 +71,5 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     lineHeight: 22,
-  },
-  button: {
-    paddingVertical: 12,
-    borderRadius: Radii.tile,
-    borderCurve: 'continuous',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '700',
   },
 });

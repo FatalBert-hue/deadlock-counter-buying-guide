@@ -12,7 +12,8 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { router } from 'expo-router';
 
-import { cardShadow, Radii } from '@/constants/palette';
+import { cardShadow, pillShadow, Radii } from '@/constants/palette';
+import { AccentButton } from '@/components/accent-button';
 import { buildImportLink } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
 import { heroImage, itemImage } from '@/data/images';
@@ -33,7 +34,7 @@ function typeLabel(type: string): string {
 
 export default function BuildsScreen() {
   const { builds, removeBuild, requestLoad, addBuild, currentBuild } = useSavedBuilds();
-  const { palette, accent } = useSettings();
+  const { palette } = useSettings();
   const [message, setMessage] = useState('');
   const [saveName, setSaveName] = useState('');
   const [saveAuthor, setSaveAuthor] = useState('');
@@ -119,7 +120,8 @@ export default function BuildsScreen() {
           onChangeText={setSaveName}
           placeholder="Name this build (optional)"
           placeholderTextColor={palette.faint}
-          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
+          // Soft pill input: pale fill, fully round, no hard border.
+          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
         <TextInput
           value={saveAuthor}
@@ -127,25 +129,13 @@ export default function BuildsScreen() {
           placeholder="Your name (author)"
           placeholderTextColor={palette.faint}
           autoCapitalize="words"
-          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
+          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
-        <Pressable
-          onPress={saveCurrent}
-          style={[styles.saveButton, { backgroundColor: accent.color }]}
-          accessibilityRole="button"
-          accessibilityLabel="Save the current Full build">
-          <Text style={[styles.saveButtonText, { color: palette.onAccent }]}>Save build</Text>
-        </Pressable>
+        <AccentButton label="Save build" onPress={saveCurrent} accessibilityLabel="Save the current Full build" />
         {saveMessage ? <Text style={[styles.saveMessage, { color: palette.muted }]}>{saveMessage}</Text> : null}
       </View>
 
-      <Pressable
-        onPress={() => void importBuild()}
-        style={[styles.button, { backgroundColor: accent.color }]}
-        accessibilityRole="button"
-        accessibilityLabel="Import a build file">
-        <Text style={[styles.buttonText, { color: palette.onAccent }]}>Import a build file</Text>
-      </Pressable>
+      <AccentButton label="Import a build file" onPress={() => void importBuild()} accessibilityLabel="Import a build file" />
       {message ? <Text style={[styles.message, { color: palette.muted }]}>{message}</Text> : null}
 
       {!builds.length ? (
@@ -167,7 +157,7 @@ export default function BuildsScreen() {
             <View style={styles.matchupHero}>
               <Image
                 source={b.enemyHero ? heroImage(b.enemyHero) : undefined}
-                style={styles.heroIcon}
+                style={[styles.heroIcon, pillShadow(palette)]}
                 contentFit="cover"
               />
               <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
@@ -178,7 +168,7 @@ export default function BuildsScreen() {
             <View style={styles.matchupHero}>
               <Image
                 source={b.youHero ? heroImage(b.youHero) : undefined}
-                style={styles.heroIcon}
+                style={[styles.heroIcon, pillShadow(palette)]}
                 contentFit="cover"
               />
               <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
@@ -212,30 +202,30 @@ export default function BuildsScreen() {
           )}
           <Text style={[styles.meta, { color: palette.muted }]}>{new Date(b.savedAt).toLocaleDateString()}</Text>
           <View style={styles.actions}>
-            <Pressable
+            <AccentButton
+              label="Load"
               onPress={() => loadBuild(b)}
-              style={[styles.action, { backgroundColor: accent.color }]}
-              accessibilityRole="button"
-              accessibilityLabel={`Load ${b.name} into Full build`}>
-              <Text style={[styles.actionText, { color: palette.onAccent }]}>Load</Text>
-            </Pressable>
+              accessibilityLabel={`Load ${b.name} into Full build`}
+              compact
+              style={styles.actionFlex}
+            />
             <Pressable
               onPress={() => void shareBuild(b)}
-              style={[styles.action, { backgroundColor: palette.panel2 }]}
+              style={[styles.action, pillShadow(palette), { backgroundColor: palette.panel2 }]}
               accessibilityRole="button"
               accessibilityLabel={`Download ${b.name} as a file`}>
               <Text style={[styles.actionText, { color: palette.ink }]}>Download</Text>
             </Pressable>
             <Pressable
               onPress={() => void shareBuildAsLink(b)}
-              style={[styles.action, { backgroundColor: palette.panel2 }]}
+              style={[styles.action, pillShadow(palette), { backgroundColor: palette.panel2 }]}
               accessibilityRole="button"
               accessibilityLabel={`Share ${b.name} as a link`}>
               <Text style={[styles.actionText, { color: palette.ink }]}>Share</Text>
             </Pressable>
             <Pressable
               onPress={() => removeBuild(b.id)}
-              style={[styles.action, { backgroundColor: palette.panel2 }]}
+              style={[styles.action, pillShadow(palette), { backgroundColor: palette.panel2 }]}
               accessibilityRole="button"
               accessibilityLabel={`Delete ${b.name}`}>
               <Text style={[styles.actionText, { color: palette.ink }]}>Delete</Text>
@@ -259,35 +249,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   saveInput: {
-    borderWidth: 1,
-    borderRadius: Radii.tile,
+    borderRadius: 999,
     borderCurve: 'continuous',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
   },
-  saveButton: {
-    paddingVertical: 12,
-    borderRadius: Radii.tile,
-    borderCurve: 'continuous',
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
   saveMessage: {
     fontSize: 13,
-  },
-  button: {
-    paddingVertical: 12,
-    borderRadius: Radii.tile,
-    borderCurve: 'continuous',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '700',
   },
   message: {
     fontSize: 14,
@@ -349,17 +318,20 @@ const styles = StyleSheet.create({
   itemIcon: {
     width: 26,
     height: 26,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   actions: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 8,
   },
+  actionFlex: {
+    flex: 1,
+  },
   action: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: Radii.tile,
+    borderRadius: 999,
     borderCurve: 'continuous',
     alignItems: 'center',
   },

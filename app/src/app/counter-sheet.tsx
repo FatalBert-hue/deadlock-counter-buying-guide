@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { Image } from 'expo-image';
 
-import { cardShadow, Radii } from '@/constants/palette';
+import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { HeroPicker } from '@/components/hero-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
@@ -30,7 +30,11 @@ export default function CounterSheetScreen() {
         style={[styles.heroButton, cardShadow(palette), { backgroundColor: palette.panel, borderColor: palette.line }]}>
         {enemyHero ? (
           <>
-            <Image source={heroImage(enemyHero)} style={{ width: 52, height: 52, borderRadius: Radii.tile }} contentFit="cover" />
+            <Image
+              source={heroImage(enemyHero)}
+              style={[{ width: 52, height: 52, borderRadius: Radii.tile }, pillShadow(palette)]}
+              contentFit="cover"
+            />
             <Text style={[styles.heroName, { color: palette.ink }]}>{enemyHero}</Text>
             <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
           </>

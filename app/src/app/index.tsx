@@ -5,7 +5,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
 
-import { cardShadow, Radii } from '@/constants/palette';
+import { cardShadow, pillShadow, Radii } from '@/constants/palette';
+import { AccentButton } from '@/components/accent-button';
 import { HeroPicker } from '@/components/hero-picker';
 import { ItemPicker } from '@/components/item-picker';
 import { Results } from '@/components/results';
@@ -115,7 +116,11 @@ export default function FullBuildScreen() {
       style={[styles.heroButton, cardShadow(palette), { backgroundColor: palette.panel, borderColor: palette.line }]}>
       {hero ? (
         <>
-          <Image source={heroImage(hero)} style={{ width: 52, height: 52, borderRadius: Radii.tile }} contentFit="cover" />
+          <Image
+            source={heroImage(hero)}
+            style={[{ width: 52, height: 52, borderRadius: Radii.tile }, pillShadow(palette)]}
+            contentFit="cover"
+          />
           <Text style={[styles.heroName, { color: palette.ink }]}>{hero}</Text>
           <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
         </>
@@ -164,7 +169,11 @@ export default function FullBuildScreen() {
                 <Pressable
                   key={b}
                   onPress={() => setBudget(b)}
-                  style={[styles.budget, { backgroundColor: active ? accent.color : palette.panel }]}>
+                  style={[
+                    styles.budget,
+                    active ? pillShadow(palette) : null,
+                    { backgroundColor: active ? accent.color : palette.panel },
+                  ]}>
                   <Text style={[styles.budgetText, { color: active ? palette.onAccent : palette.ink }]}>
                     {b === 0 ? 'Any' : b.toLocaleString('en-US')}
                   </Text>
@@ -187,7 +196,8 @@ export default function FullBuildScreen() {
           onChangeText={setSaveName}
           placeholder="Name this build (optional)"
           placeholderTextColor={palette.faint}
-          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
+          // Soft pill input: pale fill, fully round, no hard border.
+          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
         <TextInput
           value={saveAuthor}
@@ -195,15 +205,9 @@ export default function FullBuildScreen() {
           placeholder="Your name (author)"
           placeholderTextColor={palette.faint}
           autoCapitalize="words"
-          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
+          style={[styles.saveInput, { color: palette.ink, backgroundColor: palette.panel2 }]}
         />
-        <Pressable
-          onPress={saveCurrent}
-          style={[styles.saveButton, { backgroundColor: accent.color }]}
-          accessibilityRole="button"
-          accessibilityLabel="Save this build">
-          <Text style={[styles.saveButtonText, { color: palette.onAccent }]}>Save build</Text>
-        </Pressable>
+        <AccentButton label="Save build" onPress={saveCurrent} accessibilityLabel="Save this build" />
         {saveMessage ? <Text style={[styles.saveMessage, { color: palette.muted }]}>{saveMessage}</Text> : null}
       </View>
 
@@ -289,22 +293,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   saveInput: {
-    borderWidth: 1,
-    borderRadius: Radii.tile,
+    borderRadius: 999,
     borderCurve: 'continuous',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-  },
-  saveButton: {
-    paddingVertical: 12,
-    borderRadius: Radii.tile,
-    borderCurve: 'continuous',
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
   },
   saveMessage: {
     fontSize: 13,

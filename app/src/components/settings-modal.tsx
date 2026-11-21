@@ -2,7 +2,7 @@
 // icon size, show/hide souls budget. The accent is for the UI border only.
 import { Modal, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { ACCENTS, ICON_SIZES, type IconSize, type ThemeMode } from '@/constants/palette';
+import { ACCENTS, ICON_SIZES, pillShadow, type IconSize, type ThemeMode } from '@/constants/palette';
 import { useSettings } from '@/state/settings';
 
 const THEME_MODES: { id: ThemeMode; label: string }[] = [
@@ -37,7 +37,7 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
               <Pressable
                 key={m.id}
                 onPress={() => update({ themeMode: m.id })}
-                style={[styles.option, { backgroundColor: active ? accent.color : palette.panel }]}>
+                style={[styles.option, active ? pillShadow(palette) : null, { backgroundColor: active ? accent.color : palette.panel }]}>
                 <Text style={[styles.optionText, { color: active ? palette.onAccent : palette.ink }]}>{m.label}</Text>
               </Pressable>
             );
@@ -56,6 +56,7 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
                 accessibilityLabel={`${a.label} border`}
                 style={[
                   styles.swatch,
+                  pillShadow(palette),
                   { backgroundColor: a.color, borderColor: active ? palette.ink : 'transparent', borderWidth: active ? 3 : 1 },
                 ]}
               />
@@ -72,7 +73,7 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
               <Pressable
                 key={o.id}
                 onPress={() => update({ iconSize: o.id })}
-                style={[styles.option, { backgroundColor: active ? accent.color : palette.panel }]}>
+                style={[styles.option, active ? pillShadow(palette) : null, { backgroundColor: active ? accent.color : palette.panel }]}>
                 <Text style={[styles.optionText, { color: active ? palette.onAccent : palette.ink }]}>
                   {o.label} · {ICON_SIZES[o.id]}px
                 </Text>

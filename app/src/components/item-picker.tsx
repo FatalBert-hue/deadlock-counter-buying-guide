@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 
-import { Radii } from '@/constants/palette';
+import { pillShadow, Radii } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import type { Item } from '@/data';
 import { useFavorites } from '@/state/favorites';
@@ -58,7 +58,9 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
           onChangeText={setQuery}
           placeholder="Search items"
           placeholderTextColor={palette.faint}
-          style={[styles.search, { backgroundColor: palette.panel, color: palette.ink, borderColor: palette.line }]}
+          // Soft pill search like the reference's search bar: pale fill,
+          // fully round, no hard border.
+          style={[styles.search, { backgroundColor: palette.panel2, color: palette.ink }]}
         />
         <View style={styles.tabs}>
           {CATEGORIES.map((c) => {
@@ -69,6 +71,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                 onPress={() => setCategory(c)}
                 style={[
                   styles.tab,
+                  active ? pillShadow(palette) : null,
                   { backgroundColor: active ? accent.color : palette.panel, borderColor: palette.line },
                 ]}>
                 <Text style={[styles.tabText, { color: active ? palette.onAccent : palette.ink }]}>{c}</Text>
@@ -90,7 +93,11 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                   onClose();
                 }}
                 style={[styles.row, { borderBottomColor: palette.line, opacity: inBuild ? 0.45 : 1 }]}>
-                <Image source={itemImage(item.name)} style={{ width: iconSize, height: iconSize, borderRadius: 12 }} contentFit="cover" />
+                <Image
+                  source={itemImage(item.name)}
+                  style={[{ width: iconSize, height: iconSize, borderRadius: Radii.tile }, pillShadow(palette)]}
+                  contentFit="cover"
+                />
                 <View style={styles.rowText}>
                   <Text style={[styles.name, { color: palette.ink }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: palette.muted }]}>
@@ -117,7 +124,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
             onSelect(null);
             onClose();
           }}
-          style={[styles.clear, { backgroundColor: palette.panel }]}>
+          style={[styles.clear, pillShadow(palette), { backgroundColor: palette.panel }]}>
           <Text style={[styles.clearText, { color: palette.ink }]}>Empty slot</Text>
         </Pressable>
       </View>
@@ -152,9 +159,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: Radii.tile,
+    borderRadius: 999,
     borderCurve: 'continuous',
-    borderWidth: 1,
     fontSize: 16,
   },
   tabs: {
@@ -203,7 +209,7 @@ const styles = StyleSheet.create({
   clear: {
     margin: 12,
     paddingVertical: 12,
-    borderRadius: Radii.tile,
+    borderRadius: 999,
     borderCurve: 'continuous',
     alignItems: 'center',
   },

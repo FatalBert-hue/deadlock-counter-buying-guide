@@ -2,7 +2,7 @@
 // settings button. Short and quiet — no long descriptions.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { cardShadow, Radii } from '@/constants/palette';
+import { pillShadow } from '@/constants/palette';
 import { useDrawer } from '@/state/drawer';
 import { useSettings } from '@/state/settings';
 
@@ -15,7 +15,7 @@ export function ScreenHeader({ title, onOpenSettings }: { title: string; onOpenS
         onPress={openDrawer}
         accessibilityRole="button"
         accessibilityLabel="Open menu"
-        style={[styles.iconButton, cardShadow(palette), { backgroundColor: palette.panel }]}>
+        style={[styles.iconButton, pillShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.icon, { color: palette.ink }]}>☰</Text>
       </Pressable>
       <Text style={[styles.title, { color: palette.ink }]} numberOfLines={1}>
@@ -25,7 +25,7 @@ export function ScreenHeader({ title, onOpenSettings }: { title: string; onOpenS
         onPress={onOpenSettings}
         accessibilityRole="button"
         accessibilityLabel="Open settings"
-        style={[styles.settingsButton, cardShadow(palette), { backgroundColor: palette.panel }]}>
+        style={[styles.settingsButton, pillShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.settingsText, { color: palette.ink }]}>Settings</Text>
       </Pressable>
     </View>
@@ -44,7 +44,8 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 40,
     height: 40,
-    borderRadius: Radii.tile,
+    // Circular, like the reference's round icon buttons.
+    borderRadius: 999,
     borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',
@@ -61,7 +62,8 @@ const styles = StyleSheet.create({
   settingsButton: {
     height: 40,
     paddingHorizontal: 12,
-    borderRadius: Radii.tile,
+    // Fully rounded pill, like the reference's chunky pill buttons.
+    borderRadius: 999,
     borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',

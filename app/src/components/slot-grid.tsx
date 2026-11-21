@@ -3,7 +3,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
-import { Radii } from '@/constants/palette';
+import { Radii, pillShadow } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import { MAX_SLOTS } from '@/engine/score';
 import { useSettings } from '@/state/settings';
@@ -26,7 +26,18 @@ export function SlotGrid({ slots, onPickSlot }: SlotGridProps) {
             onPress={() => onPickSlot(i)}
             accessibilityRole="button"
             accessibilityLabel={name ? `Slot ${i + 1}: ${name}` : `Slot ${i + 1}: empty`}
-            style={[styles.slot, { backgroundColor: palette.panel, borderColor: palette.line, width: size + 16, height: size + 16 }]}>
+            style={[
+              styles.slot,
+              pillShadow(palette),
+              {
+                // Empty slots sit on the soft violet tint, like the
+                // reference's tinted icon tiles; filled slots stay panel.
+                backgroundColor: name ? palette.panel : palette.heroSoft,
+                borderColor: palette.line,
+                width: size + 16,
+                height: size + 16,
+              },
+            ]}>
             {name ? (
               <Image source={itemImage(name)} style={{ width: size, height: size, borderRadius: 12 }} contentFit="cover" />
             ) : (

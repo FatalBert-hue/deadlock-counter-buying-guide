@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { usePathname, useRouter, type Href } from 'expo-router';
 
-import { Radii } from '@/constants/palette';
+import { pillShadow, Radii } from '@/constants/palette';
 import { useDrawer } from '@/state/drawer';
 import { useSettings } from '@/state/settings';
 
@@ -92,7 +92,14 @@ export function AppDrawer() {
                 accessibilityRole="button"
                 accessibilityLabel={item.label}
                 accessibilityState={{ selected: isActive }}
-                style={[styles.item, { backgroundColor: isActive ? palette.panel : 'transparent' }]}>
+                style={[
+                  styles.item,
+                  // The active destination is a soft violet pill, like the
+                  // reference's raised circular action — lifted, tinted,
+                  // fully round. Inactive items stay flat and quiet.
+                  isActive ? pillShadow(palette) : null,
+                  { backgroundColor: isActive ? palette.heroSoft : 'transparent' },
+                ]}>
                 <Image
                   source={item.icon}
                   style={[styles.itemIcon, { tintColor: isActive ? accent.color : palette.ink }]}
@@ -152,7 +159,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: Radii.tile,
+    borderRadius: 999,
     borderCurve: 'continuous',
   },
   itemIcon: {

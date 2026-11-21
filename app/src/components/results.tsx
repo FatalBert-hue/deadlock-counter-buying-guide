@@ -2,7 +2,7 @@
 // list, and the notes (anti-heal owned, Healbane both sides, stealth gap).
 import { StyleSheet, Text, View } from 'react-native';
 
-import { cardShadow, Radii } from '@/constants/palette';
+import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import type { ScoreResult } from '@/engine/score';
 import { PickCard } from '@/components/pick-card';
 import { useSettings } from '@/state/settings';
@@ -29,11 +29,16 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
     <View style={styles.list}>
       {result.threatLabels.length ? (
         <View style={styles.chips}>
-          {result.threatLabels.map((t) => (
-            <Text key={t} style={[styles.chip, { backgroundColor: palette.chip, color: palette.muted }]}>
-              {t}
-            </Text>
-          ))}
+          {result.threatLabels.map((t, i) => {
+            // Chunky coloured pills like the reference's teal / pink /
+            // orange chips — pastel tints cycling, bold short labels.
+            const tint = palette.chipTints[i % palette.chipTints.length];
+            return (
+              <Text key={t} style={[styles.chip, pillShadow(palette), { backgroundColor: tint.bg, color: tint.ink }]}>
+                {t}
+              </Text>
+            );
+          })}
         </View>
       ) : null}
       {result.picks.map((p, i) => (
@@ -73,11 +78,10 @@ const styles = StyleSheet.create({
   },
   chip: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 999,
-    overflow: 'hidden',
   },
   noteBox: {
     borderRadius: Radii.card,
