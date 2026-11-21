@@ -1,7 +1,7 @@
 // Quick pick — enemy hero + the item type they're buying + the type you
 // want to buy. No item-by-item input.
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
 import { HeroPicker } from '@/components/hero-picker';
@@ -10,7 +10,6 @@ import { ScreenShell } from '@/components/screen-shell';
 import { heroImage } from '@/data/images';
 import { scoreQuick, typeDisplayName } from '@/engine/score';
 import { useGuideData } from '@/state/data';
-import { useSavedBuilds } from '@/state/saved';
 import { useSettings } from '@/state/settings';
 
 type ItemType = '' | 'Weapon' | 'Vitality' | 'Spirit';
@@ -25,40 +24,15 @@ const TYPE_OPTIONS: { id: ItemType; label: string }[] = [
 export default function QuickPickScreen() {
   const { data } = useGuideData();
   const { palette, accent } = useSettings();
-  const { addBuild } = useSavedBuilds();
   const [enemyHero, setEnemyHero] = useState<string | null>(null);
   const [enemyType, setEnemyType] = useState<ItemType>('');
   const [youType, setYouType] = useState<ItemType>('');
   const [heroPickerOpen, setHeroPickerOpen] = useState(false);
-  const [saveName, setSaveName] = useState('');
-  const [saveAuthor, setSaveAuthor] = useState('');
-  const [saveMessage, setSaveMessage] = useState('');
 
   const result = useMemo(
     () => scoreQuick(data, { enemyHero, enemyType, youType }),
     [data, enemyHero, enemyType, youType],
   );
-
-  // Quick pick has no item-by-item lists or "you" hero — the build
-  // records the matchup plus the two item-type choices.
-  const saveCurrent = () => {
-    if (!enemyHero) {
-      setSaveMessage('Pick an enemy hero first.');
-      return;
-    }
-    addBuild({
-      name: saveName.trim() || `vs ${enemyHero}`,
-      author: saveAuthor,
-      enemyHero,
-      enemyItems: [],
-      youHero: null,
-      youItems: [],
-      quickPick: { enemyType, youType },
-    });
-    setSaveName('');
-    setSaveAuthor('');
-    setSaveMessage('Saved. Find it in Builds.');
-  };
 
   const typeRow = (label: string, value: ItemType, onChange: (t: ItemType) => void) => (
     <View>
@@ -112,32 +86,6 @@ export default function QuickPickScreen() {
           No strong {typeDisplayName(youType)} counter for this matchup — the pick above is the best answer overall.
         </Text>
       ) : null}
-
-      <View style={[styles.saveBox, { backgroundColor: palette.panel }]}>
-        <TextInput
-          value={saveName}
-          onChangeText={setSaveName}
-          placeholder="Name this build (optional)"
-          placeholderTextColor={palette.faint}
-          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
-        />
-        <TextInput
-          value={saveAuthor}
-          onChangeText={setSaveAuthor}
-          placeholder="Your name (author)"
-          placeholderTextColor={palette.faint}
-          autoCapitalize="words"
-          style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
-        />
-        <Pressable
-          onPress={saveCurrent}
-          style={[styles.saveButton, { backgroundColor: accent.color }]}
-          accessibilityRole="button"
-          accessibilityLabel="Save this quick pick">
-          <Text style={[styles.saveButtonText, { color: palette.bg }]}>Save build</Text>
-        </Pressable>
-        {saveMessage ? <Text style={[styles.saveMessage, { color: palette.muted }]}>{saveMessage}</Text> : null}
-      </View>
 
       <HeroPicker
         visible={heroPickerOpen}
@@ -197,29 +145,5 @@ const styles = StyleSheet.create({
   note: {
     fontSize: 14,
     lineHeight: 20,
-  },
-  saveBox: {
-    borderRadius: 12,
-    padding: 12,
-    gap: 8,
-  },
-  saveInput: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-  },
-  saveButton: {
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  saveMessage: {
-    fontSize: 13,
   },
 });
