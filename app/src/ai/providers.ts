@@ -87,39 +87,70 @@ export function friendlyError(status: number | null, context: string): Error {
     — which is exactly what happened to Mikel on 0.1.11. */
 export const REQUEST_TIMEOUT_MS = 30_000;
 
+/** Retry policy for transient provider errors (Google's documented
+    fix for 503s: retry with exponential backoff). Only responses that
+    actually came back with a transient status are retried — 429 (rate
+    limit) and 5xx (e.g. Gemini 503 "model is currently experiencing
+    high demand"). Client errors (400/401/403/404 — bad key, wrong
+    model) fail immediately, because retrying them can never help.
+    Timeouts and network failures are NOT retried either: a request
+    that already waited the full 30s should not make the user wait
+    minutes. Delays are ~1s, ~2s, ~4s with a little jitter, so a
+    503 that clears quickly still feels fast. */
+export const MAX_RETRIES = 3;
+const RETRY_BASE_DELAY_MS = 1_000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function retryDelayMs(retryIndex: number): number {
+  // retryIndex 0 -> ~1s, 1 -> ~2s, 2 -> ~4s, plus up to 250ms jitter.
+  return RETRY_BASE_DELAY_MS * 2 ** retryIndex + Math.random() * 250;
+}
+
 /** Run a fetch and turn HTTP errors into friendly errors. Throws the
     friendly error; returns the parsed JSON body on success. The request
-    is aborted after REQUEST_TIMEOUT_MS so this always settles. */
+    is aborted after REQUEST_TIMEOUT_MS so this always settles, and
+    transient 429/5xx responses are retried with backoff (see above).
+    When retries are exhausted the error is exactly the same friendly
+    error a single attempt would have produced, status included. */
 export async function postJson(
   url: string,
   headers: Record<string, string>,
   body: unknown,
   context: string,
 ): Promise<Record<string, any>> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-  } catch (e) {
-    if (e instanceof Error && e.name === 'AbortError') {
-      throw new Error('That took too long — check your connection and try again.');
+  for (let attempt = 0; ; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') {
+        throw new Error('That took too long — check your connection and try again.');
+      }
+      throw friendlyError(null, context);
+    } finally {
+      clearTimeout(timer);
     }
-    throw friendlyError(null, context);
-  } finally {
-    clearTimeout(timer);
-  }
-  if (!res.ok) {
-    throw friendlyError(res.status, context);
-  }
-  try {
-    return (await res.json()) as Record<string, any>;
-  } catch {
-    throw new Error(`Got a garbled reply from ${context}. Try again.`);
+    if (res.ok) {
+      try {
+        return (await res.json()) as Record<string, any>;
+      } catch {
+        throw new Error(`Got a garbled reply from ${context}. Try again.`);
+      }
+    }
+    const transient = res.status === 429 || res.status >= 500;
+    if (!transient || attempt >= MAX_RETRIES) {
+      throw friendlyError(res.status, context);
+    }
+    await sleep(retryDelayMs(attempt));
   }
 }
