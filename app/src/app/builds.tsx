@@ -1,5 +1,5 @@
 // Builds — the hub for saving, sharing, and importing builds.
-// Everything about a build lives here: the saved list, Share as a .json
+// Everything about a build lives here: the saved list, Download as a .json
 // file, Share as an https App Link (plain text, so it goes through phone
 // Messages), Import a .json file, and a save box for the current Full
 // build draft (name + author). No accounts, no logins, nothing uploaded
@@ -222,15 +222,15 @@ export default function BuildsScreen() {
               onPress={() => void shareBuild(b)}
               style={[styles.action, { backgroundColor: palette.panel2 }]}
               accessibilityRole="button"
-              accessibilityLabel={`Share ${b.name} as a file`}>
-              <Text style={[styles.actionText, { color: palette.ink }]}>Share</Text>
+              accessibilityLabel={`Download ${b.name} as a file`}>
+              <Text style={[styles.actionText, { color: palette.ink }]}>Download</Text>
             </Pressable>
             <Pressable
               onPress={() => void shareBuildAsLink(b)}
               style={[styles.action, { backgroundColor: palette.panel2 }]}
               accessibilityRole="button"
               accessibilityLabel={`Share ${b.name} as a link`}>
-              <Text style={[styles.actionText, { color: palette.ink }]}>Link</Text>
+              <Text style={[styles.actionText, { color: palette.ink }]}>Share</Text>
             </Pressable>
             <Pressable
               onPress={() => removeBuild(b.id)}
