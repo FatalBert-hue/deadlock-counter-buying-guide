@@ -1,6 +1,6 @@
 // Full build — pick both heroes and their 12 item slots, get the counter buy.
 // State lives here; saved builds load in through the load request on focus.
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
@@ -26,7 +26,7 @@ function emptySlots(): (string | null)[] {
 export default function FullBuildScreen() {
   const { data } = useGuideData();
   const { palette, accent, settings } = useSettings();
-  const { addBuild, loadRequest, consumeLoadRequest, lastAuthor } = useSavedBuilds();
+  const { addBuild, loadRequest, consumeLoadRequest, setCurrentBuild } = useSavedBuilds();
   const [enemyHero, setEnemyHero] = useState<string | null>(null);
   const [youHero, setYouHero] = useState<string | null>(null);
   const [enemySlots, setEnemySlots] = useState<(string | null)[]>(emptySlots());
@@ -36,12 +36,7 @@ export default function FullBuildScreen() {
   const [itemPickerFor, setItemPickerFor] = useState<{ side: 'enemy' | 'you'; index: number } | null>(null);
   const [saveName, setSaveName] = useState('');
   const [saveAuthor, setSaveAuthor] = useState('');
-  const [authorTouched, setAuthorTouched] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-
-  // Author input shows the last-used author until the user edits it
-  // (first time: "Mikel").
-  const authorValue = authorTouched ? saveAuthor : lastAuthor;
 
   useFocusEffect(
     useCallback(() => {
@@ -66,6 +61,11 @@ export default function FullBuildScreen() {
 
   const enemyItems = useMemo(() => enemySlots.filter((n): n is string => !!n), [enemySlots]);
   const youItems = useMemo(() => youSlots.filter((n): n is string => !!n), [youSlots]);
+
+  // Publish the current draft so the Builds tab can save it too.
+  useEffect(() => {
+    setCurrentBuild({ enemyHero, enemyItems, youHero, youItems });
+  }, [enemyHero, enemyItems, youHero, youItems, setCurrentBuild]);
   const result = useMemo(
     () =>
       scoreFull(data, {
@@ -95,7 +95,7 @@ export default function FullBuildScreen() {
     }
     addBuild({
       name: saveName.trim() || `vs ${enemyHero}`,
-      author: authorValue.trim() || lastAuthor,
+      author: saveAuthor,
       enemyHero,
       enemyItems,
       youHero,
@@ -103,8 +103,7 @@ export default function FullBuildScreen() {
     });
     setSaveName('');
     setSaveAuthor('');
-    setAuthorTouched(false);
-    setSaveMessage('Saved. Find it on the Saved tab.');
+    setSaveMessage('Saved. Find it in Builds.');
   };
 
   const heroButton = (side: 'enemy' | 'you', hero: string | null, label: string) => (
@@ -190,11 +189,8 @@ export default function FullBuildScreen() {
           style={[styles.saveInput, { color: palette.ink, borderColor: palette.line }]}
         />
         <TextInput
-          value={authorValue}
-          onChangeText={(text) => {
-            setAuthorTouched(true);
-            setSaveAuthor(text);
-          }}
+          value={saveAuthor}
+          onChangeText={setSaveAuthor}
           placeholder="Your name (author)"
           placeholderTextColor={palette.faint}
           autoCapitalize="words"
