@@ -27,6 +27,11 @@ interface AIContextValue {
   keyConfigured: boolean;
   /** Has the stored config/key finished loading? */
   ready: boolean;
+  /** The model that answered the most recent successful reply (for
+      example a Gemini fallback model). Null until the first reply —
+      the chat screen falls back to the configured model. Reset
+      whenever the provider or model setting changes. */
+  lastUsedModel: string | null;
   saveConfig: (patch: Partial<AIConfig>) => void;
   /** Store a new key (SecureStore only). Empty string removes it. */
   saveKey: (key: string) => Promise<void>;
@@ -43,6 +48,7 @@ const AIContext = createContext<AIContextValue>({
   config: DEFAULT_AI_CONFIG,
   keyConfigured: false,
   ready: false,
+  lastUsedModel: null,
   saveConfig: () => {},
   saveKey: async () => {},
   disconnect: async () => {},
@@ -52,7 +58,7 @@ const AIContext = createContext<AIContextValue>({
   },
 });
 
-function resolveModel(config: AIConfig): string {
+export function resolveModel(config: AIConfig): string {
   const trimmed = config.model.trim();
   return trimmed || providerMeta(config.provider).defaultModel;
 }
@@ -61,6 +67,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG);
   const [keyConfigured, setKeyConfigured] = useState(false);
   const [ready, setReady] = useState(false);
+  const [lastUsedModel, setLastUsedModel] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -84,6 +91,11 @@ export function AIProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const saveConfig = useCallback((patch: Partial<AIConfig>) => {
+    // A new provider/model means the last reply's model is stale —
+    // the indicator falls back to the configured model until the next reply.
+    if (patch.provider !== undefined || patch.model !== undefined) {
+      setLastUsedModel(null);
+    }
     setConfig((prev) => {
       const next = { ...prev, ...patch };
       AsyncStorage.setItem(CONFIG_KEY, JSON.stringify(next)).catch(() => {});
@@ -116,16 +128,20 @@ export function AIProvider({ children }: { children: ReactNode }) {
     const model = resolveModel(testConfig);
     if (!model) return { ok: false, message: 'Add a model name first.' };
     try {
-      const reply = await sendChatMessage({
+      const result = await sendChatMessage({
         config: testConfig,
         apiKey: trimmedKey,
         model,
         systemPrompt: buildTestSystemPrompt(),
         messages: [{ role: 'user', text: 'Reply with just the word OK' }],
       });
-      return reply.trim().toUpperCase().startsWith('OK')
-        ? { ok: true, message: `Connected — ${providerMeta(testConfig.provider).label} answered OK.` }
-        : { ok: true, message: `Connected — ${providerMeta(testConfig.provider).label} answered, but not with OK. It should still work for chat.` };
+      setLastUsedModel(result.model);
+      // Name the model that actually answered, so a Gemini fallback is visible.
+      const via = result.model !== model ? ` via ${result.model}` : '';
+      const label = providerMeta(testConfig.provider).label;
+      return result.text.trim().toUpperCase().startsWith('OK')
+        ? { ok: true, message: `Connected${via} — ${label} answered OK.` }
+        : { ok: true, message: `Connected${via} — ${label} answered, but not with OK. It should still work for chat.` };
     } catch (e) {
       return { ok: false, message: e instanceof Error ? e.message : 'Connection test failed.' };
     }
@@ -144,20 +160,22 @@ export function AIProvider({ children }: { children: ReactNode }) {
       if (!model) {
         throw new Error('No model set — add one in Settings first.');
       }
-      return sendChatMessage({
+      const result = await sendChatMessage({
         config,
         apiKey: key,
         model,
         systemPrompt: buildSystemPrompt(),
         messages,
       });
+      setLastUsedModel(result.model);
+      return result.text;
     },
     [config],
   );
 
   const value = useMemo(
-    () => ({ config, keyConfigured, ready, saveConfig, saveKey, disconnect, testConnection, sendChat }),
-    [config, keyConfigured, ready, saveConfig, saveKey, disconnect, testConnection, sendChat],
+    () => ({ config, keyConfigured, ready, lastUsedModel, saveConfig, saveKey, disconnect, testConnection, sendChat }),
+    [config, keyConfigured, ready, lastUsedModel, saveConfig, saveKey, disconnect, testConnection, sendChat],
   );
   return <AIContext.Provider value={value}>{children}</AIContext.Provider>;
 }

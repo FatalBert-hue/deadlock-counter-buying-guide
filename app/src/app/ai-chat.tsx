@@ -24,7 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccentButton } from '@/components/accent-button';
 import { ScreenHeader } from '@/components/screen-header';
 import { cardShadow, lighten, pillShadow, Radii } from '@/constants/palette';
-import { useAI } from '@/state/ai';
+import { useAI, resolveModel } from '@/state/ai';
 import { useSettings } from '@/state/settings';
 import { useSettingsModal } from '@/state/settings-modal';
 import type { ChatMessage, StoredChatMessage } from '@/ai/types';
@@ -46,7 +46,7 @@ function toChatMessages(stored: StoredChatMessage[]): ChatMessage[] {
 
 export default function AIChatScreen() {
   const { palette, accent } = useSettings();
-  const { keyConfigured, ready, sendChat } = useAI();
+  const { config, keyConfigured, ready, lastUsedModel, sendChat } = useAI();
   // Settings opens from the shared root modal (see _layout.tsx) —
   // the "Open Settings" button here and the drawer's Settings item
   // both use this same hook.
@@ -109,6 +109,10 @@ export default function AIChatScreen() {
   }, [persist]);
 
   const configured = ready && keyConfigured;
+  // Which model is actually answering: the one from the latest reply
+  // (a Gemini fallback when the primary was overloaded), or the
+  // configured model before anything has been sent.
+  const answeringModel = lastUsedModel ?? resolveModel(config);
 
   return (
     <View style={[styles.root, { backgroundColor: palette.bg }]}>
@@ -195,6 +199,7 @@ export default function AIChatScreen() {
                   </View>
                 </View>
               ) : null}
+              <Text style={[styles.modelNote, { color: palette.faint }]}>Answering with {answeringModel}</Text>
               <View style={[styles.inputRow, { backgroundColor: palette.bg }]}>
                 <TextInput
                   value={input}
@@ -295,6 +300,12 @@ const styles = StyleSheet.create({
   bubbleText: {
     fontSize: 15,
     lineHeight: 21,
+  },
+  modelNote: {
+    fontSize: 12,
+    textAlign: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 2,
   },
   inputRow: {
     flexDirection: 'row',

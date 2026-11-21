@@ -5,9 +5,9 @@
 // text blocks in content[]. `anthropic-dangerous-direct-browser-access`
 // is the documented header for direct client-side calls.
 // max_tokens is required by this API.
-import { postJson, type SendChatOptions } from '../providers';
+import { postJson, type SendChatOptions, type SendChatResult } from '../providers';
 
-export async function sendAnthropic({ apiKey, model, systemPrompt, messages }: SendChatOptions): Promise<string> {
+export async function sendAnthropic({ apiKey, model, systemPrompt, messages }: SendChatOptions): Promise<SendChatResult> {
   const json = await postJson(
     'https://api.anthropic.com/v1/messages',
     {
@@ -30,7 +30,7 @@ export async function sendAnthropic({ apiKey, model, systemPrompt, messages }: S
       .map((b: any) => b.text)
       .join('')
       .trim();
-    if (text) return text;
+    if (text) return { text, model };
   }
   throw new Error('Got an empty reply from Claude. Try again.');
 }

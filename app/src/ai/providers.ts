@@ -30,7 +30,28 @@ export interface SendChatOptions {
   messages: ChatMessage[];
 }
 
-export async function sendChatMessage(options: SendChatOptions): Promise<string> {
+/** An HTTP failure from a provider, carrying the status so callers
+    can decide what to do next (e.g. Gemini falls back to a quieter
+    model on 429/5xx, but never on 400/401/403/404). The message is
+    the same plain-language friendly error the user sees. */
+export class ProviderHttpError extends Error {
+  status: number;
+  constructor(status: number, context: string) {
+    super(friendlyError(status, context).message);
+    this.name = 'ProviderHttpError';
+    this.status = status;
+  }
+}
+
+/** What a provider send returns: the reply text plus the model that
+    actually answered (Gemini may answer from a fallback model — see
+    sendGemini). */
+export interface SendChatResult {
+  text: string;
+  model: string;
+}
+
+export async function sendChatMessage(options: SendChatOptions): Promise<SendChatResult> {
   const { config } = options;
   switch (config.provider) {
     case 'gemini':
@@ -149,7 +170,7 @@ export async function postJson(
     }
     const transient = res.status === 429 || res.status >= 500;
     if (!transient || attempt >= MAX_RETRIES) {
-      throw friendlyError(res.status, context);
+      throw new ProviderHttpError(res.status, context);
     }
     await sleep(retryDelayMs(attempt));
   }

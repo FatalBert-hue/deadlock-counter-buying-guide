@@ -2,10 +2,18 @@
 // POST https://api.openai.com/v1/chat/completions
 // Auth: Authorization: Bearer <key>. System prompt is the first
 // message with role 'system'. Reply text: choices[0].message.content
-import { postJson, type SendChatOptions } from '../providers';
+import { postJson, type SendChatOptions, type SendChatResult } from '../providers';
 
-export async function sendOpenAI({ apiKey, model, systemPrompt, messages }: SendChatOptions): Promise<string> {
-  return sendChatCompletions('https://api.openai.com/v1/chat/completions', apiKey, model, systemPrompt, messages, 'ChatGPT');
+export async function sendOpenAI({ apiKey, model, systemPrompt, messages }: SendChatOptions): Promise<SendChatResult> {
+  const text = await sendChatCompletions(
+    'https://api.openai.com/v1/chat/completions',
+    apiKey,
+    model,
+    systemPrompt,
+    messages,
+    'ChatGPT',
+  );
+  return { text, model };
 }
 
 export async function sendChatCompletions(
