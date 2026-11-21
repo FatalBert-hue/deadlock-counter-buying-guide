@@ -1,22 +1,32 @@
 // Deep-link handling for DCB build sharing.
 //
-// Two ways a build can arrive from outside the app:
-//   1. A dcb:// link — dcb://import?data=<base64url JSON> — shared as plain
-//      text, so it goes through phone Messages (SMS) where a .json
-//      attachment is not offered. Tapping it opens DCB and imports the
-//      build. The payload is the same shared build JSON as the file
-//      format (formatVersion 1), so a link and a file carry the same
-//      build. The build JSON is ~1–2 KB, so the encoded link is ~1.5–3 KB.
-//   2. A .json file — a content:// or file:// URI handed to the app when
+// Three ways a build can arrive from outside the app:
+//   1. An https App Link — https://fatalbert-hue.github.io/dcb/build?data=<base64url JSON>
+//      — shared as plain text. Google Messages only linkifies http/https
+//      URLs, so this is the link that is actually tappable in a text.
+//      Android verifies it against /.well-known/assetlinks.json on that
+//      host (intent filter in app.json, autoVerify) and opens DCB to the
+//      /dcb/build route (src/app/dcb/build.tsx).
+//   2. A dcb:// link — dcb://import?data=<base64url JSON> — the fallback
+//      used only inside the build.html page a browser shows when the app
+//      is not installed. Custom schemes are not linkified by Messages, so
+//      this is never the shared link anymore.
+//   3. A .json file — a content:// or file:// URI handed to the app when
 //      the user picks "Open with DCB" on a build file. Android only offers
 //      DCB there because of the intent filter in app.json
 //      (VIEW + application/json + *.json on content/file schemes).
 //
-// Incoming dcb:// links are routed by Expo Router to the /import screen
-// (src/app/import.tsx). This module's listener (DeepLinkHandler) handles
-// only the file URIs, which the router ignores. Both paths validate
-// through the same parseBuildFile() — unknown hero/item names are
-// dropped, a bad payload never crashes, and the author always shows.
+// The payload is the same shared build JSON as the file format
+// (formatVersion 1) in every case, so a link and a file carry the same
+// build. The build JSON is ~1–2 KB, so the encoded link is ~1.5–3 KB.
+//
+// Incoming dcb:// and https links are routed by Expo Router to the
+// /import and /dcb/build screens. This module's listener
+// (DeepLinkHandler) handles only the file URIs, which the router turns
+// into an unmatched route instead — see src/app/+not-found.tsx, which
+// sends that route home. Both paths validate through the same
+// parseBuildFile() — unknown hero/item names are dropped, a bad payload
+// never crashes, and the author always shows.
 import * as Linking from 'expo-linking';
 import { File } from 'expo-file-system';
 
@@ -24,6 +34,11 @@ import { buildToFile, parseBuildFile, type SavedBuild } from '@/state/saved';
 
 export const IMPORT_SCHEME = 'dcb';
 export const IMPORT_HOST = 'import';
+
+/** The https App Link host/path — the shareable, Messages-tappable link. */
+export const APP_LINK_HOST = 'fatalbert-hue.github.io';
+export const APP_LINK_PATH = '/dcb/build';
+export const APP_LINK_BASE = `https://${APP_LINK_HOST}${APP_LINK_PATH}`;
 
 /* ------------------------------------------------------------------ */
 /* base64url codec (dependency-free; Hermes has no Buffer)             */
@@ -121,18 +136,35 @@ export function base64UrlDecode(input: string): string {
 /* Build links                                                         */
 /* ------------------------------------------------------------------ */
 
-/** Plain-text link carrying a whole build: dcb://import?data=<base64url>. */
+/** The shared link: an https App Link, tappable in Google Messages. */
 export function buildImportLink(build: SavedBuild): string {
+  return `${APP_LINK_BASE}?data=${base64UrlEncode(JSON.stringify(buildToFile(build)))}`;
+}
+
+/** The dcb:// fallback link — used only inside the build.html page a
+ *  browser shows when the app is not installed. Never shared directly:
+ *  Messages does not linkify custom schemes. */
+export function buildDcbImportLink(build: SavedBuild): string {
   return `${IMPORT_SCHEME}://${IMPORT_HOST}?data=${base64UrlEncode(JSON.stringify(buildToFile(build)))}`;
 }
 
-/** Decode a dcb://import?data=... link back to a build (null if not one). */
+/**
+ * Decode an import link back to a build (null if not one). Accepts both
+ * the https App Link (https://fatalbert-hue.github.io/dcb/build?data=...)
+ * and the dcb://import?data=... fallback.
+ */
 export function parseImportLink(url: string): SavedBuild | null {
   const parsed = Linking.parse(url);
-  if (parsed.scheme !== IMPORT_SCHEME && parsed.scheme !== 'counter-buy') return null;
-  const host = parsed.hostname ?? '';
-  const path = (parsed.path ?? '').replace(/^\//, '');
-  if (host !== IMPORT_HOST && path !== IMPORT_HOST) return null;
+  if (parsed.scheme === 'https') {
+    if (parsed.hostname !== APP_LINK_HOST) return null;
+    if ((parsed.path ?? '') !== APP_LINK_PATH) return null;
+  } else if (parsed.scheme === IMPORT_SCHEME || parsed.scheme === 'counter-buy') {
+    const host = parsed.hostname ?? '';
+    const path = (parsed.path ?? '').replace(/^\//, '');
+    if (host !== IMPORT_HOST && path !== IMPORT_HOST) return null;
+  } else {
+    return null;
+  }
   const data = parsed.queryParams?.data;
   if (typeof data !== 'string' || !data) return null;
   try {
@@ -149,8 +181,9 @@ export type IncomingUrlOutcome =
 
 /**
  * Handle a URL the OS handed the app. Used by DeepLinkHandler for file
- * URIs only — dcb:// links are routed by Expo Router to /import instead,
- * so they are ignored here to avoid importing the same build twice.
+ * URIs only — dcb:// and https App Links are routed by Expo Router to
+ * /import and /dcb/build instead, so they are ignored here to avoid
+ * importing the same build twice.
  */
 export async function handleIncomingUrl(url: string): Promise<IncomingUrlOutcome> {
   const parsed = Linking.parse(url);
