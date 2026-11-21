@@ -1,13 +1,13 @@
 // Deep-link handling for DCB build sharing.
 //
 // Three ways a build can arrive from outside the app:
-//   1. An https App Link — https://fatalbert-hue.github.io/dcb/build?data=<base64url JSON>
+//   1. An https App Link — https://fatalbert-hue.github.io/dcb/build?data=<compact payload>
 //      — shared as plain text. Google Messages only linkifies http/https
 //      URLs, so this is the link that is actually tappable in a text.
 //      Android verifies it against /.well-known/assetlinks.json on that
 //      host (intent filter in app.json, autoVerify) and opens DCB to the
 //      /dcb/build route (src/app/dcb/build.tsx).
-//   2. A dcb:// link — dcb://import?data=<base64url JSON> — the fallback
+//   2. A dcb:// link — dcb://import?data=<compact payload> — the fallback
 //      used only inside the build.html page a browser shows when the app
 //      is not installed. Custom schemes are not linkified by Messages, so
 //      this is never the shared link anymore.
@@ -16,9 +16,13 @@
 //      DCB there because of the intent filter in app.json
 //      (VIEW + application/json + *.json on content/file schemes).
 //
-// The payload is the same shared build JSON as the file format
-// (formatVersion 1) in every case, so a link and a file carry the same
-// build. The build JSON is ~1–2 KB, so the encoded link is ~1.5–3 KB.
+// The link payload is a COMPACT encoding (see encodeCompactBuild below):
+// heroes and items travel as their index in the bundled data.json
+// roster/shop, not as full names, so a full 12+12-item build fits in
+// ~70 characters of payload instead of ~2 KB of JSON. Old links that
+// carry the full JSON payload still parse (parseImportLink tries the
+// compact form first, then the legacy JSON form). The .json FILE format
+// is unchanged (formatVersion 1) — only links are compact.
 //
 // Incoming dcb:// and https links are routed by Expo Router to the
 // /import and /dcb/build screens. This module's listener
@@ -30,7 +34,8 @@
 import * as Linking from 'expo-linking';
 import { File } from 'expo-file-system';
 
-import { buildToFile, parseBuildFile, type SavedBuild } from '@/state/saved';
+import { guideData } from '@/data';
+import { parseBuildFile, type SavedBuild } from '@/state/saved';
 
 export const IMPORT_SCHEME = 'dcb';
 export const IMPORT_HOST = 'import';
@@ -105,7 +110,15 @@ function utf8Decode(bytes: number[]): string {
 }
 
 export function base64UrlEncode(text: string): string {
-  const bytes = utf8Encode(text);
+  return base64UrlEncodeBytes(utf8Encode(text));
+}
+
+export function base64UrlDecode(input: string): string {
+  return utf8Decode(base64UrlDecodeBytes(input));
+}
+
+/** base64url over raw bytes (no padding). Hermes has no Buffer. */
+export function base64UrlEncodeBytes(bytes: number[]): string {
   let out = '';
   for (let i = 0; i < bytes.length; i += 3) {
     const b0 = bytes[i];
@@ -119,7 +132,7 @@ export function base64UrlEncode(text: string): string {
   return out.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-export function base64UrlDecode(input: string): string {
+export function base64UrlDecodeBytes(input: string): number[] {
   const s = input.replace(/-/g, '+').replace(/_/g, '/');
   const padded = s + '='.repeat((4 - (s.length % 4)) % 4);
   const idx = (ch: string): number => (ch === '=' ? 0 : B64_ALPHABET.indexOf(ch));
@@ -129,29 +142,157 @@ export function base64UrlDecode(input: string): string {
     bytes.push((n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff);
   }
   const pad = (padded.match(/=+$/) || [''])[0].length;
-  return utf8Decode(bytes.slice(0, bytes.length - pad));
+  return bytes.slice(0, bytes.length - pad);
 }
 
 /* ------------------------------------------------------------------ */
 /* Build links                                                         */
 /* ------------------------------------------------------------------ */
 
-/** The shared link: an https App Link, tappable in Google Messages. */
+/* ------------------------------------------------------------------ */
+/* Compact link encoding                                               */
+/* ------------------------------------------------------------------ */
+
+// A full build as JSON is ~1–2 KB, which is why the old share links
+// were ~1.5–3 KB and kept hitting character limits in Messages. The
+// compact form packs the same build into a few dozen bytes:
+//
+//   data = "c1." + base64url(bytes)
+//   bytes = [0x01 version]
+//           [enemy hero index in guideData.heroes, or 0xFF]
+//           [your hero index in guideData.heroes, or 0xFF]
+//           [enemy item count N][N item indices in guideData.items]
+//           [your item count M][M item indices in guideData.items]
+//           [quickPick flag 0/1][enemy type code][your type code]
+//           [name byte length][name UTF-8]
+//           [author byte length][author UTF-8]
+//   type codes: 0 = "" (none) · 1 = Weapon · 2 = Vitality · 3 = Spirit
+//
+// Indices are positions in the BUNDLED data.json roster/shop order.
+// That order must not be shuffled without bumping COMPACT_VERSION, or
+// old links would decode to the wrong heroes/items. A full 12+12-item
+// build encodes to ~50–70 bytes of payload (~70–95 base64url chars).
+// Name/author are truncated to 60 characters so each length still
+// fits in one byte (60 chars x 4 bytes max = 240).
+
+export const COMPACT_PREFIX = 'c1.';
+const COMPACT_VERSION = 0x01;
+const NO_HERO = 0xff;
+const MAX_TEXT_CHARS = 60;
+
+const TYPE_CODES: Record<string, number> = { '': 0, Weapon: 1, Vitality: 2, Spirit: 3 };
+const CODE_TYPES = ['', 'Weapon', 'Vitality', 'Spirit'];
+
+function heroIndex(name: string | null): number {
+  if (!name) return NO_HERO;
+  const i = guideData.heroes.findIndex((h) => h.name === name);
+  return i < 0 ? NO_HERO : i;
+}
+
+function itemIndices(names: string[]): number[] {
+  return names
+    .map((n) => guideData.items.findIndex((i) => i.name === n))
+    .filter((i) => i >= 0);
+}
+
+/** Encode a build as the compact payload string (with the "c1." prefix). */
+export function encodeCompactBuild(build: SavedBuild): string {
+  const enemyItems = itemIndices(build.enemyItems);
+  const youItems = itemIndices(build.youItems);
+  const nameBytes = utf8Encode(build.name.slice(0, MAX_TEXT_CHARS));
+  const authorBytes = utf8Encode(build.author.slice(0, MAX_TEXT_CHARS));
+  const bytes: number[] = [COMPACT_VERSION, heroIndex(build.enemyHero), heroIndex(build.youHero)];
+  bytes.push(enemyItems.length, ...enemyItems);
+  bytes.push(youItems.length, ...youItems);
+  if (build.quickPick) {
+    bytes.push(1, TYPE_CODES[build.quickPick.enemyType] ?? 0, TYPE_CODES[build.quickPick.youType] ?? 0);
+  } else {
+    bytes.push(0, 0, 0);
+  }
+  bytes.push(nameBytes.length, ...nameBytes);
+  bytes.push(authorBytes.length, ...authorBytes);
+  return COMPACT_PREFIX + base64UrlEncodeBytes(bytes);
+}
+
+/** Decode a compact payload back to a build (null if it is not one).
+ *  Indices are mapped back to names and the result is validated through
+ *  the same parseBuildFile() as the .json file format, so out-of-range
+ *  indices are dropped and a bad payload never crashes. */
+export function decodeCompactBuild(data: string): SavedBuild | null {
+  if (!data.startsWith(COMPACT_PREFIX)) return null;
+  try {
+    const bytes = base64UrlDecodeBytes(data.slice(COMPACT_PREFIX.length));
+    let p = 0;
+    const take = (n: number): number[] | null => {
+      if (p + n > bytes.length) return null;
+      return bytes.slice(p, (p += n));
+    };
+    if (bytes[p++] !== COMPACT_VERSION) return null;
+    const heroAt = (i: number): string | null =>
+      i === NO_HERO || i < 0 || i >= guideData.heroes.length ? null : guideData.heroes[i].name;
+    const enemyHero = heroAt(bytes[p++]);
+    const youHero = heroAt(bytes[p++]);
+    const readItems = (): string[] | null => {
+      const count = bytes[p++];
+      if (count === undefined) return null;
+      const idxs = take(count);
+      if (!idxs) return null;
+      return idxs
+        .filter((i) => i >= 0 && i < guideData.items.length)
+        .map((i) => guideData.items[i].name);
+    };
+    const enemyItems = readItems();
+    const youItems = readItems();
+    if (!enemyItems || !youItems) return null;
+    const qpFlag = bytes[p++];
+    const qpEnemy = CODE_TYPES[bytes[p++]] ?? '';
+    const qpYou = CODE_TYPES[bytes[p++]] ?? '';
+    const readText = (): string | null => {
+      const len = bytes[p++];
+      if (len === undefined) return null;
+      const b = take(len);
+      return b ? utf8Decode(b) : null;
+    };
+    const name = readText();
+    const author = readText();
+    if (name === null || author === null) return null;
+    return parseBuildFile({
+      format: 'counter-buy-build',
+      formatVersion: 1,
+      app: 'DCB',
+      name,
+      author,
+      savedAt: new Date().toISOString(),
+      enemyHero,
+      enemyItems,
+      youHero,
+      youItems,
+      ...(qpFlag === 1 ? { quickPick: { enemyType: qpEnemy, youType: qpYou } } : {}),
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** The shared link: an https App Link, tappable in Google Messages.
+ *  Compact payload, so the whole link stays short. */
 export function buildImportLink(build: SavedBuild): string {
-  return `${APP_LINK_BASE}?data=${base64UrlEncode(JSON.stringify(buildToFile(build)))}`;
+  return `${APP_LINK_BASE}?data=${encodeCompactBuild(build)}`;
 }
 
 /** The dcb:// fallback link — used only inside the build.html page a
  *  browser shows when the app is not installed. Never shared directly:
- *  Messages does not linkify custom schemes. */
+ *  Messages does not linkify custom schemes. Same compact payload. */
 export function buildDcbImportLink(build: SavedBuild): string {
-  return `${IMPORT_SCHEME}://${IMPORT_HOST}?data=${base64UrlEncode(JSON.stringify(buildToFile(build)))}`;
+  return `${IMPORT_SCHEME}://${IMPORT_HOST}?data=${encodeCompactBuild(build)}`;
 }
 
 /**
  * Decode an import link back to a build (null if not one). Accepts both
  * the https App Link (https://fatalbert-hue.github.io/dcb/build?data=...)
- * and the dcb://import?data=... fallback.
+ * and the dcb://import?data=... fallback — and both payload shapes:
+ * the new compact "c1." payload, and the old full-JSON payload (links
+ * already shared keep working).
  */
 export function parseImportLink(url: string): SavedBuild | null {
   const parsed = Linking.parse(url);
@@ -167,6 +308,7 @@ export function parseImportLink(url: string): SavedBuild | null {
   }
   const data = parsed.queryParams?.data;
   if (typeof data !== 'string' || !data) return null;
+  if (data.startsWith(COMPACT_PREFIX)) return decodeCompactBuild(data);
   try {
     return parseBuildFile(JSON.parse(base64UrlDecode(data)) as unknown);
   } catch {
