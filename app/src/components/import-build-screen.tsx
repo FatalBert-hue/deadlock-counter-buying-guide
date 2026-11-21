@@ -10,9 +10,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
-import { base64UrlDecode } from '@/linking/build-link';
+import { parseImportPayload } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
-import { parseBuildFile, useSavedBuilds, type SavedBuild } from '@/state/saved';
+import { useSavedBuilds, type SavedBuild } from '@/state/saved';
 import { useSettings } from '@/state/settings';
 
 type ImportResult =
@@ -27,14 +27,13 @@ export default function ImportBuildScreen() {
   // The link payload is parsed once, during render — it is pure
   // computation, not an effect. The only effect below saves the parsed
   // build into the (external) saved-builds store.
+  // parseImportPayload handles BOTH payload shapes — the compact "c1."
+  // payload the app now shares, and the old full-JSON payload — so a
+  // link tapped in Messages imports instead of showing "not a DCB build".
   const [result] = useState<ImportResult>(() => {
-    try {
-      if (typeof data !== 'string' || !data) return { status: 'failed' };
-      const parsed = parseBuildFile(JSON.parse(base64UrlDecode(data)) as unknown);
-      return parsed ? { status: 'done', build: parsed } : { status: 'failed' };
-    } catch {
-      return { status: 'failed' };
-    }
+    if (typeof data !== 'string' || !data) return { status: 'failed' };
+    const parsed = parseImportPayload(data);
+    return parsed ? { status: 'done', build: parsed } : { status: 'failed' };
   });
   const savedRef = useRef(false);
 
