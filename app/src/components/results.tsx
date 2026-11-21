@@ -2,6 +2,7 @@
 // list, and the notes (anti-heal owned, Healbane both sides, stealth gap).
 import { StyleSheet, Text, View } from 'react-native';
 
+import { cardShadow, Radii } from '@/constants/palette';
 import type { ScoreResult } from '@/engine/score';
 import { PickCard } from '@/components/pick-card';
 import { useSettings } from '@/state/settings';
@@ -10,14 +11,14 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
   const { palette } = useSettings();
   if (!result.enemyHero) {
     return (
-      <View style={[styles.box, { backgroundColor: palette.panel }]}>
+      <View style={[styles.box, cardShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.empty, { color: palette.muted }]}>{emptyText}</Text>
       </View>
     );
   }
   if (!result.picks.length) {
     return (
-      <View style={[styles.box, { backgroundColor: palette.panel }]}>
+      <View style={[styles.box, cardShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.empty, { color: palette.muted }]}>
           You&apos;ve already marked every strong answer to this matchup as owned.
         </Text>
@@ -44,7 +45,7 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
         </Text>
       ) : null}
       {result.notes.map((n, i) => (
-        <View key={i} style={[styles.noteBox, { backgroundColor: palette.panel }]}>
+        <View key={i} style={[styles.noteBox, cardShadow(palette), { backgroundColor: palette.panel }]}>
           <Text style={[styles.note, { color: palette.muted }]}>{n.text}</Text>
         </View>
       ))}
@@ -54,7 +55,8 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
 
 const styles = StyleSheet.create({
   box: {
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 16,
   },
   empty: {
@@ -78,7 +80,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   noteBox: {
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 12,
   },
   note: {

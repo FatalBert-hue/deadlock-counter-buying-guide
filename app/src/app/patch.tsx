@@ -2,6 +2,7 @@
 // and a manual data-update check. No long descriptions.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { cardShadow, Radii } from '@/constants/palette';
 import { ScreenShell } from '@/components/screen-shell';
 import { useGuideData } from '@/state/data';
 import { useSettings } from '@/state/settings';
@@ -19,7 +20,7 @@ export default function PatchScreen() {
 
   return (
     <ScreenShell title="Patch">
-      <View style={[styles.card, { backgroundColor: palette.panel }]}>
+      <View style={[styles.card, cardShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.patch, { color: palette.ink }]}>{data.patch}</Text>
         <Text style={[styles.meta, { color: palette.muted }]}>
           {data.heroes.length} heroes · {data.items.length} items · Data version {data.version}
@@ -38,12 +39,12 @@ export default function PatchScreen() {
         style={[styles.button, { backgroundColor: accent.color, opacity: checking ? 0.6 : 1 }]}
         accessibilityRole="button"
         accessibilityLabel="Check for a data update">
-        <Text style={[styles.buttonText, { color: palette.bg }]}>
+        <Text style={[styles.buttonText, { color: palette.onAccent }]}>
           {checking ? 'Checking…' : 'Check for a data update'}
         </Text>
       </Pressable>
 
-      <View style={[styles.card, { backgroundColor: palette.panel }]}>
+      <View style={[styles.card, cardShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.body, { color: palette.muted }]}>
           When a new Deadlock patch lands, the app checks for a newer data file on launch and updates without a
           rebuild. If you&apos;re offline, the copy on your phone keeps working.
@@ -59,7 +60,8 @@ export default function PatchScreen() {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 16,
     gap: 6,
   },
@@ -73,7 +75,8 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   buttonText: {

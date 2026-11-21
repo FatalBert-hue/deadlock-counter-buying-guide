@@ -4,6 +4,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { cardShadow, Radii } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import { deliverLabel, type RankedPick } from '@/engine/score';
 import { useSettings } from '@/state/settings';
@@ -24,10 +25,15 @@ export function PickCard({
     <View
       style={[
         styles.card,
-        { backgroundColor: palette.panel, borderColor: top ? accent.color : palette.line, borderWidth: top ? 2 : 1 },
+        cardShadow(palette),
+        {
+          backgroundColor: top ? palette.heroSoft : palette.panel,
+          borderColor: top ? accent.color : palette.line,
+          borderWidth: top ? 2 : 1,
+        },
       ]}>
       <View style={styles.head}>
-        <Image source={itemImage(pick.name)} style={{ width: size, height: size, borderRadius: 10 }} contentFit="cover" />
+        <Image source={itemImage(pick.name)} style={{ width: size, height: size, borderRadius: Radii.tile }} contentFit="cover" />
         <View style={styles.headText}>
           <Text style={[styles.name, { color: palette.ink }]}>{pick.name}</Text>
           <Text style={[styles.meta, { color: palette.muted }]}>
@@ -48,7 +54,8 @@ export function PickCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 12,
     gap: 8,
   },

@@ -38,7 +38,7 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
                 key={m.id}
                 onPress={() => update({ themeMode: m.id })}
                 style={[styles.option, { backgroundColor: active ? accent.color : palette.panel }]}>
-                <Text style={[styles.optionText, { color: active ? palette.bg : palette.ink }]}>{m.label}</Text>
+                <Text style={[styles.optionText, { color: active ? palette.onAccent : palette.ink }]}>{m.label}</Text>
               </Pressable>
             );
           })}
@@ -73,7 +73,7 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
                 key={o.id}
                 onPress={() => update({ iconSize: o.id })}
                 style={[styles.option, { backgroundColor: active ? accent.color : palette.panel }]}>
-                <Text style={[styles.optionText, { color: active ? palette.bg : palette.ink }]}>
+                <Text style={[styles.optionText, { color: active ? palette.onAccent : palette.ink }]}>
                   {o.label} · {ICON_SIZES[o.id]}px
                 </Text>
               </Pressable>

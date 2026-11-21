@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { usePathname, useRouter, type Href } from 'expo-router';
 
+import { Radii } from '@/constants/palette';
 import { useDrawer } from '@/state/drawer';
 import { useSettings } from '@/state/settings';
 
@@ -124,6 +125,8 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingHorizontal: 16,
     borderRightWidth: 3,
+    borderTopRightRadius: Radii.card,
+    borderBottomRightRadius: Radii.card,
   },
   header: {
     flexDirection: 'row',
@@ -149,7 +152,8 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
   },
   itemIcon: {
     width: 24,

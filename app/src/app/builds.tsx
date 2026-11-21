@@ -12,6 +12,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { router } from 'expo-router';
 
+import { cardShadow, Radii } from '@/constants/palette';
 import { buildImportLink } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
 import { heroImage, itemImage } from '@/data/images';
@@ -111,7 +112,7 @@ export default function BuildsScreen() {
 
   return (
     <ScreenShell title="Builds">
-      <View style={[styles.saveBox, { backgroundColor: palette.panel }]}>
+      <View style={[styles.saveBox, cardShadow(palette), { backgroundColor: palette.panel }]}>
         <Text style={[styles.saveTitle, { color: palette.ink }]}>Save the current Full build</Text>
         <TextInput
           value={saveName}
@@ -133,7 +134,7 @@ export default function BuildsScreen() {
           style={[styles.saveButton, { backgroundColor: accent.color }]}
           accessibilityRole="button"
           accessibilityLabel="Save the current Full build">
-          <Text style={[styles.saveButtonText, { color: palette.bg }]}>Save build</Text>
+          <Text style={[styles.saveButtonText, { color: palette.onAccent }]}>Save build</Text>
         </Pressable>
         {saveMessage ? <Text style={[styles.saveMessage, { color: palette.muted }]}>{saveMessage}</Text> : null}
       </View>
@@ -143,12 +144,12 @@ export default function BuildsScreen() {
         style={[styles.button, { backgroundColor: accent.color }]}
         accessibilityRole="button"
         accessibilityLabel="Import a build file">
-        <Text style={[styles.buttonText, { color: palette.bg }]}>Import a build file</Text>
+        <Text style={[styles.buttonText, { color: palette.onAccent }]}>Import a build file</Text>
       </Pressable>
       {message ? <Text style={[styles.message, { color: palette.muted }]}>{message}</Text> : null}
 
       {!builds.length ? (
-        <View style={[styles.card, { backgroundColor: palette.panel }]}>
+        <View style={[styles.card, cardShadow(palette), { backgroundColor: palette.panel }]}>
           <Text style={[styles.empty, { color: palette.muted }]}>
             No saved builds yet. Save one from Full build and it shows up here — then share it as a
             file or a link, or import one someone sent you.
@@ -157,7 +158,7 @@ export default function BuildsScreen() {
       ) : null}
 
       {builds.map((b) => (
-        <View key={b.id} style={[styles.card, { backgroundColor: palette.panel }]}>
+        <View key={b.id} style={[styles.card, cardShadow(palette), { backgroundColor: palette.panel }]}>
           <Text style={[styles.name, { color: palette.ink }]}>{b.name}</Text>
           <Text style={[styles.meta, { color: palette.muted }]}>by {b.author}</Text>
           {/* The matchup, as it reads in-game: enemy hero vs the hero
@@ -216,7 +217,7 @@ export default function BuildsScreen() {
               style={[styles.action, { backgroundColor: accent.color }]}
               accessibilityRole="button"
               accessibilityLabel={`Load ${b.name} into Full build`}>
-              <Text style={[styles.actionText, { color: palette.bg }]}>Load</Text>
+              <Text style={[styles.actionText, { color: palette.onAccent }]}>Load</Text>
             </Pressable>
             <Pressable
               onPress={() => void shareBuild(b)}
@@ -248,7 +249,8 @@ export default function BuildsScreen() {
 
 const styles = StyleSheet.create({
   saveBox: {
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 12,
     gap: 8,
   },
@@ -258,14 +260,16 @@ const styles = StyleSheet.create({
   },
   saveInput: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
   },
   saveButton: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   saveButtonText: {
@@ -277,7 +281,8 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   buttonText: {
@@ -288,7 +293,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 16,
     gap: 6,
   },
@@ -318,7 +324,7 @@ const styles = StyleSheet.create({
   heroIcon: {
     width: 56,
     height: 56,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
   },
   matchupName: {
     fontSize: 13,
@@ -343,7 +349,7 @@ const styles = StyleSheet.create({
   itemIcon: {
     width: 26,
     height: 26,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   actions: {
     flexDirection: 'row',
@@ -353,7 +359,8 @@ const styles = StyleSheet.create({
   action: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   actionText: {

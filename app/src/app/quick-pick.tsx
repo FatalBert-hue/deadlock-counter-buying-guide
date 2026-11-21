@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { cardShadow, Radii } from '@/constants/palette';
 import { HeroPicker } from '@/components/hero-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
@@ -45,7 +46,7 @@ export default function QuickPickScreen() {
               key={o.id}
               onPress={() => onChange(o.id)}
               style={[styles.option, { backgroundColor: active ? accent.color : palette.panel }]}>
-              <Text style={[styles.optionText, { color: active ? palette.bg : palette.ink }]}>{o.label}</Text>
+              <Text style={[styles.optionText, { color: active ? palette.onAccent : palette.ink }]}>{o.label}</Text>
             </Pressable>
           );
         })}
@@ -59,10 +60,10 @@ export default function QuickPickScreen() {
         onPress={() => setHeroPickerOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Choose the enemy hero"
-        style={[styles.heroButton, { backgroundColor: palette.panel, borderColor: palette.line }]}>
+        style={[styles.heroButton, cardShadow(palette), { backgroundColor: palette.panel, borderColor: palette.line }]}>
         {enemyHero ? (
           <>
-            <Image source={heroImage(enemyHero)} style={{ width: 52, height: 52, borderRadius: 10 }} contentFit="cover" />
+            <Image source={heroImage(enemyHero)} style={{ width: 52, height: 52, borderRadius: Radii.tile }} contentFit="cover" />
             <Text style={[styles.heroName, { color: palette.ink }]}>{enemyHero}</Text>
             <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
           </>
@@ -101,7 +102,8 @@ export default function QuickPickScreen() {
 const styles = StyleSheet.create({
   heroButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: Radii.card,
+    borderCurve: 'continuous',
     padding: 12,
     minHeight: 76,
     alignItems: 'center',

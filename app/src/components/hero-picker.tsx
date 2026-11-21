@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { Radii } from '@/constants/palette';
 import { heroImage } from '@/data/images';
 import type { Hero } from '@/data';
 import { useFavorites } from '@/state/favorites';
@@ -60,7 +61,7 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
                   onClose();
                 }}
                 style={[styles.row, { borderBottomColor: palette.line, backgroundColor: isSelected ? palette.panel2 : 'transparent' }]}>
-                <Image source={heroImage(item.name)} style={{ width: 44, height: 44, borderRadius: 8 }} contentFit="cover" />
+                <Image source={heroImage(item.name)} style={{ width: 44, height: 44, borderRadius: 12 }} contentFit="cover" />
                 <View style={styles.rowText}>
                   <Text style={[styles.name, { color: palette.ink }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: palette.muted }]}>
@@ -120,7 +121,8 @@ const styles = StyleSheet.create({
     margin: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     borderWidth: 1,
     fontSize: 16,
   },
@@ -153,7 +155,8 @@ const styles = StyleSheet.create({
   clear: {
     margin: 12,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   clearText: {

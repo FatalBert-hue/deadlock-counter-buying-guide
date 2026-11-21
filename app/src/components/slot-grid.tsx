@@ -3,6 +3,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { Radii } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import { MAX_SLOTS } from '@/engine/score';
 import { useSettings } from '@/state/settings';
@@ -27,7 +28,7 @@ export function SlotGrid({ slots, onPickSlot }: SlotGridProps) {
             accessibilityLabel={name ? `Slot ${i + 1}: ${name}` : `Slot ${i + 1}: empty`}
             style={[styles.slot, { backgroundColor: palette.panel, borderColor: palette.line, width: size + 16, height: size + 16 }]}>
             {name ? (
-              <Image source={itemImage(name)} style={{ width: size, height: size, borderRadius: 8 }} contentFit="cover" />
+              <Image source={itemImage(name)} style={{ width: size, height: size, borderRadius: 12 }} contentFit="cover" />
             ) : (
               <Text style={[styles.plus, { color: palette.faint }]}>+</Text>
             )}
@@ -46,7 +47,8 @@ const styles = StyleSheet.create({
   },
   slot: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',
   },

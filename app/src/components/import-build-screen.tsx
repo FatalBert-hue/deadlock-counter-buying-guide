@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
+import { Radii } from '@/constants/palette';
 import { parseImportPayload } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
 import { useSavedBuilds, type SavedBuild } from '@/state/saved';
@@ -56,7 +57,7 @@ export default function ImportBuildScreen() {
             style={[styles.button, { backgroundColor: accent.color }]}
             accessibilityRole="button"
             accessibilityLabel="View Builds">
-            <Text style={[styles.buttonText, { color: palette.bg }]}>View Builds</Text>
+            <Text style={[styles.buttonText, { color: palette.onAccent }]}>View Builds</Text>
           </Pressable>
         </View>
       ) : (
@@ -67,7 +68,7 @@ export default function ImportBuildScreen() {
             style={[styles.button, { backgroundColor: accent.color }]}
             accessibilityRole="button"
             accessibilityLabel="Go to Builds">
-            <Text style={[styles.buttonText, { color: palette.bg }]}>Go to Builds</Text>
+            <Text style={[styles.buttonText, { color: palette.onAccent }]}>Go to Builds</Text>
           </Pressable>
         </View>
       )}
@@ -85,7 +86,8 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   buttonText: {

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { Radii } from '@/constants/palette';
 import { itemImage } from '@/data/images';
 import type { Item } from '@/data';
 import { useFavorites } from '@/state/favorites';
@@ -70,7 +71,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                   styles.tab,
                   { backgroundColor: active ? accent.color : palette.panel, borderColor: palette.line },
                 ]}>
-                <Text style={[styles.tabText, { color: active ? palette.bg : palette.ink }]}>{c}</Text>
+                <Text style={[styles.tabText, { color: active ? palette.onAccent : palette.ink }]}>{c}</Text>
               </Pressable>
             );
           })}
@@ -89,7 +90,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                   onClose();
                 }}
                 style={[styles.row, { borderBottomColor: palette.line, opacity: inBuild ? 0.45 : 1 }]}>
-                <Image source={itemImage(item.name)} style={{ width: iconSize, height: iconSize, borderRadius: 8 }} contentFit="cover" />
+                <Image source={itemImage(item.name)} style={{ width: iconSize, height: iconSize, borderRadius: 12 }} contentFit="cover" />
                 <View style={styles.rowText}>
                   <Text style={[styles.name, { color: palette.ink }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: palette.muted }]}>
@@ -151,7 +152,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     borderWidth: 1,
     fontSize: 16,
   },
@@ -201,7 +203,8 @@ const styles = StyleSheet.create({
   clear: {
     margin: 12,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: Radii.tile,
+    borderCurve: 'continuous',
     alignItems: 'center',
   },
   clearText: {
