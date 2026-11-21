@@ -22,6 +22,7 @@ function RootStack() {
         <Stack.Screen name="counter-sheet" />
         <Stack.Screen name="patch" />
         <Stack.Screen name="builds" />
+        <Stack.Screen name="ai-chat" />
         <Stack.Screen name="import" />
         <Stack.Screen name="dcb/build" />
       </Stack>

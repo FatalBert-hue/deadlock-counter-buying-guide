@@ -1,0 +1,101 @@
+// Provider layer — one small module per AI provider behind a single
+// `sendChatMessage` interface, so adding a provider later is one file.
+//
+// Every provider gets: the resolved model name, the system prompt, and
+// the conversation so far. Every provider returns the assistant's reply
+// text. Errors are mapped to short plain-language messages — never a
+// raw JSON dump, never the API key.
+//
+// Request shapes were verified against the providers' current docs
+// (Nov 2026): Gemini generateContent REST, OpenAI chat completions,
+// Anthropic Messages API.
+import type { AIConfig, ChatMessage } from './types';
+import { sendGemini } from './providers/gemini';
+import { sendOpenAI } from './providers/openai';
+import { sendAnthropic } from './providers/anthropic';
+import { sendOpenAICompatible } from './providers/openai-compatible';
+
+export interface SendChatOptions {
+  config: AIConfig;
+  /** The user's API key. Passed in, never stored or logged here. */
+  apiKey: string;
+  /** Resolved model name (config.model, or the provider default when blank). */
+  model: string;
+  systemPrompt: string;
+  messages: ChatMessage[];
+}
+
+export async function sendChatMessage(options: SendChatOptions): Promise<string> {
+  const { config } = options;
+  switch (config.provider) {
+    case 'gemini':
+      return sendGemini(options);
+    case 'openai':
+      return sendOpenAI(options);
+    case 'anthropic':
+      return sendAnthropic(options);
+    case 'other':
+      return sendOpenAICompatible(options);
+  }
+}
+
+/** Map an HTTP status / network failure to a short plain-language
+    message. `context` names the provider so the message can say where
+    the problem is. No request or response body is ever included. */
+export function friendlyError(status: number | null, context: string): Error {
+  if (status === null) {
+    return new Error(`Couldn't reach ${context} — check your connection and try again.`);
+  }
+  switch (status) {
+    case 400:
+      return new Error(
+        `That request was rejected by ${context} — the model name may be wrong, or the message too long. Check the model in Settings.`,
+      );
+    case 401:
+    case 403:
+      return new Error(
+        `Your API key was rejected by ${context}. Check the key in Settings — make sure you copied the whole thing.`,
+      );
+    case 404:
+      return new Error(
+        `That model wasn't found on ${context}. Check the model name in Settings.`,
+      );
+    case 429:
+      return new Error(
+        `You're being rate-limited by ${context} — wait a bit and try again. (Free tiers cap how often you can ask.)`,
+      );
+    default:
+      if (status >= 500) {
+        return new Error(`${context} is having trouble right now — try again in a bit.`);
+      }
+      return new Error(`Something went wrong talking to ${context} (error ${status}). Try again.`);
+  }
+}
+
+/** Run a fetch and turn HTTP errors into friendly errors. Throws the
+    friendly error; returns the parsed JSON body on success. */
+export async function postJson(
+  url: string,
+  headers: Record<string, string>,
+  body: unknown,
+  context: string,
+): Promise<Record<string, any>> {
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw friendlyError(null, context);
+  }
+  if (!res.ok) {
+    throw friendlyError(res.status, context);
+  }
+  try {
+    return (await res.json()) as Record<string, any>;
+  } catch {
+    throw new Error(`Got a garbled reply from ${context}. Try again.`);
+  }
+}

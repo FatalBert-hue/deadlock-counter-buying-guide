@@ -2,6 +2,7 @@
 // and the side-menu drawer.
 import type { ReactNode } from 'react';
 
+import { AIProvider } from '@/state/ai';
 import { DataProvider } from '@/state/data';
 import { DrawerProvider } from '@/state/drawer';
 import { FavoritesProvider } from '@/state/favorites';
@@ -11,13 +12,15 @@ import { SettingsProvider } from '@/state/settings';
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <SettingsProvider>
-      <DataProvider>
-        <SavedBuildsProvider>
-          <FavoritesProvider>
-            <DrawerProvider>{children}</DrawerProvider>
-          </FavoritesProvider>
-        </SavedBuildsProvider>
-      </DataProvider>
+      <AIProvider>
+        <DataProvider>
+          <SavedBuildsProvider>
+            <FavoritesProvider>
+              <DrawerProvider>{children}</DrawerProvider>
+            </FavoritesProvider>
+          </SavedBuildsProvider>
+        </DataProvider>
+      </AIProvider>
     </SettingsProvider>
   );
 }

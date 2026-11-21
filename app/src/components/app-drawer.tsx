@@ -1,6 +1,6 @@
 // Side menu drawer, opened by the ☰ button top-left of every screen.
-// Holds the five main destinations — Full build, Quick pick, Counter sheet,
-// Patch, Builds. Tapping one navigates there and closes the drawer.
+// Holds the six main destinations — Full build, Quick pick, Counter sheet,
+// Patch, Builds, AI Chat. Tapping one navigates there and closes the drawer.
 import { useEffect, useState } from 'react';
 import {
   Animated,
@@ -36,6 +36,7 @@ const MENU_ITEMS: MenuItem[] = [
   },
   { label: 'Patch', href: '/patch', icon: require('@/assets/images/tabIcons/patch.png') },
   { label: 'Builds', href: '/builds', icon: require('@/assets/images/tabIcons/saved.png') },
+  { label: 'AI Chat', href: '/ai-chat', icon: require('@/assets/images/tabIcons/ai-chat.png') },
 ];
 
 export function AppDrawer() {
