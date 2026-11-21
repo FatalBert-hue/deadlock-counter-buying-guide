@@ -1,13 +1,20 @@
 // Listens for URLs the OS hands the app from outside — specifically the
 // .json files opened with "Open with DCB" (content:// or file:// URIs).
-// dcb:// links are NOT handled here: Expo Router routes those to the
-// /import screen, and handling them in both places would import the same
-// build twice.
+// dcb:// and https App Links are NOT handled here: Expo Router routes
+// those to the /import and /dcb/build screens, and handling them in both
+// places would import the same build twice.
 //
 // Mounted once in the root layout, inside AppProviders so it can save
 // imported builds. The cold-start URL is only handled once per app
 // session (getInitialURL returns the same URL again if this effect ever
 // re-runs when addBuild changes identity).
+//
+// A file URL is not a route, so the router has nowhere to put it —
+// without src/app/+not-found.tsx it shows the "Unmatched Route" screen.
+// That screen redirects home on its own, and this handler also sends the
+// user home (router.replace) once the file has been consumed, which
+// covers the warm-start case where the app was already open on another
+// screen when the file arrived.
 import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import * as Linking from 'expo-linking';
@@ -26,14 +33,18 @@ export function DeepLinkHandler() {
       const outcome = await handleIncomingUrl(url);
       if (outcome.status === 'imported') {
         const saved = addBuild(outcome.build);
+        // The file URL is not a route — get off it before showing the
+        // alert, so the user is on a real screen underneath.
+        router.replace('/');
         Alert.alert('Build imported', `“${saved.name}” by ${saved.author} was added to Builds.`, [
           { text: 'View Builds', onPress: () => router.push('/builds') },
           { text: 'OK', style: 'cancel' },
         ]);
       } else if (outcome.status === 'invalid') {
+        router.replace('/');
         Alert.alert('Could not import', 'That file is not a DCB build file.');
       }
-      // 'ignored' (e.g. a dcb:// link the router is handling) — do nothing.
+      // 'ignored' (e.g. a dcb:// or https link the router is handling) — do nothing.
     };
 
     if (!initialUrlHandled) {
