@@ -17,7 +17,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { deleteApiKey, hasApiKey, loadApiKey, saveApiKey } from '@/ai/secure-key';
 import { sendChatMessage } from '@/ai/providers';
 import { buildSystemPrompt, buildTestSystemPrompt } from '@/ai/system-prompt';
-import { DEFAULT_AI_CONFIG, providerMeta, type AIConfig, type ChatMessage } from '@/ai/types';
+import { DEFAULT_AI_CONFIG, migrateLegacyGeminiModel, providerMeta, type AIConfig, type ChatMessage } from '@/ai/types';
 
 const CONFIG_KEY = 'counter-buy:ai-config:v1';
 
@@ -75,7 +75,14 @@ export function AIProvider({ children }: { children: ReactNode }) {
       AsyncStorage.getItem(CONFIG_KEY).then((raw) => {
         if (!raw) return;
         const parsed = JSON.parse(raw) as Partial<AIConfig>;
+        // One-time migration (2026-11-21): a saved Gemini model of
+        // gemini-3.8-flash (the old default) becomes gemma-3-27b-it.
+        // Anything the user typed themselves is left alone.
+        const migrated = migrateLegacyGeminiModel(parsed);
         if (alive) setConfig((prev) => ({ ...prev, ...parsed }));
+        if (migrated) {
+          AsyncStorage.setItem(CONFIG_KEY, JSON.stringify({ ...DEFAULT_AI_CONFIG, ...parsed })).catch(() => {});
+        }
       }),
       hasApiKey().then((has) => {
         if (alive) setKeyConfigured(has);

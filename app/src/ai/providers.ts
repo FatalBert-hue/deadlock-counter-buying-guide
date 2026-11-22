@@ -9,11 +9,14 @@
 // Request shapes were verified against the providers' current docs
 // (Nov 2026): Gemini generateContent REST, OpenAI chat completions,
 // Anthropic Messages API. Re-checked 2026-11-21 against
-// ai.google.dev: `gemini-3.8-flash` is a real Stable model (so the
-// Gemini default is correct), `generateContent` remains fully
-// supported (now labelled legacy beside the new Interactions API),
-// and `systemInstruction: { parts: [{ text }] }` matches the
-// GenerateContentRequest reference — no model or shape change needed.
+// ai.google.dev: `gemma-3-27b-it` is the Gemini default (served
+// through the same generateContent endpoint with the same key),
+// `generateContent` remains fully supported (now labelled legacy
+// beside the new Interactions API), and `systemInstruction:
+// { parts: [{ text }] }` matches the GenerateContentRequest
+// reference for Gemini-family models — Gemma models reject that
+// field, so the Gemini provider prepends the system prompt to the
+// first user turn for Gemma instead (see providers/gemini.ts).
 import type { AIConfig, ChatMessage } from './types';
 import { sendGemini } from './providers/gemini';
 import { sendOpenAI } from './providers/openai';
