@@ -75,9 +75,10 @@ export function AIProvider({ children }: { children: ReactNode }) {
       AsyncStorage.getItem(CONFIG_KEY).then((raw) => {
         if (!raw) return;
         const parsed = JSON.parse(raw) as Partial<AIConfig>;
-        // One-time migration (2026-11-21): a saved Gemini model of
-        // gemini-3.8-flash (the old default) becomes gemma-3-27b-it.
-        // Anything the user typed themselves is left alone.
+        // One-time migration (2026-11-21/22): a saved Gemini model of
+        // gemini-3.8-flash (the old default) or a dead Gemma 3 model
+        // becomes gemma-4-31b-it. Anything the user typed themselves
+        // is left alone.
         const migrated = migrateLegacyGeminiModel(parsed);
         if (alive) setConfig((prev) => ({ ...prev, ...parsed }));
         if (migrated) {

@@ -22,13 +22,18 @@ export const AI_PROVIDERS: AIProviderMeta[] = [
     id: 'gemini',
     label: 'Gemini',
     keyHint: 'Free key from Google AI Studio (aistudio.google.com).',
-    // Gemma 3 27B, served through the same Gemini API with the same
-    // key (verified 2026-11-21 against Google's docs and the Vercel
-    // AI SDK / ADK provider docs). Its free tier is far roomier than
-    // Flash's — 30 RPM / 15,000 TPM / 14,400 RPD per model from
-    // secondary sources, vs Flash's 20 requests/day — though the low
-    // 15,000 TPM binds first with DCB's ~1,274-token system prompt.
-    defaultModel: 'gemma-3-27b-it',
+    // Gemma 4 31B, served through the same Gemini API with the same
+    // key (verified 2026-11-22 against Google's Gemma docs —
+    // gemma.ai/deployment/gemini-api — which host exactly two Gemma
+    // 4 models: gemma-4-31b-it and gemma-4-26b-a4b-it). Gemma 3 is
+    // DEAD on the API: Google's official Gemini models page lists no
+    // Gemma at all, and gemma-3-27b-it 404s on Mikel's phone. Free
+    // tier for Gemma 4 from secondary sources (Google publishes no
+    // free-tier numbers): 30 RPM / 16,000 TPM / 14,400 RPD per model
+    // — one older AI Studio snapshot showed 1,500 RPD instead, so
+    // treat the daily number as indicative, not promised. The low
+    // TPM binds first with DCB's ~1,274-token system prompt.
+    defaultModel: 'gemma-4-31b-it',
   },
   {
     id: 'openai',
@@ -71,21 +76,35 @@ export const DEFAULT_AI_CONFIG: AIConfig = {
 };
 
 /** The Gemini default before 2026-11-21. A saved config that still
-    holds it is migrated to the new Gemma default on load (see
+    holds it is migrated to the current Gemma default on load (see
     migrateLegacyGeminiModel); anything else the user typed is left
     alone. */
 export const LEGACY_GEMINI_DEFAULT_MODEL = 'gemini-3.8-flash';
 
-/** One-time migration for the Gemini default change (2026-11-21):
-    the old default `gemini-3.8-flash` becomes `gemma-3-27b-it`.
-    Only the exact old default is moved — a model the user typed in
-    themselves, a blank model (which already resolves to the new
-    default), or a config for another provider is untouched. Mutates
-    the passed object and returns true when it changed anything. */
+/** Gemma 3 models, dead on the API since ~Nov 2026 (Google's models
+    page lists no Gemma at all; gemma-3-27b-it 404s). A saved config
+    that still holds one is migrated to the current Gemma 4 default
+    on load, alongside the old Flash default. */
+export const LEGACY_GEMMA3_MODELS = ['gemma-3-27b-it', 'gemma-3-12b-it', 'gemma-3-4b-it'];
+
+/** Current Gemini default, the migration target. */
+export const CURRENT_GEMINI_DEFAULT_MODEL = 'gemma-4-31b-it';
+
+/** One-time migration for the Gemini default changes (2026-11-21
+    and 2026-11-22): the old default `gemini-3.8-flash` and any dead
+    Gemma 3 model (`gemma-3-27b-it` / `-12b-it` / `-4b-it`) become
+    `gemma-4-31b-it`. Only those exact legacy defaults are moved — a
+    model the user typed in themselves, a blank model (which already
+    resolves to the new default), or a config for another provider is
+    untouched. Mutates the passed object and returns true when it
+    changed anything. */
 export function migrateLegacyGeminiModel(config: Partial<AIConfig>): boolean {
   const provider = config.provider ?? DEFAULT_AI_CONFIG.provider;
-  if (provider === 'gemini' && config.model === LEGACY_GEMINI_DEFAULT_MODEL) {
-    config.model = 'gemma-3-27b-it';
+  if (
+    provider === 'gemini' &&
+    (config.model === LEGACY_GEMINI_DEFAULT_MODEL || LEGACY_GEMMA3_MODELS.includes(config.model ?? ''))
+  ) {
+    config.model = CURRENT_GEMINI_DEFAULT_MODEL;
     return true;
   }
   return false;

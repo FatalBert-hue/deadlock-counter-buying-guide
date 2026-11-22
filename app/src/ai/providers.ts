@@ -8,15 +8,18 @@
 //
 // Request shapes were verified against the providers' current docs
 // (Nov 2026): Gemini generateContent REST, OpenAI chat completions,
-// Anthropic Messages API. Re-checked 2026-11-21 against
-// ai.google.dev: `gemma-3-27b-it` is the Gemini default (served
-// through the same generateContent endpoint with the same key),
-// `generateContent` remains fully supported (now labelled legacy
-// beside the new Interactions API), and `systemInstruction:
-// { parts: [{ text }] }` matches the GenerateContentRequest
-// reference for Gemini-family models — Gemma models reject that
-// field, so the Gemini provider prepends the system prompt to the
-// first user turn for Gemma instead (see providers/gemini.ts).
+// Anthropic Messages API. Re-checked 2026-11-22 against
+// ai.google.dev and gemma.ai: `gemma-4-31b-it` is the Gemini
+// default (served through the same generateContent endpoint with the
+// same key — the Gemma docs host exactly gemma-4-31b-it and
+// gemma-4-26b-a4b-it), `generateContent` remains fully supported
+// (now labelled legacy beside the new Interactions API), and
+// `systemInstruction: { parts: [{ text }] }` matches the
+// GenerateContentRequest reference — Gemma 4 supports that field
+// natively, unlike Gemma 3, which the API no longer serves at all
+// (gemma-3-27b-it 404s; Google's models page lists no Gemma). Only
+// a gemma-3-* model still gets the system prompt prepended to the
+// first user turn (see providers/gemini.ts).
 import type { AIConfig, ChatMessage } from './types';
 import { sendGemini } from './providers/gemini';
 import { sendOpenAI } from './providers/openai';
@@ -35,8 +38,10 @@ export interface SendChatOptions {
 
 /** An HTTP failure from a provider, carrying the status so callers
     can decide what to do next (e.g. Gemini falls back to a quieter
-    model on 429/5xx, but never on 400/401/403/404). The message is
-    the same plain-language friendly error the user sees. */
+    model on 429/5xx, and on 404 for its own built-in models — but
+    never on 400/401/403, and never on a 404 for the user's own typed
+    model). The message is the same plain-language friendly error
+    the user sees. */
 export class ProviderHttpError extends Error {
   status: number;
   constructor(status: number, context: string) {
