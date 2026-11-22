@@ -65,6 +65,12 @@ const BUILTIN_GEMINI_MODELS = [
   ...GEMINI_FALLBACK_MODELS,
 ];
 
+/** Overall deadline for one Gemini send across the whole chain.
+    90s: four models × ~30s worst case would otherwise be minutes
+    of "Thinking…". Production value — tests may use a shorter
+    deadline through postJson's options, never by changing this. */
+export const GEMINI_CHAIN_DEADLINE_MS = 90_000;
+
 /** Only Gemma 3 models lack a system role — `systemInstruction`
     errors on them — so the system prompt is prepended to the first
     user turn for those. Gemma 4 supports system instructions
@@ -79,10 +85,18 @@ export async function sendGemini(options: SendChatOptions): Promise<SendChatResu
   // Only a built-in chain model earns a 404 fallback — a dead
   // built-in is Google's doing, a dead custom model is the user's.
   const canFallback404 = BUILTIN_GEMINI_MODELS.includes(options.model);
+  // Overall deadline for one send across the whole chain (~90s).
+  // postJson's race caps each single attempt at 30s, but a chain
+  // of slow models could still spin for minutes — the deadline
+  // stops the chain and reports the last error, and it is also
+  // passed into postJson so an in-flight attempt cannot run past
+  // it. "Thinking…" never spins for minutes.
+  const deadline = Date.now() + GEMINI_CHAIN_DEADLINE_MS;
   let lastError: unknown = null;
   for (const model of chain) {
+    if (Date.now() >= deadline) break;
     try {
-      const text = await sendGeminiWithModel({ ...options, model });
+      const text = await sendGeminiWithModel({ ...options, model }, deadline);
       return { text, model };
     } catch (e) {
       // Only transient overload/rate-limit failures try the next model.
@@ -104,10 +118,16 @@ export async function sendGemini(options: SendChatOptions): Promise<SendChatResu
   }
   // Every model in the chain failed the same way — report the last
   // one's error, which carries the same diagnosable status.
-  throw lastError;
+  if (lastError !== null) {
+    throw lastError;
+  }
+  throw new Error('That took too long — check your connection and try again.');
 }
 
-async function sendGeminiWithModel({ apiKey, model, systemPrompt, messages }: SendChatOptions): Promise<string> {
+async function sendGeminiWithModel(
+  { apiKey, model, systemPrompt, messages }: SendChatOptions,
+  deadline: number,
+): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const contents = messages.map((m) => ({
     role: m.role === 'assistant' ? 'model' : 'user',
@@ -134,6 +154,7 @@ async function sendGeminiWithModel({ apiKey, model, systemPrompt, messages }: Se
     { 'x-goog-api-key': apiKey },
     body,
     'Gemini',
+    { deadline },
   );
   const parts = json.candidates?.[0]?.content?.parts;
   if (Array.isArray(parts)) {

@@ -147,34 +147,72 @@ function retryDelayMs(retryIndex: number): number {
   return RETRY_BASE_DELAY_MS * 2 ** retryIndex + Math.random() * 250;
 }
 
-/** Run a fetch and turn HTTP errors into friendly errors. Throws the
-    friendly error; returns the parsed JSON body on success. The request
-    is aborted after REQUEST_TIMEOUT_MS so this always settles, transient
-    429/5xx responses are retried with backoff, and network failures
-    (fetch throwing before any response) are retried twice on a fresh
-    connection (see the retry policy above). Timeouts are never retried.
-    When retries are exhausted the error is exactly the same friendly
-    error a single attempt would have produced, status included. */
+/** Options for postJson. `timeoutMs` exists only so tests can
+    prove the race without waiting 30s — production callers pass
+    nothing and always get REQUEST_TIMEOUT_MS. `deadline` is an
+    absolute Date.now() timestamp capping the whole call including
+    retries (the Gemini chain passes its ~90s deadline so a chain
+    of slow models can never spin for minutes). */
+export interface PostJsonOptions {
+  timeoutMs?: number;
+  deadline?: number;
+}
+
+/** Run a fetch and turn HTTP errors into friendly errors. The
+    request is raced against a timeout promise, so it ALWAYS
+    settles at REQUEST_TIMEOUT_MS even if the underlying fetch
+    ignores the AbortController signal — that is the failure Mikel
+    hit on 2026-11-21: a chat send showed "Thinking…" for ~5
+    minutes, then "couldn't reach Gemini", because the fetch hung
+    past the 30s abort and only died when the OS killed the socket.
+    Transient 429/5xx responses are retried with backoff, and
+    network failures (fetch throwing before any response) are
+    retried twice on a fresh connection (see the retry policy
+    above). Timeouts are never retried. When retries are exhausted
+    the error is exactly the same friendly error a single attempt
+    would have produced, status included. */
 export async function postJson(
   url: string,
   headers: Record<string, string>,
   body: unknown,
   context: string,
+  options: PostJsonOptions = {},
 ): Promise<Record<string, any>> {
+  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
+  const deadline = options.deadline;
   for (let attempt = 0; ; attempt++) {
+    // Overall deadline: once it has passed, stop starting attempts.
+    const remaining = deadline === undefined ? Infinity : deadline - Date.now();
+    if (remaining <= 0) {
+      throw new Error('That took too long — check your connection and try again.');
+    }
+    const attemptTimeout = Math.min(timeoutMs, remaining);
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    // The timeout error for this attempt — the race rejects with
+    // this exact object so it can be told apart from a real
+    // network failure below.
+    const timeoutError = new Error('That took too long — check your connection and try again.');
+    const abortTimer = setTimeout(() => controller.abort(), attemptTimeout);
+    let raceTimer: ReturnType<typeof setTimeout> | undefined;
     let res: Response;
     try {
-      res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
+      res = await Promise.race([
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...headers },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        }),
+        new Promise<never>((_, reject) => {
+          raceTimer = setTimeout(() => reject(timeoutError), attemptTimeout);
+        }),
+      ]);
     } catch (e) {
-      if (e instanceof Error && e.name === 'AbortError') {
-        throw new Error('That took too long — check your connection and try again.');
+      // The race left a fetch hanging — cancel it if it honours
+      // the signal so it does not linger for minutes.
+      controller.abort();
+      if (e === timeoutError || (e instanceof Error && e.name === 'AbortError')) {
+        throw timeoutError;
       }
       // Network failure: fetch threw before any response came back
       // (stale pooled connection, Wi-Fi hiccup). Retry on a fresh
@@ -187,7 +225,8 @@ export async function postJson(
       }
       throw friendlyError(null, context);
     } finally {
-      clearTimeout(timer);
+      clearTimeout(abortTimer);
+      if (raceTimer !== undefined) clearTimeout(raceTimer);
     }
     if (res.ok) {
       try {

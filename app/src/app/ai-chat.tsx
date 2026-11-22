@@ -19,6 +19,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import type { TextInputInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccentButton } from '@/components/accent-button';
@@ -55,6 +56,7 @@ export default function AIChatScreen() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const listRef = useRef<FlatList<StoredChatMessage>>(null);
+  const inputRef = useRef<TextInputInstance>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY)
@@ -80,6 +82,10 @@ export default function AIChatScreen() {
     const text = input.trim();
     if (!text || sending) return;
     setInput('');
+    // Belt and braces: a controlled multiline TextInput on Android
+    // sometimes does not visually clear when its value is set to ''
+    // programmatically, so clear the native text as well.
+    inputRef.current?.clear();
     const userMsg: StoredChatMessage = { id: nextId(), role: 'user', text };
     const withUser = [...messages, userMsg];
     persist(withUser);
@@ -134,6 +140,11 @@ export default function AIChatScreen() {
             </View>
           ) : (
             <>
+              {/* Screen status, up top under the header — nowhere
+                  near the input row. */}
+              <Text style={[styles.modelNote, styles.modelNoteTop, { color: palette.faint }]}>
+                Answering with {answeringModel}
+              </Text>
               {messages.length > 0 ? (
                 <View style={styles.clearRow}>
                   <Pressable
@@ -151,6 +162,18 @@ export default function AIChatScreen() {
                 keyExtractor={(m) => m.id}
                 contentContainerStyle={styles.list}
                 keyboardShouldPersistTaps="handled"
+                ListFooterComponent={
+                  // "Thinking…" lives in the message list so it
+                  // scrolls with the conversation and reads as
+                  // part of the chat, not as input chrome.
+                  sending ? (
+                    <View style={styles.aiRow}>
+                      <View style={[styles.bubble, styles.aiBubble, { backgroundColor: palette.panel }]}>
+                        <Text style={[styles.bubbleText, { color: palette.muted }]}>Thinking…</Text>
+                      </View>
+                    </View>
+                  ) : undefined
+                }
                 ListEmptyComponent={
                   <View style={[styles.emptyCard, cardShadow(palette), { backgroundColor: palette.panel }]}>
                     <Text style={[styles.emptyTitle, { color: palette.ink }]}>Ask about Deadlock</Text>
@@ -192,16 +215,9 @@ export default function AIChatScreen() {
                   )
                 }
               />
-              {sending ? (
-                <View style={styles.aiRow}>
-                  <View style={[styles.bubble, styles.aiBubble, { backgroundColor: palette.panel }]}>
-                    <Text style={[styles.bubbleText, { color: palette.muted }]}>Thinking…</Text>
-                  </View>
-                </View>
-              ) : null}
-              <Text style={[styles.modelNote, { color: palette.faint }]}>Answering with {answeringModel}</Text>
               <View style={[styles.inputRow, { backgroundColor: palette.bg }]}>
                 <TextInput
+                  ref={inputRef}
                   value={input}
                   onChangeText={setInput}
                   placeholder="Ask about Deadlock…"
@@ -306,6 +322,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
     paddingBottom: 2,
+  },
+  modelNoteTop: {
+    paddingTop: 10,
+    paddingBottom: 4,
   },
   inputRow: {
     flexDirection: 'row',
