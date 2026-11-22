@@ -14,7 +14,7 @@ import { ACCENTS, ICON_SIZES, pillShadow, type IconSize, type ThemeMode } from '
 import { useAI } from '@/state/ai';
 import { useSettings } from '@/state/settings';
 import { AccentButton } from '@/components/accent-button';
-import { AI_PROVIDERS, providerMeta, type AIProviderId } from '@/ai/types';
+import { AI_PROVIDERS, isCustomModel, providerMeta, type AIProviderId } from '@/ai/types';
 import { loadApiKey } from '@/ai/secure-key';
 
 const THEME_MODES: { id: ThemeMode; label: string }[] = [
@@ -37,12 +37,35 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
   const [testStatus, setTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [testing, setTesting] = useState(false);
   const [savingKey, setSavingKey] = useState(false);
+  const [modelListOpen, setModelListOpen] = useState(false);
+  const [customModelOpen, setCustomModelOpen] = useState(false);
 
   const meta = providerMeta(config.provider);
+  // Models offered in the dropdown for this provider (empty for
+  // "Other" — its models depend on the service). A saved model that
+  // is not in the list is a custom one the user typed: it shows as
+  // the Custom value with the text field open.
+  const modelOptions = meta.models;
+  const customModel = isCustomModel(config.provider, config.model);
+  const showCustomField = config.provider === 'other' || customModel || customModelOpen;
 
   const onPickProvider = (id: AIProviderId) => {
     saveConfig({ provider: id, model: '', baseUrl: id === 'other' ? config.baseUrl : '' });
     setTestStatus(null);
+    setModelListOpen(false);
+    setCustomModelOpen(false);
+  };
+
+  const onPickModel = (model: string) => {
+    saveConfig({ model });
+    setModelListOpen(false);
+    setCustomModelOpen(false);
+    setTestStatus(null);
+  };
+
+  const onPickCustomModel = () => {
+    setModelListOpen(false);
+    setCustomModelOpen(true);
   };
 
   const onSaveKey = async () => {
@@ -172,18 +195,80 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
           <Text style={[styles.hint, { color: palette.muted }]}>{meta.keyHint}</Text>
 
           <Text style={[styles.fieldLabel, { color: palette.ink }]}>Model</Text>
-          <TextInput
-            value={config.model}
-            onChangeText={(v) => saveConfig({ model: v })}
-            placeholder={meta.defaultModel || 'e.g. gpt-4o-mini'}
-            placeholderTextColor={palette.faint}
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={[styles.input, pillShadow(palette), { backgroundColor: palette.panel2, color: palette.ink }]}
-            accessibilityLabel="AI model"
-          />
+          {modelOptions.length > 0 ? (
+            <>
+              <Pressable
+                onPress={() => setModelListOpen((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel="Choose AI model"
+                style={[styles.input, styles.modelField, pillShadow(palette), { backgroundColor: palette.panel2 }]}>
+                <Text
+                  style={[styles.modelFieldText, { color: palette.ink }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  {config.model === ''
+                    ? `Default (${meta.defaultModel})`
+                    : customModel
+                      ? `Custom: ${config.model}`
+                      : config.model}
+                </Text>
+                <Text style={[styles.modelChevron, { color: palette.muted }]}>{modelListOpen ? '▴' : '▾'}</Text>
+              </Pressable>
+              {modelListOpen ? (
+                <View style={[styles.modelList, pillShadow(palette), { backgroundColor: palette.panel2 }]}>
+                  <Pressable
+                    onPress={() => onPickModel('')}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use default model ${meta.defaultModel}`}
+                    style={[styles.modelRow, { borderBottomColor: palette.line }]}>
+                    <Text style={[styles.modelRowText, { color: palette.ink }]}>
+                      Default ({meta.defaultModel}){config.model === '' ? ' ✓' : ''}
+                    </Text>
+                  </Pressable>
+                  {modelOptions.map((m) => (
+                    <Pressable
+                      key={m}
+                      onPress={() => onPickModel(m)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use model ${m}`}
+                      style={[styles.modelRow, { borderBottomColor: palette.line }]}>
+                      <Text style={[styles.modelRowText, { color: palette.ink }]}>
+                        {m}
+                        {config.model === m ? ' ✓' : ''}
+                      </Text>
+                    </Pressable>
+                  ))}
+                  <Pressable
+                    onPress={onPickCustomModel}
+                    accessibilityRole="button"
+                    accessibilityLabel="Type a custom model name"
+                    style={styles.modelRowLast}>
+                    <Text style={[styles.modelRowText, { color: palette.ink }]}>
+                      Custom…{customModel ? ' ✓' : ''}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : null}
+            </>
+          ) : null}
+          {showCustomField ? (
+            <TextInput
+              value={config.model}
+              onChangeText={(v) => saveConfig({ model: v })}
+              placeholder={
+                config.provider === 'other' ? 'Model name from your service' : meta.defaultModel || 'e.g. gpt-4o-mini'
+              }
+              placeholderTextColor={palette.faint}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={[styles.input, styles.customModelInput, pillShadow(palette), { backgroundColor: palette.panel2, color: palette.ink }]}
+              accessibilityLabel="Custom AI model"
+            />
+          ) : null}
           <Text style={[styles.hint, { color: palette.muted }]}>
-            Leave blank to use {meta.defaultModel ? `the default (${meta.defaultModel})` : 'your provider’s default'}.
+            {modelOptions.length > 0
+              ? 'Pick a model, or choose Custom… to type a different one.'
+              : 'Type the model name your service uses.'}
           </Text>
 
           {config.provider === 'other' ? (
@@ -328,6 +413,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
+  },
+  modelField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  modelFieldText: {
+    fontSize: 15,
+    fontWeight: '600',
+    flex: 1,
+  },
+  modelChevron: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  modelList: {
+    borderRadius: 16,
+    borderCurve: 'continuous',
+    marginTop: 8,
+    overflow: 'hidden',
+  },
+  modelRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  modelRowLast: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  modelRowText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  customModelInput: {
+    marginTop: 8,
   },
   keyRow: {
     flexDirection: 'row',

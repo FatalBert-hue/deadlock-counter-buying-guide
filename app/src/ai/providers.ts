@@ -122,11 +122,20 @@ export const REQUEST_TIMEOUT_MS = 30_000;
     limit) and 5xx (e.g. Gemini 503 "model is currently experiencing
     high demand"). Client errors (400/401/403/404 — bad key, wrong
     model) fail immediately, because retrying them can never help.
-    Timeouts and network failures are NOT retried either: a request
-    that already waited the full 30s should not make the user wait
-    minutes. Delays are ~1s, ~2s, ~4s with a little jitter, so a
-    503 that clears quickly still feels fast. */
+    Timeouts are NOT retried either: a request that already waited
+    the full 30s should not make the user wait minutes.
+    Network failures ARE retried — 2 retries (3 attempts total),
+    ~1s then ~2s apart. That is the exact failure Mikel hit on
+    2026-11-21: Test connection (tiny prompt) succeeds, then the
+    first real chat message (full Deadlock context, longer-held
+    connection) fails with "Couldn't reach Gemini" because fetch
+    threw before any response came back — a stale pooled connection
+    on a flaky link. A failed connection attempt sends nothing and
+    consumes no quota, so retrying it is free, and the next attempt
+    opens a fresh connection. Delays are ~1s, ~2s, ~4s with a little
+    jitter for HTTP retries, ~1s then ~2s for network retries. */
 export const MAX_RETRIES = 3;
+export const MAX_NETWORK_RETRIES = 2;
 const RETRY_BASE_DELAY_MS = 1_000;
 
 function sleep(ms: number): Promise<void> {
@@ -140,8 +149,10 @@ function retryDelayMs(retryIndex: number): number {
 
 /** Run a fetch and turn HTTP errors into friendly errors. Throws the
     friendly error; returns the parsed JSON body on success. The request
-    is aborted after REQUEST_TIMEOUT_MS so this always settles, and
-    transient 429/5xx responses are retried with backoff (see above).
+    is aborted after REQUEST_TIMEOUT_MS so this always settles, transient
+    429/5xx responses are retried with backoff, and network failures
+    (fetch throwing before any response) are retried twice on a fresh
+    connection (see the retry policy above). Timeouts are never retried.
     When retries are exhausted the error is exactly the same friendly
     error a single attempt would have produced, status included. */
 export async function postJson(
@@ -164,6 +175,15 @@ export async function postJson(
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
         throw new Error('That took too long — check your connection and try again.');
+      }
+      // Network failure: fetch threw before any response came back
+      // (stale pooled connection, Wi-Fi hiccup). Retry on a fresh
+      // connection — the failed attempt sent nothing and cost no
+      // quota. After MAX_NETWORK_RETRIES retries, surface the same
+      // friendly "couldn't reach" error a single attempt would give.
+      if (attempt < MAX_NETWORK_RETRIES) {
+        await sleep(retryDelayMs(attempt));
+        continue;
       }
       throw friendlyError(null, context);
     } finally {
