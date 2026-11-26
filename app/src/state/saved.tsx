@@ -6,7 +6,7 @@
 // file is readable by the phone app and by the future desktop app, in
 // either direction, and older files still import fine:
 //   { "format": "counter-buy-build", "formatVersion": 1, "app": "DCB",
-//     "dataPatch": "Minor Update 11-04-2026", "name": "...",
+//     "dataPatch": "Minor Update 11-26-2026", "name": "...",
 //     "author": "Mikel", "savedAt": "<ISO date>",
 //     "enemyHero": "Mina", "enemyItems": [...],
 //     "youHero": "Abrams", "youItems": [...] }

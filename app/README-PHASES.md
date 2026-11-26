@@ -5,13 +5,13 @@ must NOT be "Deadlock Counter Buying Guide". Free, no ads, no in-app purchases,
 no accounts, no logins, no AI, no backend. Rule-based only: pro counter-buy
 rules first, item-effect algorithm second.
 
-Data current to **Minor Update 11-04-2026** (posted 2026-11-05): 44 heroes,
+Data current to **Minor Update 11-26-2026** (posted 2026-11-26): 44 heroes,
 156 items.
 
 ## Layout
 
 - `pwa/` — **Phase 0, PWA safety net ($0).** A copy of the web guide
-  (v0.7) made installable. The live site under
+  (v0.8) made installable. The live site under
   `~/workspace/ts-spaces/deadlock-counter-buying-guide/` was NOT touched;
   only this copy was modified.
   - `index.html` — copy of the guide, plus manifest link, theme-color /
@@ -23,7 +23,7 @@ Data current to **Minor Update 11-04-2026** (posted 2026-11-05): 44 heroes,
     from the guide's `icon.webp` with PIL.
   - `assets/` — the 200 hero/item images, copied unchanged.
 - `data/data.json` — **canonical extracted data** (version 1, patch
-  "Minor Update 11-04-2026"): 44 heroes, 156 items, 59 counter entries,
+  "Minor Update 11-26-2026"): 44 heroes, 156 items, 59 counter entries,
   pro rules for all 44 heroes, signature picks for all 44, family map,
   upgrades. Extracted from the web guide's `index.html` with
   `/tmp/extract-data.js` (read-only parse of the page's data literals).

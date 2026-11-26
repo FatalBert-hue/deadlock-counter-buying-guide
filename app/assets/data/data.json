@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "patch": "Minor Update 11-04-2026",
-  "patchPosted": "2026-11-05",
-  "source": "Deadlock Counter Buying Guide web guide v0.7 (extracted 2026-11-20)",
+  "patch": "Minor Update 11-26-2026",
+  "patchPosted": "2026-11-26",
+  "source": "Deadlock Counter Buying Guide web guide v0.8 (extracted 2026-11-26)",
   "heroes": [
     {
       "name": "Abrams",
@@ -25,7 +25,7 @@
         "mobile",
         "burst"
       ],
-      "note": "Riposte parries you, and since 4 Nov his Pommel Hit also disarms — don't dump a magazine into the parry."
+      "note": "Riposte no longer triggers off bullets — it reflects them; only abilities and items trigger it. Pommel Hit no longer disarms — it knocks you up, slows you 50% and blocks stamina for 2s."
     },
     {
       "name": "Baba",
@@ -35,7 +35,7 @@
         "spirit",
         "tank"
       ],
-      "note": "S-tier frontliner. Baba's Brew cycles barrier, silence and burn; her resists were trimmed on 4 Nov (Spirit Resist scaling 0.7→0.5)."
+      "note": "S-tier frontliner. Baba's Brew cycles barrier, silence and burn; Threadsap now lasts 10s (was 16s) and her Spirit Resist scaling was cut again on 26 Nov. Feed The Birds hits harder (max damage 650) but Indomitable now blocks the pigeon."
     },
     {
       "name": "Bebop",
@@ -2020,7 +2020,7 @@
       "tier": 3,
       "cost": 3200,
       "deliver": "active",
-      "desc": "Active (45s CD): purge all non-ultimate debuffs on yourself; if anything was removed, heal 250 and gain move speed. Cannot be used while stunned or asleep — pop it for slows, burns, hexes and marks, before the stun lands."
+      "desc": "Active (52s CD): purge all non-ultimate debuffs on yourself; if anything was removed, heal 250 and gain move speed. Cannot be used while stunned or asleep — pop it for slows, burns, hexes and marks, before the stun lands."
     },
     "Debuff Reducer": {
       "cat": "Vitality",
@@ -2153,7 +2153,7 @@
       "tier": 4,
       "cost": 6400,
       "deliver": "passive",
-      "desc": "Passive (90s CD): when you would die, you instead survive with 4.5s of death immunity and clear non-stun debuffs — at −60% damage and healing during it. Buys the one extra life a focused target needs."
+      "desc": "Passive (105s CD): when you would die, you instead survive with 4.5s of death immunity and clear non-stun debuffs — at −60% damage and healing during it. Buys the one extra life a focused target needs."
     },
     "Divine Barrier": {
       "cat": "Vitality",
@@ -2251,7 +2251,7 @@
       "tier": 4,
       "cost": 6400,
       "deliver": "passive",
-      "desc": "Automatically cleanses the next stun, sleep, silence, root or fear and grants a barrier — no reaction needed. The pro answer to surprise catches (Sleep Dagger, Lasso, Wraith's ult lift) where you can't press Unstoppable in time. Not a reliable escape from Dynamo's Singularity."
+      "desc": "Automatically cleanses the next stun, sleep, silence, root or fear and grants a barrier — no reaction needed. The pro answer to surprise catches (Sleep Dagger, Lasso, Wraith's ult lift) where you can't press Unstoppable in time. Not a reliable escape from Dynamo's Singularity. It also blocks Baba's Feed The Birds pigeon transformation (26 Nov)."
     },
     "Mystic Slow": {
       "cat": "Spirit",
@@ -2389,7 +2389,7 @@
       [
         "Escalating Exposure",
         10,
-        "Baba stacks health and resists, and her Spirit Resist scaling was cut on 4 Nov — stacking spirit amplification burns through the frontline build."
+        "Baba stacks health and resists, and her Spirit Resist scaling was cut again on 26 Nov — stacking spirit amplification burns through the frontline build."
       ],
       [
         "Spirit Resilience",
@@ -3221,6 +3221,11 @@
         "Rebuttal",
         8,
         "If Baba has Granny Long Legs melee, then suggest Rebuttal — parry the light kick and it stuns her. Pro rule · Strong (IB)"
+      ],
+      [
+        "Indomitable",
+        8,
+        "If Baba has Feed The Birds (channeled ult), then suggest Indomitable — it now blocks the pigeon transformation outright. Pro rule · Strong (VALVE)"
       ],
       [
         "Knockdown",

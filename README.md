@@ -1,4 +1,4 @@
-# Deadlock Counter Buying Guide — v0.7
+# Deadlock Counter Buying Guide — v0.8
 
 > Pick the enemy hero and their items, pick your hero and yours, and get the counter-buy the pros would buy.
 
@@ -20,7 +20,7 @@
 
 ## Current patch
 
-Current to **Minor Update 11-04-2026** (posted 5 November 2026).
+Current to **Minor Update 11-26-2026** (posted 26 November 2026).
 
 ## A note
 
