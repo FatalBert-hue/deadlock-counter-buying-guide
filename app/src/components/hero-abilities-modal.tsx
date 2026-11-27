@@ -24,12 +24,16 @@ export function HeroAbilitiesModal({ heroName, onClose }: { heroName: string | n
   const abilities = hero?.abilities ?? [];
   return (
     <Modal visible={hero != null} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close hero abilities">
-        <Pressable
-          style={styles.panel}
-          // No-op press so taps on the panel itself don't fall through
-          // to the backdrop and close the modal.
-          onPress={() => {}}>
+      {/* The panel is NOT inside a Pressable: the first version nested
+          the ScrollView inside the backdrop and panel Pressables, and
+          on Android they fought the scroll gesture — scrolling stuck,
+          stuttered, or snapped back. Now the close target is a
+          separate full-screen Pressable behind the panel, so taps
+          outside close the modal and touches inside the panel belong
+          to the ScrollView alone. */}
+      <View style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close hero abilities" />
+        <View style={styles.panel}>
           {hero ? (
             <>
               <View style={styles.head}>
@@ -47,7 +51,7 @@ export function HeroAbilitiesModal({ heroName, onClose }: { heroName: string | n
               </View>
               <View style={[styles.divider, { backgroundColor: SHOP_LINE }]} />
               {abilities.length ? (
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView style={styles.scroll} showsVerticalScrollIndicator contentContainerStyle={styles.scrollContent}>
                   {abilities.map((a) => {
                     const local = abilityImage(hero.name, a.name);
                     const source = local ?? (a.iconUrl ? { uri: a.iconUrl } : undefined);
@@ -91,8 +95,8 @@ export function HeroAbilitiesModal({ heroName, onClose }: { heroName: string | n
               )}
             </>
           ) : null}
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -157,6 +161,15 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginVertical: 12,
+  },
+  scroll: {
+    // flex: 1 gives the list a real bounded height inside the panel
+    // (header + divider take the rest), so it scrolls instead of
+    // sizing to its content and overflowing the modal.
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 8,
   },
   ability: {
     marginBottom: 16,
