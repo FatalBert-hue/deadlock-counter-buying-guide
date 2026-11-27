@@ -1,11 +1,15 @@
 // AI chat helper — types shared by the provider layer, the AI state
 // provider, the Settings AI section, and the AI Chat screen.
 //
-// The user brings their own key (BYOK): Gemini, ChatGPT (OpenAI),
-// Claude (Anthropic), or any OpenAI-compatible endpoint ("Other").
-// The key lives ONLY in expo-secure-store — never in AsyncStorage,
-// never in plain text, never in a log or an error message.
-export type AIProviderId = 'gemini' | 'openai' | 'anthropic' | 'other';
+// The user brings their own key (BYOK). OpenRouter is the default:
+// one key for every model, free or paid, with a one-tap sign-in in
+// Settings — it replaces the old way of pasting a separate key per
+// provider. Gemini, ChatGPT (OpenAI), Claude (Anthropic), and any
+// OpenAI-compatible endpoint ("Other") are still available for
+// anyone who already has those keys. The key lives ONLY in
+// expo-secure-store — never in AsyncStorage, never in plain text,
+// never in a log or an error message.
+export type AIProviderId = 'openrouter' | 'gemini' | 'openai' | 'anthropic' | 'other';
 
 export interface AIProviderMeta {
   id: AIProviderId;
@@ -24,6 +28,33 @@ export interface AIProviderMeta {
 }
 
 export const AI_PROVIDERS: AIProviderMeta[] = [
+  {
+    id: 'openrouter',
+    label: 'OpenRouter',
+    keyHint: 'One key for every model — free from openrouter.ai, or tap "Sign in with OpenRouter" below.',
+    // The default since 2026-11-27: the cheapest models that can
+    // still answer game questions well, free first. Both Gemma 4
+    // models are free on OpenRouter (verified 2026-11-27 on
+    // openrouter.ai/google/gemma-4-31b-it:free and
+    // /gemma-4-26b-a4b-it:free — $0, served by Google AI Studio,
+    // 262K context, image input, so screenshots work). Free-model
+    // limits: 20 requests/min, 50/day, rising to 1,000/day once the
+    // account has bought $10 of credits at any point. Paid fallback
+    // is Gemini 2.5 Flash-Lite ($0.10/$0.40 per 1M tokens, verified
+    // 2026-11-27 on openrouter.ai/google/gemini-2.5-flash-lite),
+    // and DeepSeek V3 ($0.26/$1.03 per 1M, verified the same day on
+    // openrouter.ai/deepseek/deepseek-chat) is the last dropdown
+    // option. The app's fallback chain (providers/openrouter.ts)
+    // runs default → 26B free → Flash-Lite, so a free user never
+    // pays unless both free models are capped out.
+    defaultModel: 'google/gemma-4-31b-it:free',
+    models: [
+      'google/gemma-4-31b-it:free',
+      'google/gemma-4-26b-a4b-it:free',
+      'google/gemini-2.5-flash-lite',
+      'deepseek/deepseek-chat',
+    ],
+  },
   {
     id: 'gemini',
     label: 'Gemini',
@@ -112,7 +143,7 @@ export interface AIConfig {
 }
 
 export const DEFAULT_AI_CONFIG: AIConfig = {
-  provider: 'gemini',
+  provider: 'openrouter',
   model: '',
   baseUrl: '',
 };

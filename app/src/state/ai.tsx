@@ -17,6 +17,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { deleteApiKey, hasApiKey, loadApiKey, saveApiKey } from '@/ai/secure-key';
 import { sendChatMessage } from '@/ai/providers';
 import { buildSystemPrompt, buildTestSystemPrompt } from '@/ai/system-prompt';
+import { buildRelevantGameData } from '@/ai/game-context';
 import { DEFAULT_AI_CONFIG, migrateLegacyGeminiModel, providerMeta, type AIConfig, type ChatMessage } from '@/ai/types';
 
 const CONFIG_KEY = 'counter-buy:ai-config:v1';
@@ -168,11 +169,20 @@ export function AIProvider({ children }: { children: ReactNode }) {
       if (!model) {
         throw new Error('No model set — add one in Settings first.');
       }
+      // The app's own counter-buy data for this question: heroes and
+      // items named in the latest user message get their full picks,
+      // reasons, and descriptions appended to the system prompt, so
+      // the model answers from DCB's database instead of guessing.
+      // Nothing is appended when the question names nobody — the
+      // compact system prompt carries those on its own.
+      const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+      const relevant = buildRelevantGameData(lastUser?.text ?? '');
+      const systemPrompt = relevant ? `${buildSystemPrompt()}\n\n${relevant}` : buildSystemPrompt();
       const result = await sendChatMessage({
         config,
         apiKey: key,
         model,
-        systemPrompt: buildSystemPrompt(),
+        systemPrompt,
         messages,
       });
       setLastUsedModel(result.model);

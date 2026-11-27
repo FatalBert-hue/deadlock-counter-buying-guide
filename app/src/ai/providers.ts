@@ -8,7 +8,8 @@
 //
 // Request shapes were verified against the providers' current docs
 // (Nov 2026): Gemini generateContent REST, OpenAI chat completions,
-// Anthropic Messages API. Re-checked 2026-11-22 against
+// Anthropic Messages API, OpenRouter chat completions (OpenAI wire
+// format at openrouter.ai/api/v1). Re-checked 2026-11-22 against
 // ai.google.dev and gemma.ai: `gemma-4-31b-it` is the Gemini
 // default (served through the same generateContent endpoint with the
 // same key — the Gemma docs host exactly gemma-4-31b-it and
@@ -25,6 +26,7 @@ import { sendGemini } from './providers/gemini';
 import { sendOpenAI } from './providers/openai';
 import { sendAnthropic } from './providers/anthropic';
 import { sendOpenAICompatible } from './providers/openai-compatible';
+import { sendOpenRouter } from './providers/openrouter';
 
 export interface SendChatOptions {
   config: AIConfig;
@@ -62,6 +64,8 @@ export interface SendChatResult {
 export async function sendChatMessage(options: SendChatOptions): Promise<SendChatResult> {
   const { config } = options;
   switch (config.provider) {
+    case 'openrouter':
+      return sendOpenRouter(options);
     case 'gemini':
       return sendGemini(options);
     case 'openai':
@@ -95,6 +99,10 @@ export function friendlyError(status: number | null, context: string): Error {
     case 404:
       return new Error(
         `That model wasn't found on ${context} (error 404). Check the model name in Settings.`,
+      );
+    case 402:
+      return new Error(
+        `You're out of credits on ${context} (error 402) — top up at openrouter.ai, or switch to a free model in Settings.`,
       );
     case 429:
       return new Error(

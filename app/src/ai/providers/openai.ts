@@ -23,10 +23,11 @@ export async function sendChatCompletions(
   systemPrompt: string,
   messages: SendChatOptions['messages'],
   context: string,
+  options: { extraHeaders?: Record<string, string>; deadline?: number } = {},
 ): Promise<string> {
   const json = await postJson(
     url,
-    { Authorization: `Bearer ${apiKey}` },
+    { Authorization: `Bearer ${apiKey}`, ...options.extraHeaders },
     {
       model,
       messages: [
@@ -36,6 +37,7 @@ export async function sendChatCompletions(
       max_tokens: 1024,
     },
     context,
+    { deadline: options.deadline },
   );
   const text = json.choices?.[0]?.message?.content;
   if (typeof text === 'string' && text.trim()) return text.trim();

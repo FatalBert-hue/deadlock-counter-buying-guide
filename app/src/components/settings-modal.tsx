@@ -1,7 +1,8 @@
 // Settings modal: theme (dark/light/system), border accent colour, item
 // icon size, show/hide souls budget — plus the AI section: pick a
-// provider (Gemini, ChatGPT, Claude, or another OpenAI-compatible
-// service), paste your own API key, test the connection.
+// provider (OpenRouter first, then Gemini, ChatGPT, Claude, or
+// another OpenAI-compatible service), sign in with OpenRouter or
+// paste your own API key, test the connection.
 //
 // The key is stored ONLY in expo-secure-store (see src/ai/secure-key.ts)
 // — never in AsyncStorage, never in plain text, never logged. The
@@ -9,12 +10,19 @@
 // rest of the AI config.
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 
 import { ACCENTS, ICON_SIZES, pillShadow, type IconSize, type ThemeMode } from '@/constants/palette';
 import { useAI } from '@/state/ai';
 import { useSettings } from '@/state/settings';
 import { AccentButton } from '@/components/accent-button';
 import { AI_PROVIDERS, isCustomModel, providerMeta, type AIProviderId } from '@/ai/types';
+import {
+  cancelOpenRouterSignIn,
+  completeOpenRouterSignIn,
+  queryParam,
+  startOpenRouterSignIn,
+} from '@/ai/openrouter-auth';
 import { loadApiKey } from '@/ai/secure-key';
 
 const THEME_MODES: { id: ThemeMode; label: string }[] = [
@@ -37,6 +45,7 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
   const [testStatus, setTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [testing, setTesting] = useState(false);
   const [savingKey, setSavingKey] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const [modelListOpen, setModelListOpen] = useState(false);
   const [customModelOpen, setCustomModelOpen] = useState(false);
 
@@ -101,6 +110,45 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
     await disconnect();
     setKeyInput('');
     setTestStatus({ ok: true, message: 'Disconnected — key removed from this phone.' });
+  };
+
+  // "Sign in with OpenRouter": opens openrouter.ai in the browser,
+  // the user authorizes DCB, and OpenRouter redirects back to the
+  // app (dcb://openrouter) with a code that is exchanged for a key
+  // tied to their own OpenRouter account. If the redirect lands on
+  // the /openrouter route instead of coming back here, that screen
+  // completes the same exchange — either way the key ends up saved.
+  const onSignInWithOpenRouter = async () => {
+    setSigningIn(true);
+    setTestStatus(null);
+    try {
+      const { authUrl, redirectUrl } = await startOpenRouterSignIn();
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+      if (result.type === 'cancel' || result.type === 'dismiss' || result.type === 'locked') {
+        await cancelOpenRouterSignIn();
+        setTestStatus({ ok: false, message: 'Sign-in cancelled — you can paste a key instead.' });
+        return;
+      }
+      if (result.type !== 'success') return;
+      const code = queryParam(result.url, 'code');
+      const state = queryParam(result.url, 'state');
+      if (!code) {
+        setTestStatus({ ok: false, message: 'OpenRouter did not send a sign-in code — try again.' });
+        return;
+      }
+      const outcome = await completeOpenRouterSignIn(code, state);
+      setTestStatus({
+        ok: true,
+        message:
+          outcome === 'already'
+            ? 'Already signed in with OpenRouter.'
+            : 'Signed in with OpenRouter — key saved on this phone.',
+      });
+    } catch (e) {
+      setTestStatus({ ok: false, message: e instanceof Error ? e.message : 'Sign-in failed — try again.' });
+    } finally {
+      setSigningIn(false);
+    }
   };
 
   return (
@@ -193,6 +241,23 @@ export function SettingsModal({ visible, onClose }: { visible: boolean; onClose:
             })}
           </View>
           <Text style={[styles.hint, { color: palette.muted }]}>{meta.keyHint}</Text>
+
+          {config.provider === 'openrouter' ? (
+            <>
+              <View style={styles.aiButtons}>
+                <AccentButton
+                  label={signingIn ? 'Signing in…' : 'Sign in with OpenRouter'}
+                  onPress={onSignInWithOpenRouter}
+                  disabled={signingIn}
+                  compact
+                />
+              </View>
+              <Text style={[styles.hint, { color: palette.muted }]}>
+                Free models answer up to 50 questions a day — no card needed. A one-time $10 top-up on
+                openrouter.ai lifts that to 1,000 a day. Or paste a key below instead.
+              </Text>
+            </>
+          ) : null}
 
           <Text style={[styles.fieldLabel, { color: palette.ink }]}>Model</Text>
           {modelOptions.length > 0 ? (
