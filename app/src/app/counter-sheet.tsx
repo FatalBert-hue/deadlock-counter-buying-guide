@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { cardShadow, Radii } from '@/constants/palette';
+import { HeroAbilitiesModal } from '@/components/hero-abilities-modal';
 import { HeroPicker } from '@/components/hero-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
@@ -18,6 +19,7 @@ export default function CounterSheetScreen() {
   const { palette } = useSettings();
   const [enemyHero, setEnemyHero] = useState<string | null>(null);
   const [heroPickerOpen, setHeroPickerOpen] = useState(false);
+  const [abilitiesHero, setAbilitiesHero] = useState<string | null>(null);
 
   const result = useMemo(() => scoreCounterSheet(data, enemyHero), [data, enemyHero]);
 
@@ -36,7 +38,14 @@ export default function CounterSheetScreen() {
         ]}>
         {enemyHero ? (
           <>
-            <TileImage source={heroImage(enemyHero)} size={52} palette={palette} bg="#ffffff" />
+            <TileImage
+              source={heroImage(enemyHero)}
+              size={52}
+              palette={palette}
+              bg="#ffffff"
+              onPress={() => setHeroPickerOpen(true)}
+              onLongPress={() => setAbilitiesHero(enemyHero)}
+            />
             <Text style={[styles.heroName, { color: palette.ink }]}>{enemyHero}</Text>
             <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
           </>
@@ -54,7 +63,9 @@ export default function CounterSheetScreen() {
         selected={enemyHero}
         onSelect={setEnemyHero}
         onClose={() => setHeroPickerOpen(false)}
+        onLongPressHero={setAbilitiesHero}
       />
+      <HeroAbilitiesModal heroName={abilitiesHero} onClose={() => setAbilitiesHero(null)} />
     </ScreenShell>
   );
 }

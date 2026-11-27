@@ -15,9 +15,11 @@ interface HeroPickerProps {
   selected: string | null;
   onSelect: (name: string | null) => void;
   onClose: () => void;
+  /** Long-press on a hero's portrait opens that hero's abilities. */
+  onLongPressHero: (name: string) => void;
 }
 
-export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: HeroPickerProps) {
+export function HeroPicker({ visible, heroes, selected, onSelect, onClose, onLongPressHero }: HeroPickerProps) {
   const { palette, accent } = useSettings();
   const { isHeroFavorite, toggleHero } = useFavorites();
   const [query, setQuery] = useState('');
@@ -51,6 +53,9 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
           // the background.
           style={[styles.search, pillShadow(palette), { backgroundColor: palette.panel2, color: palette.ink }]}
         />
+        <Text style={[styles.hint, { color: palette.muted }]}>
+          Long-press a portrait to view that hero&apos;s abilities.
+        </Text>
         <FlatList
           data={filtered}
           keyExtractor={(h) => h.name}
@@ -75,7 +80,17 @@ export function HeroPicker({ visible, heroes, selected, onSelect, onClose }: Her
                     borderRadius: isSelected ? Radii.tile : 0,
                   },
                 ]}>
-                <TileImage source={heroImage(item.name)} size={44} palette={palette} tint={index} />
+                <TileImage
+                  source={heroImage(item.name)}
+                  size={44}
+                  palette={palette}
+                  tint={index}
+                  onPress={() => {
+                    onSelect(item.name);
+                    onClose();
+                  }}
+                  onLongPress={() => onLongPressHero(item.name)}
+                />
                 <View style={styles.rowText}>
                   <Text style={[styles.name, { color: palette.ink }]}>{item.name}</Text>
                   <Text style={[styles.meta, { color: palette.muted }]}>
@@ -137,11 +152,17 @@ const styles = StyleSheet.create({
   },
   search: {
     margin: 12,
+    marginBottom: 4,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 999,
     borderCurve: 'continuous',
     fontSize: 16,
+  },
+  hint: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 4,
   },
   row: {
     flexDirection: 'row',

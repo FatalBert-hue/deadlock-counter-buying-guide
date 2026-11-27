@@ -7,7 +7,12 @@
 // little smaller, with the tint showing as a frame around it.
 // Pass `bg` to override the tint (e.g. white on the violet hero
 // panel); otherwise the tint cycles from `palette.tileTints`.
-import { View } from 'react-native';
+// Pass `onPress` / `onLongPress` to make the tile itself tappable:
+// hero portraits use onLongPress to open the hero's abilities, with
+// onPress doing whatever a tap on that portrait already did (open
+// the picker, select the hero, load the build). When neither is
+// set the tile stays a plain View, as before.
+import { Pressable, View } from 'react-native';
 import { Image, type ImageSource } from 'expo-image';
 
 import { pillShadow, Radii, type Palette } from '@/constants/palette';
@@ -22,12 +27,16 @@ interface TileImageProps {
   tint?: number;
   /** Explicit tile background, e.g. white on the hero panel. */
   bg?: string;
+  /** Tap on the tile itself (defaults to nothing). */
+  onPress?: () => void;
+  /** Long-press on the tile itself (defaults to nothing). */
+  onLongPress?: () => void;
 }
 
-export function TileImage({ source, size, palette, tint = 0, bg }: TileImageProps) {
+export function TileImage({ source, size, palette, tint = 0, bg, onPress, onLongPress }: TileImageProps) {
   const tileBg = bg ?? palette.tileTints[((tint % 4) + 4) % 4];
   const inner = size - 8;
-  return (
+  const tile = (
     <View
       style={[
         {
@@ -45,5 +54,11 @@ export function TileImage({ source, size, palette, tint = 0, bg }: TileImageProp
         <Image source={source} style={{ width: inner, height: inner, borderRadius: 12 }} contentFit="cover" />
       ) : null}
     </View>
+  );
+  if (!onPress && !onLongPress) return tile;
+  return (
+    <Pressable onPress={onPress} onLongPress={onLongPress}>
+      {tile}
+    </Pressable>
   );
 }

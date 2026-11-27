@@ -4,12 +4,26 @@
 // fall back to this copy offline). No network, no accounts, no AI.
 import raw from '@/assets/data/data.json';
 
+export interface Ability {
+  name: string;
+  /** Ability key "1"–"4" (4 is usually the ultimate). */
+  key: string;
+  /** In-game description of what the ability does. */
+  desc: string;
+  /** Tiered upgrade lines, T1–T3 in order (fewer if the wiki lists fewer). */
+  tiers: string[];
+  /** Direct wiki URL of the ability icon (fallback when no local file). */
+  iconUrl: string;
+}
+
 export interface Hero {
   name: string;
   role: string;
   cls: string;
   tags: string[];
   note: string;
+  /** The hero's 4 abilities, in key order. */
+  abilities?: Ability[];
 }
 
 export interface Item {

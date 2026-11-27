@@ -6,6 +6,7 @@ import { useFocusEffect } from 'expo-router';
 
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { AccentButton } from '@/components/accent-button';
+import { HeroAbilitiesModal } from '@/components/hero-abilities-modal';
 import { HeroPicker } from '@/components/hero-picker';
 import { ItemDetailModal } from '@/components/item-detail-modal';
 import { ItemPicker } from '@/components/item-picker';
@@ -38,6 +39,7 @@ export default function FullBuildScreen() {
   const [heroPickerFor, setHeroPickerFor] = useState<'enemy' | 'you' | null>(null);
   const [itemPickerFor, setItemPickerFor] = useState<{ side: 'enemy' | 'you'; index: number } | null>(null);
   const [detailItem, setDetailItem] = useState<string | null>(null);
+  const [abilitiesHero, setAbilitiesHero] = useState<string | null>(null);
   const [saveName, setSaveName] = useState('');
   const [saveAuthor, setSaveAuthor] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
@@ -130,7 +132,14 @@ export default function FullBuildScreen() {
       ]}>
       {hero ? (
         <>
-          <TileImage source={heroImage(hero)} size={52} palette={palette} bg="#ffffff" />
+          <TileImage
+            source={heroImage(hero)}
+            size={52}
+            palette={palette}
+            bg="#ffffff"
+            onPress={() => setHeroPickerFor(side)}
+            onLongPress={() => setAbilitiesHero(hero)}
+          />
           <Text style={[styles.heroName, { color: palette.ink }]}>{hero}</Text>
           <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
         </>
@@ -235,6 +244,7 @@ export default function FullBuildScreen() {
           else if (heroPickerFor === 'you') setYouHero(name);
         }}
         onClose={() => setHeroPickerFor(null)}
+        onLongPressHero={setAbilitiesHero}
       />
       <ItemPicker
         visible={itemPickerFor !== null}
@@ -246,6 +256,7 @@ export default function FullBuildScreen() {
         onClose={() => setItemPickerFor(null)}
       />
       <ItemDetailModal itemName={detailItem} onClose={() => setDetailItem(null)} />
+      <HeroAbilitiesModal heroName={abilitiesHero} onClose={() => setAbilitiesHero(null)} />
     </ScreenShell>
   );
 }

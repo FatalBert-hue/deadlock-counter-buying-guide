@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { AccentButton } from '@/components/accent-button';
+import { HeroAbilitiesModal } from '@/components/hero-abilities-modal';
 import { buildImportLink } from '@/linking/build-link';
 import { ScreenShell } from '@/components/screen-shell';
 import { TileImage } from '@/components/tile-image';
@@ -40,6 +41,7 @@ export default function BuildsScreen() {
   const [saveName, setSaveName] = useState('');
   const [saveAuthor, setSaveAuthor] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
+  const [abilitiesHero, setAbilitiesHero] = useState<string | null>(null);
 
   const saveCurrent = () => {
     if (!currentBuild.enemyHero) {
@@ -162,6 +164,7 @@ export default function BuildsScreen() {
                 size={56}
                 palette={palette}
                 tint={2}
+                onLongPress={b.enemyHero ? () => setAbilitiesHero(b.enemyHero) : undefined}
               />
               <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
                 {b.enemyHero ?? '—'}
@@ -174,6 +177,7 @@ export default function BuildsScreen() {
                 size={56}
                 palette={palette}
                 tint={0}
+                onLongPress={b.youHero ? () => setAbilitiesHero(b.youHero) : undefined}
               />
               <Text style={[styles.matchupName, { color: palette.muted }]} numberOfLines={1}>
                 {b.youHero ?? '—'}
@@ -249,6 +253,7 @@ export default function BuildsScreen() {
           </View>
         </View>
       ))}
+      <HeroAbilitiesModal heroName={abilitiesHero} onClose={() => setAbilitiesHero(null)} />
     </ScreenShell>
   );
 }

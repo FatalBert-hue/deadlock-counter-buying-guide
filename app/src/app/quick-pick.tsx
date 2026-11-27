@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
+import { HeroAbilitiesModal } from '@/components/hero-abilities-modal';
 import { HeroPicker } from '@/components/hero-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
@@ -29,6 +30,7 @@ export default function QuickPickScreen() {
   const [enemyType, setEnemyType] = useState<ItemType>('');
   const [youType, setYouType] = useState<ItemType>('');
   const [heroPickerOpen, setHeroPickerOpen] = useState(false);
+  const [abilitiesHero, setAbilitiesHero] = useState<string | null>(null);
 
   const result = useMemo(
     () => scoreQuick(data, { enemyHero, enemyType, youType }),
@@ -77,7 +79,14 @@ export default function QuickPickScreen() {
         ]}>
         {enemyHero ? (
           <>
-            <TileImage source={heroImage(enemyHero)} size={52} palette={palette} bg="#ffffff" />
+            <TileImage
+              source={heroImage(enemyHero)}
+              size={52}
+              palette={palette}
+              bg="#ffffff"
+              onPress={() => setHeroPickerOpen(true)}
+              onLongPress={() => setAbilitiesHero(enemyHero)}
+            />
             <Text style={[styles.heroName, { color: palette.ink }]}>{enemyHero}</Text>
             <Text style={[styles.heroChange, { color: palette.muted }]}>Change</Text>
           </>
@@ -108,7 +117,9 @@ export default function QuickPickScreen() {
         selected={enemyHero}
         onSelect={setEnemyHero}
         onClose={() => setHeroPickerOpen(false)}
+        onLongPressHero={setAbilitiesHero}
       />
+      <HeroAbilitiesModal heroName={abilitiesHero} onClose={() => setAbilitiesHero(null)} />
     </ScreenShell>
   );
 }
