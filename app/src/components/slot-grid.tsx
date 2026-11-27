@@ -11,9 +11,11 @@ import { useSettings } from '@/state/settings';
 interface SlotGridProps {
   slots: (string | null)[];
   onPickSlot: (index: number) => void;
+  /** Long-press a filled slot to peek at the item in the shop. */
+  onLongPressItem?: (name: string) => void;
 }
 
-export function SlotGrid({ slots, onPickSlot }: SlotGridProps) {
+export function SlotGrid({ slots, onPickSlot, onLongPressItem }: SlotGridProps) {
   const { palette, settings } = useSettings();
   const size = settings.iconSize === 'small' ? 40 : settings.iconSize === 'large' ? 64 : 52;
   return (
@@ -24,6 +26,7 @@ export function SlotGrid({ slots, onPickSlot }: SlotGridProps) {
           <Pressable
             key={i}
             onPress={() => onPickSlot(i)}
+            onLongPress={name && onLongPressItem ? () => onLongPressItem(name) : undefined}
             accessibilityRole="button"
             accessibilityLabel={name ? `Slot ${i + 1}: ${name}` : `Slot ${i + 1}: empty`}
             style={[

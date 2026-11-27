@@ -18,6 +18,8 @@ export interface Item {
   tier: number;
   cost: number;
   tags: string[];
+  /** In-game description of what the item does (shop text). */
+  desc?: string;
 }
 
 export interface CounterInfo {

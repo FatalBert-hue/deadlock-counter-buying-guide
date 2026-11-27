@@ -5,6 +5,7 @@ import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'r
 
 import { pillShadow } from '@/constants/palette';
 import { TileImage } from '@/components/tile-image';
+import { ItemDetailModal } from '@/components/item-detail-modal';
 import { itemImage } from '@/data/images';
 import type { Item } from '@/data';
 import { useFavorites } from '@/state/favorites';
@@ -27,6 +28,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
   const { isItemFavorite, toggleItem } = useFavorites();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('All');
+  const [detailName, setDetailName] = useState<string | null>(null);
   const iconSize = settings.iconSize === 'small' ? 36 : settings.iconSize === 'large' ? 56 : 44;
 
   const filtered = useMemo(() => {
@@ -45,6 +47,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
   }, [items, query, category, isItemFavorite]);
 
   return (
+    <>
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={[styles.sheet, { backgroundColor: palette.bg }]}>
         <View style={[styles.header, { borderBottomColor: palette.line }]}>
@@ -80,6 +83,9 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
             );
           })}
         </View>
+        <Text style={[styles.hint, { color: palette.muted }]}>
+          Long-press an item to see what it does in the shop.
+        </Text>
         <FlatList
           data={filtered}
           keyExtractor={(i) => i.name}
@@ -93,6 +99,7 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
                   onSelect(item.name);
                   onClose();
                 }}
+                onLongPress={() => setDetailName(item.name)}
                 style={[styles.row, { borderBottomColor: palette.line, opacity: inBuild ? 0.45 : 1 }]}>
                 <TileImage source={itemImage(item.name)} size={iconSize} palette={palette} tint={index} />
                 <View style={styles.rowText}>
@@ -130,6 +137,8 @@ export function ItemPicker({ visible, items, owned, onSelect, onClose }: ItemPic
         </Pressable>
       </View>
     </Modal>
+    <ItemDetailModal itemName={detailName} onClose={() => setDetailName(null)} />
+    </>
   );
 }
 
@@ -180,6 +189,11 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  hint: {
+    fontSize: 13,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
   },
   row: {
     flexDirection: 'row',

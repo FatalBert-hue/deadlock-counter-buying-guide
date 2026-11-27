@@ -1,14 +1,18 @@
 // Shared results rendering for all three layouts: threat chips, the pick
 // list, and the notes (anti-heal owned, Healbane both sides, stealth gap).
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { useState } from 'react';
 
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import type { ScoreResult } from '@/engine/score';
 import { PickCard } from '@/components/pick-card';
+import { ItemDetailModal } from '@/components/item-detail-modal';
 import { useSettings } from '@/state/settings';
 
 export function Results({ result, emptyText }: { result: ScoreResult; emptyText: string }) {
   const { palette } = useSettings();
+  const [detailName, setDetailName] = useState<string | null>(null);
   if (!result.enemyHero) {
     return (
       <View style={[styles.box, cardShadow(palette), { backgroundColor: palette.panel }]}>
@@ -43,8 +47,12 @@ export function Results({ result, emptyText }: { result: ScoreResult; emptyText:
         </View>
       ) : null}
       {result.picks.map((p, i) => (
-        <PickCard key={p.name} pick={p} rank={i + 1} top={i === 0} />
+        <Pressable key={p.name} onLongPress={() => setDetailName(p.name)}>
+          <PickCard pick={p} rank={i + 1} top={i === 0} />
+        </Pressable>
       ))}
+      <Text style={[styles.hint, { color: palette.muted }]}>Long-press a pick to see it in the shop.</Text>
+      <ItemDetailModal itemName={detailName} onClose={() => setDetailName(null)} />
       {result.topOverBudget ? (
         <Text style={[styles.note, { color: palette.muted }]}>
           Top pick is over your stated budget — it&apos;s the save-up target.
@@ -98,5 +106,8 @@ const styles = StyleSheet.create({
   note: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  hint: {
+    fontSize: 13,
   },
 });

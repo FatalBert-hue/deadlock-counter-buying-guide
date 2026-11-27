@@ -7,6 +7,7 @@ import { useFocusEffect } from 'expo-router';
 import { cardShadow, pillShadow, Radii } from '@/constants/palette';
 import { AccentButton } from '@/components/accent-button';
 import { HeroPicker } from '@/components/hero-picker';
+import { ItemDetailModal } from '@/components/item-detail-modal';
 import { ItemPicker } from '@/components/item-picker';
 import { Results } from '@/components/results';
 import { ScreenShell } from '@/components/screen-shell';
@@ -36,6 +37,7 @@ export default function FullBuildScreen() {
   const [budget, setBudget] = useState(0);
   const [heroPickerFor, setHeroPickerFor] = useState<'enemy' | 'you' | null>(null);
   const [itemPickerFor, setItemPickerFor] = useState<{ side: 'enemy' | 'you'; index: number } | null>(null);
+  const [detailItem, setDetailItem] = useState<string | null>(null);
   const [saveName, setSaveName] = useState('');
   const [saveAuthor, setSaveAuthor] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
@@ -157,7 +159,7 @@ export default function FullBuildScreen() {
           ? ` · ${enemyItems.reduce((sum, n) => sum + (data.items.find((i) => i.name === n)?.cost ?? 0), 0).toLocaleString('en-US')} souls`
           : ''}
       </Text>
-      <SlotGrid slots={enemySlots} onPickSlot={(i) => setItemPickerFor({ side: 'enemy', index: i })} />
+      <SlotGrid slots={enemySlots} onPickSlot={(i) => setItemPickerFor({ side: 'enemy', index: i })} onLongPressItem={setDetailItem} />
 
       <Text style={[styles.label, { color: palette.ink }]}>
         Your build · {youItems.length} / 12 slots
@@ -165,7 +167,7 @@ export default function FullBuildScreen() {
           ? ` · ${youItems.reduce((sum, n) => sum + (data.items.find((i) => i.name === n)?.cost ?? 0), 0).toLocaleString('en-US')} souls`
           : ''}
       </Text>
-      <SlotGrid slots={youSlots} onPickSlot={(i) => setItemPickerFor({ side: 'you', index: i })} />
+      <SlotGrid slots={youSlots} onPickSlot={(i) => setItemPickerFor({ side: 'you', index: i })} onLongPressItem={setDetailItem} />
 
       {settings.showSouls ? (
         <View>
@@ -243,6 +245,7 @@ export default function FullBuildScreen() {
         }}
         onClose={() => setItemPickerFor(null)}
       />
+      <ItemDetailModal itemName={detailItem} onClose={() => setDetailItem(null)} />
     </ScreenShell>
   );
 }

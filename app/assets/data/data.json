@@ -489,7 +489,8 @@
       "cost": 800,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Deal additional Weapon Damage when in close range to your target. +20% Weapon Damage within 15m. Also grants +20% Melee Resist."
     },
     {
       "name": "Extended Magazine",
@@ -498,7 +499,8 @@
       "cost": 800,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "+30% Max Ammo and +8% Weapon Damage."
     },
     {
       "name": "Headshot Booster",
@@ -507,7 +509,8 @@
       "cost": 800,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your next headshot against an enemy Hero deals +45 bonus weapon damage (9s cooldown). Also grants +30 Bonus Health."
     },
     {
       "name": "High-Velocity Rounds",
@@ -516,7 +519,8 @@
       "cost": 800,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "+45% Bullet Velocity and +8% Weapon Damage."
     },
     {
       "name": "Monster Rounds",
@@ -525,7 +529,8 @@
       "cost": 800,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "+25% Weapon Damage vs. NPCs, +25% Bullet Resist vs. NPCs, and +1 Out of Combat Regen."
     },
     {
       "name": "Rapid Rounds",
@@ -534,7 +539,8 @@
       "cost": 800,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "+9% Fire Rate."
     },
     {
       "name": "Restorative Shot",
@@ -544,7 +550,8 @@
       "tags": [
         "gun",
         "heal"
-      ]
+      ],
+      "desc": "Your next bullet heals you: 50 from heroes, 20 from NPCs/Orbs (6s cooldown). Also grants +6% Weapon Damage."
     },
     {
       "name": "Active Reload",
@@ -553,7 +560,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "While reloading, pressing Reload during the highlighted portion instantly finishes your reload and grants +25% Fire Rate, +16% Bullet Lifesteal and +0.75m Move Speed for 7s (12s cooldown). Also grants +20% Max Ammo."
     },
     {
       "name": "Fleetfoot",
@@ -562,7 +570,8 @@
       "cost": 1600,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "Gain bonus Move Speed and Slow Resistance. (16s cooldown, 5s duration.)"
     },
     {
       "name": "Intensifying Magazine",
@@ -571,7 +580,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Increases Weapon Damage as you continuously fire your weapon, up to +45% max Weapon Damage after 2.5s. Also grants +20% Max Ammo."
     },
     {
       "name": "Kinetic Dash",
@@ -580,7 +590,8 @@
       "cost": 1600,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "When you Dash-Jump you gain +25% Fire Rate and +6 bonus Ammo until your next reload, lasting up to 7s. Also grants +1 Stamina and +12% Stamina Recovery."
     },
     {
       "name": "Long Range",
@@ -589,7 +600,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Deal additional Weapon Damage when beyond a minimum distance from your target: +40% Weapon Damage beyond 15m. Also grants +8% Weapon Fall-off Range and +0.75m Sprint Speed."
     },
     {
       "name": "Melee Charge",
@@ -598,7 +610,8 @@
       "cost": 1600,
       "tags": [
         "melee"
-      ]
+      ],
+      "desc": "Your next Heavy Melee attack against an enemy deals +25% increased damage (5s cooldown). Also grants +50% Heavy Melee Distance, +10% Melee Damage and +6% Bullet Resist."
     },
     {
       "name": "Mystic Shot",
@@ -607,7 +620,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Your next bullet deals +40 bonus Spirit Damage (×0.9 Spirit Power scaling) every 8s. Also grants +7 Spirit Power."
     },
     {
       "name": "Opening Rounds",
@@ -616,7 +630,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your attacks deal +25% Weapon Damage against enemies above 50% health. Also grants +60% Bullet Velocity, +8% Weapon Damage and +7 Spirit Power."
     },
     {
       "name": "Recharging Rush",
@@ -625,7 +640,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Dealing 200 weapon damage within 3.5s replenishes a charge for each of your charged abilities (25s cooldown). Also grants +20% Max Ammo and +10% Weapon Damage."
     },
     {
       "name": "Slowing Bullets",
@@ -635,7 +651,8 @@
       "tags": [
         "gun",
         "cc"
-      ]
+      ],
+      "desc": "Your bullets build up a Movement Slow on enemies: -24% Move Speed and -20% Dash Distance for 3.5s."
     },
     {
       "name": "Spirit Shredder",
@@ -644,7 +661,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Your bullets apply a debuff that reduces the target's Spirit Resist by 8% and grants you and your allies +10% Spirit Lifesteal against them for 8s."
     },
     {
       "name": "Split Shot",
@@ -653,7 +671,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Make your weapon fire multishot. Hitting more than one Hero per attack grants a stacking weapon damage bonus; targets can only be hit once per multishot. (27s cooldown.)"
     },
     {
       "name": "Stalker",
@@ -662,7 +681,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Dealing weapon damage within 8m opens a wound: the enemy takes 17 Spirit Damage per second, has -6% Bullet Resist and is revealed through walls for 5s, and you gain +1.5m Move Speed (6s cooldown). Also grants -50% Footstep Sound Distance and +50 Bonus Health."
     },
     {
       "name": "Swift Striker",
@@ -671,7 +691,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "+20% Fire Rate and +0.75m Sprint Speed."
     },
     {
       "name": "Titanic Magazine",
@@ -680,7 +701,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "+100% Max Ammo and +14% Weapon Damage."
     },
     {
       "name": "Weakening Headshot",
@@ -689,7 +711,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Landing a headshot reduces the enemy's Bullet Resist by 12% for 12s. Also grants +60 Bonus Health."
     },
     {
       "name": "Alchemical Fire",
@@ -699,7 +722,8 @@
       "tags": [
         "spirit",
         "dot"
-      ]
+      ],
+      "desc": "Throw a flask that explodes on contact, creating an area that does increasing spirit damage per second and reduces enemy Bullet Resist. 50% less effective vs non-heroes. (30s cooldown, 5s duration, 10m range.)"
     },
     {
       "name": "Ballistic Enchantment",
@@ -708,7 +732,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Imbue an ability with +22% range. Dealing damage with that ability grants +20% Weapon Damage per unique hero hit for 20s (max 3 hero stacks; reduced effect on non-heroes)."
     },
     {
       "name": "Berserker",
@@ -718,7 +743,8 @@
       "tags": [
         "gun",
         "tank"
-      ]
+      ],
+      "desc": "Your Weapon Damage increases as you take sustained damage: +7% Weapon Damage per stack (120 damage taken per stack, up to 10 stacks, 10s duration). Also grants +8% Bullet Resist."
     },
     {
       "name": "Blood Tribute",
@@ -727,7 +753,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Toggle: Continually sacrifice Health to improve Fire Rate, Debuff Resistance and Move Speed."
     },
     {
       "name": "Burst Fire",
@@ -736,7 +763,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "When one of your bullets hits a hero, briefly gain +32% Fire Rate and +1.25m Move Speed for 4.5s (9s cooldown). Also grants +50% Slide Distance and +10% Fire Rate."
     },
     {
       "name": "Cultist Sacrifice",
@@ -745,7 +773,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Target an enemy NPC and consume it for 170% Bonus Souls and grants a powerful long lasting buff. (270s cooldown, 160s duration, 7m range.)"
     },
     {
       "name": "Escalating Resilience",
@@ -754,7 +783,8 @@
       "cost": 3200,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Grants +2% Bullet Resist per stack when your bullets hit a hero (max 30%, 24s stack duration). Also grants +35% Max Ammo, +75 Bonus Health and +18% Weapon Damage."
     },
     {
       "name": "Express Shot",
@@ -763,7 +793,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your next attack fires twice in quick succession with +125% Weapon Damage and +100% Bullet Velocity, consuming 2 extra ammo (8s cooldown). Also grants +60% Bullet Velocity and +8% Weapon Damage."
     },
     {
       "name": "Headhunter",
@@ -772,7 +803,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your next headshot against an enemy Hero deals +75 bonus weapon damage, heals you for 4% of your max health and grants +1.75m Move Speed for 3s (8s cooldown). Also grants +5% Weapon Damage and +50 Bonus Health."
     },
     {
       "name": "Heroic Aura",
@@ -781,7 +813,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Provides Move Speed and Fire Rate to you and nearby allies. Minions get double value. Provides Bullet Resist to nearby friendly units. (22s cooldown, 7s duration, 35m range.)"
     },
     {
       "name": "Hollow Point",
@@ -790,7 +823,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "When you are above 65% health, deal +35% Weapon Damage and your bullets reduce enemy Bullet Resist by 10% for 8s. Also grants +4.5 Out of Combat Regen and +125 Bonus Health."
     },
     {
       "name": "Hunter's Aura",
@@ -799,7 +833,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Reduces nearby enemies' Bullet Resist by 10% and Fire Rate by 15% within 15m; doubled if only one enemy hero is nearby. Also grants +100 Bonus Health and +0.75m Sprint Speed."
     },
     {
       "name": "Point Blank",
@@ -809,7 +844,8 @@
       "tags": [
         "gun",
         "cc"
-      ]
+      ],
+      "desc": "When within 15m of your target, gain +50% Weapon Damage and your bullets apply a -20% Move Speed slow for 2.5s. Also grants +75 Bonus Health and +30% Melee Resist."
     },
     {
       "name": "Shadow Weave",
@@ -819,7 +855,8 @@
       "tags": [
         "stealth",
         "gun"
-      ]
+      ],
+      "desc": "Become Stealthed. Whenever you take damage while Stealthed you get briefly revealed. (37s cooldown, 13s duration.)"
     },
     {
       "name": "Sharpshooter",
@@ -828,7 +865,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Deal +60% Weapon Damage when beyond 15m from your target. Also grants +18% Weapon Fall-off Range, +25% Weapon Zoom, +60% Bullet Velocity, +10% Weapon Damage and +1m Sprint Speed, but -0.7m Move Speed."
     },
     {
       "name": "Spirit Rend",
@@ -838,7 +876,8 @@
       "tags": [
         "gun",
         "spirit"
-      ]
+      ],
+      "desc": "Your bullets apply a debuff that reduces the target's Spirit Resist by 8% and grants you and your allies +10% Spirit Lifesteal against them. Landing headshots reduces their Spirit Resist by a further 7% per stack (up to 4 stacks, 8s duration). Also grants +75 Bonus Health."
     },
     {
       "name": "Tesla Bullets",
@@ -848,7 +887,8 @@
       "tags": [
         "gun",
         "spirit"
-      ]
+      ],
+      "desc": "Your bullets have a 15% chance to shock your target for 33 Spirit Damage, jumping to up to 4 nearby enemies within 8m."
     },
     {
       "name": "Toxic Bullets",
@@ -857,7 +897,8 @@
       "cost": 3200,
       "tags": [
         "antiheal"
-      ]
+      ],
+      "desc": "Your bullets build up a Bleed on enemies, dealing 1.9% of their Max Health per second and reducing their Incoming Healing by 40% for 4s."
     },
     {
       "name": "Weighted Shots",
@@ -867,7 +908,8 @@
       "tags": [
         "gun",
         "cc"
-      ]
+      ],
+      "desc": "Your bullets build up a Movement Slow on enemies: -24% Move Speed and -20% Dash Distance for 3.5s. Also grants +30% Weapon Damage and +22% Debuff Resist, but -14% Stamina Recovery and -0.5m Move Speed."
     },
     {
       "name": "Armor Piercer",
@@ -876,7 +918,8 @@
       "cost": 6400,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your bullets have a 60% chance to become unavoidable, piercing through enemies and ignoring their Bullet Resistance. Also grants +60% Bullet Velocity and +8% Weapon Damage."
     },
     {
       "name": "Capacitor",
@@ -885,7 +928,8 @@
       "cost": 6400,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Launch a projectile that deals damage, applies a strong slow that recovers over time, prevents Stamina usage and Silences their movement-based items and abilities. (40s cooldown.)"
     },
     {
       "name": "Crippling Headshot",
@@ -895,7 +939,8 @@
       "tags": [
         "antiheal",
         "gun"
-      ]
+      ],
+      "desc": "Landing a headshot reduces the enemy's Bullet Resist by 16%, Spirit Resist by 16% and Incoming Healing by 40% for 12s. Also grants +125 Bonus Health."
     },
     {
       "name": "Crushing Fists",
@@ -904,7 +949,8 @@
       "cost": 6400,
       "tags": [
         "melee"
-      ]
+      ],
+      "desc": "Your next Heavy Melee attack against an enemy deals +25% increased damage (5s cooldown). Your melee damage restores 15% ammo and applies a stacking -5% Bullet Resist debuff (up to 6 stacks, 8s duration); at max stacks the enemy is stunned for 0.75s. Also grants +60% Heavy Melee Distance, +22% Melee Damage and +12% Bullet Resist."
     },
     {
       "name": "Frenzy",
@@ -914,7 +960,8 @@
       "tags": [
         "gun",
         "heal"
-      ]
+      ],
+      "desc": "While you are below 50% health, gain +4m/s Move Speed, +40% Fire Rate and +40% Debuff Resist for 10s, and existing debuffs on you are reduced (16s cooldown). Also grants +160 Bonus Health, +15% Fire Rate and +10% Bullet Lifesteal."
     },
     {
       "name": "Glass Cannon",
@@ -923,7 +970,8 @@
       "cost": 6400,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Each hero kill grants +7% Fire Rate permanently (up to 8 stacks); death loses 1 stack. Also grants +85% Weapon Damage but -13% Max Health."
     },
     {
       "name": "Lucky Shot",
@@ -932,7 +980,8 @@
       "cost": 6400,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your bullets have a 25% chance to be empowered, dealing +100% bonus weapon damage on hit (bonus damage cannot Crit). Also grants +30% Max Ammo."
     },
     {
       "name": "Ricochet",
@@ -941,7 +990,8 @@
       "cost": 6400,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Your bullets ricochet onto up to 2 enemies near your target within 13m, dealing 65% of the original damage and applying bullet procs. Also grants +18% Fire Rate."
     },
     {
       "name": "Silencer",
@@ -951,7 +1001,8 @@
       "tags": [
         "gun",
         "cc"
-      ]
+      ],
+      "desc": "Your bullets reduce the target's outgoing Spirit Damage by 25% for 6s, and build up to a 2.5s Silence (victims are immune to build-up for 10s after silence expires). Also grants +12% Spirit Resist."
     },
     {
       "name": "Spellslinger",
@@ -961,7 +1012,8 @@
       "tags": [
         "spirit",
         "gun"
-      ]
+      ],
+      "desc": "While in-combat, whenever you cast an ability or item, gain a stacking buff: +11% Fire Rate and -10% Reload Time per stack (up to 6 stacks, 18s duration, each stack refreshes the duration). Also grants +5% Ability Cooldown Reduction."
     },
     {
       "name": "Spiritual Overflow",
@@ -971,7 +1023,8 @@
       "tags": [
         "spirit",
         "gun"
-      ]
+      ],
+      "desc": "Gain bonus Fire Rate, Spirit Power and Spirit Lifesteal by charging up when shooting heroes: +25% Fire Rate, +30 Spirit Power and +10% Spirit Lifesteal for 15s. Also grants +13% Ability Duration, +15% Spirit Lifesteal, +90 Bonus Health and +8 Spirit Power."
     },
     {
       "name": "Extra Health",
@@ -980,7 +1033,8 @@
       "cost": 800,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "+210 Max Health."
     },
     {
       "name": "Extra Regen",
@@ -989,7 +1043,8 @@
       "cost": 800,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "+2.5 Health Regen and +1.5 Out of Combat Regen."
     },
     {
       "name": "Extra Stamina",
@@ -998,7 +1053,8 @@
       "cost": 800,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "+1 Stamina and +12% Stamina Recovery."
     },
     {
       "name": "Grit",
@@ -1007,7 +1063,8 @@
       "cost": 800,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Gain a Barrier for a short duration. (60s cooldown.)"
     },
     {
       "name": "Healing Rite",
@@ -1016,7 +1073,8 @@
       "cost": 800,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Grant Regen and Sprint Speed to the target. Gets dispelled if you take damage from enemy players or objectives. Can be self-cast. (70s cooldown, 30m range.)"
     },
     {
       "name": "Melee Lifesteal",
@@ -1025,7 +1083,8 @@
       "cost": 800,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Your next Melee attack heals you for 100 (30% effective vs non-heroes; 8s cooldown, 1.5x as long for Light Melee hits). Also grants +12% Melee Damage."
     },
     {
       "name": "Rebuttal",
@@ -1034,7 +1093,8 @@
       "cost": 800,
       "tags": [
         "melee"
-      ]
+      ],
+      "desc": "On a successful parry against an enemy hero, heal for 100% of the damage parried, return that damage to the target, and gain +30% bonus damage for 6s. Also grants -1.25s Parry Cooldown, +18% Melee Resist and +75 Bonus Health."
     },
     {
       "name": "Sprint Boots",
@@ -1043,7 +1103,8 @@
       "cost": 800,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "+2m Sprint Speed and +2 Out of Combat Regen."
     },
     {
       "name": "Battle Vest",
@@ -1052,7 +1113,8 @@
       "cost": 1600,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "While above 65% health, gain +22% Weapon Damage and +7% Fire Rate. Also grants +18% Bullet Resist and +3 Out of Combat Regen."
     },
     {
       "name": "Bullet Lifesteal",
@@ -1061,14 +1123,16 @@
       "cost": 1600,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Heal for 15% of the weapon damage you deal. Also grants +90 Bonus Health and +10% Weapon Damage."
     },
     {
       "name": "Debuff Reducer",
       "category": "Vitality",
       "tier": 2,
       "cost": 1600,
-      "tags": []
+      "tags": [],
+      "desc": "Reduces the duration of all negative effects applied to you by 25%. Also grants +90 Bonus Health."
     },
     {
       "name": "Enchanter's Emblem",
@@ -1077,7 +1141,8 @@
       "cost": 1600,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "While above 65% health, gain +15 Spirit Power and +5% Ability Cooldown Reduction. Also grants +18% Spirit Resist and +2 Out of Combat Regen."
     },
     {
       "name": "Enduring Speed",
@@ -1086,7 +1151,8 @@
       "cost": 1600,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "Enemy move speed penalties are 25% less effective on you. Also grants +2m Move Speed and +2 Out of Combat Regen."
     },
     {
       "name": "Guardian Ward",
@@ -1096,7 +1162,8 @@
       "tags": [
         "heal",
         "tank"
-      ]
+      ],
+      "desc": "Provide the target with a Barrier and temporary Move Speed. Can be self-cast. Cooldown is reduced by half when cast on someone else. (60s cooldown, 40m range.)"
     },
     {
       "name": "Healbane",
@@ -1105,7 +1172,8 @@
       "cost": 1600,
       "tags": [
         "antiheal"
-      ]
+      ],
+      "desc": "Your spirit damage reduces the enemy's Incoming Healing by 35% for 8s; if an enemy hero dies under the effect, heal for 170. Also grants +7 Spirit Power."
     },
     {
       "name": "Healing Booster",
@@ -1114,7 +1182,8 @@
       "cost": 1600,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Increases the effectiveness of your healing by 20%. Also grants +2 Out of Combat Regen."
     },
     {
       "name": "Reactive Barrier",
@@ -1123,7 +1192,8 @@
       "cost": 1600,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Gain a 325 Barrier for 10s when you are Stunned, Chained, Immobilized, Slept or Silenced (55s cooldown). Also grants +1 Out of Combat Regen."
     },
     {
       "name": "Restorative Locket",
@@ -1132,7 +1202,8 @@
       "cost": 1600,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "When an enemy uses an ability within 32m of you, store one Restoration Stack. Consume all stacks to heal yourself and replenish up to 3 stamina based on how many stacks you have. (20s cooldown, 32m range.)"
     },
     {
       "name": "Return Fire",
@@ -1141,7 +1212,8 @@
       "cost": 1600,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Automatically fire a bullet towards any attacker who damages you with their abilities or weapon. (23s cooldown, 6.5s duration.)"
     },
     {
       "name": "Spirit Lifesteal",
@@ -1150,7 +1222,8 @@
       "cost": 1600,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Heal for 15% of the spirit damage you deal. Also grants +90 Bonus Health and +8 Spirit Power."
     },
     {
       "name": "Spirit Shielding",
@@ -1159,14 +1232,16 @@
       "cost": 1600,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Taking 225 spirit damage from enemy heroes within 3.5s grants a 300 Barrier and +15% Spirit Resist for 8s (45s cooldown). Also grants +2.5 Out of Combat Regen."
     },
     {
       "name": "Trophy Collector",
       "category": "Vitality",
       "tier": 2,
       "cost": 1600,
-      "tags": []
+      "tags": [],
+      "desc": "Each assist or kill grants +0.15m Sprint Speed, +0.75% Ability Range and +16 Souls per minute (stacks up to 16, persists through death). Also grants +2m Sprint Speed and +2 Out of Combat Regen, but -15% Weapon Damage vs NPCs."
     },
     {
       "name": "Weapon Shielding",
@@ -1175,7 +1250,8 @@
       "cost": 1600,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Taking 250 weapon damage from enemy heroes within 4s grants a 300 Barrier and +18% Bullet Resist for 8s (35s cooldown). Also grants +2.5 Out of Combat Regen."
     },
     {
       "name": "Bullet Resilience",
@@ -1184,7 +1260,8 @@
       "cost": 3200,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "When below 50% health, gain +15% Bullet Resist (for a combined 50% total). Also grants +35% Bullet Resist and +5 Out of Combat Regen."
     },
     {
       "name": "Counterspell",
@@ -1193,7 +1270,8 @@
       "cost": 3200,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Your next parry protects you from the damage and effects of enemy abilities and items for 0.8s; a successful spell parry heals you for 150 and grants +20 Spirit Power and +1.75m Move Speed for 6s (23s cooldown). Also grants +50 Bonus Health and +5 Spirit Power."
     },
     {
       "name": "Dispel Magic",
@@ -1202,7 +1280,8 @@
       "cost": 3200,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Purge all non-ultimate negative effects currently applied to you. If any effects were removed, heal yourself and gain a move speed bonus. Cannot be used while Stunned or Slept. (52s cooldown.)"
     },
     {
       "name": "Fortitude",
@@ -1212,7 +1291,8 @@
       "tags": [
         "tank",
         "heal"
-      ]
+      ],
+      "desc": "After 10s without taking damage, regenerate 2.25% of your max health per second. While above 75% health, gain +1.5m Move Speed. Also grants +375 Bonus Health."
     },
     {
       "name": "Fury Trance",
@@ -1221,7 +1301,8 @@
       "cost": 3200,
       "tags": [
         "gun"
-      ]
+      ],
+      "desc": "Grants Fire Rate, Spirit Resistance and Move Speed, and removes the Move Speed penalty while shooting, but Silences you and disables stamina usage and regeneration. (18s cooldown, 6.5s duration.)"
     },
     {
       "name": "Healing Nova",
@@ -1230,7 +1311,8 @@
       "cost": 3200,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Heal yourself and nearby allies. (60s cooldown.)"
     },
     {
       "name": "Lifestrike",
@@ -1240,7 +1322,8 @@
       "tags": [
         "heal",
         "melee"
-      ]
+      ],
+      "desc": "Your melee attacks apply a -48% move slow for 2.5s and heal you for 120 plus 35% of the melee damage dealt (40% effective vs non-heroes; 4s cooldown, 1.5x longer for light melee). Also grants +16% Melee Damage and +125 Bonus Health."
     },
     {
       "name": "Majestic Leap",
@@ -1250,7 +1333,8 @@
       "tags": [
         "mobility",
         "air"
-      ]
+      ],
+      "desc": "Launch yourself high into the air and grant yourself a Barrier. While in the air, you can use the active again to drop down faster. Cannot be used for 5s if attacked by enemy Hero. (45s cooldown.)"
     },
     {
       "name": "Metal Skin",
@@ -1259,7 +1343,8 @@
       "cost": 3200,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Become immune to bullets. (24s cooldown, 5s duration.)"
     },
     {
       "name": "Rescue Beam",
@@ -1268,7 +1353,8 @@
       "cost": 3200,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Heals a target allied hero and yourself for a percentage of Max Health. Once while healing, you can Pull the target towards you. Can be self-cast. (60s cooldown, 35m range.)"
     },
     {
       "name": "Spirit Resilience",
@@ -1277,7 +1363,8 @@
       "cost": 3200,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "When below 50% health, gain +15% Spirit Resist (for a combined 45% total). Also grants +30% Spirit Resist and +3 Out of Combat Regen."
     },
     {
       "name": "Stamina Mastery",
@@ -1286,7 +1373,8 @@
       "cost": 3200,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "Gain an additional Air Jump or Air Dash before landing. Also grants +2 Stamina, +18% Stamina Recovery and +23% Air Jump/Dash Distance."
     },
     {
       "name": "Veil Walker",
@@ -1296,7 +1384,8 @@
       "tags": [
         "stealth",
         "mobility"
-      ]
+      ],
+      "desc": "Walking through a cosmic veil grants 8s of invisibility, +3.5m move speed and heals you for 85 (15s cooldown). Also grants +125 Bonus Health and +6 Spirit Power."
     },
     {
       "name": "Warp Stone",
@@ -1305,7 +1394,8 @@
       "cost": 3200,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "Teleport straight ahead, gaining Bullet Resist. (16s cooldown, 11m range.)"
     },
     {
       "name": "Cheat Death",
@@ -1314,7 +1404,8 @@
       "cost": 6400,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "When you would take lethal damage, become death immune for 4.5s and remove all non-stun debuffs; while immune you deal 60% less damage and receive 60% less healing (105s cooldown). Also grants +200 Bonus Health and +15% Bullet Resist."
     },
     {
       "name": "Colossus",
@@ -1323,7 +1414,8 @@
       "cost": 6400,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Grow larger in size, gaining bullet resist, spirit resist, and melee damage. Nearby enemies suffer from slow and have reduced dash speed. (37s cooldown, 7s duration, 14m range.)"
     },
     {
       "name": "Divine Barrier",
@@ -1333,7 +1425,8 @@
       "tags": [
         "heal",
         "tank"
-      ]
+      ],
+      "desc": "Remove all non-stun debuffs from the target and provide them with a Barrier and Move Speed. Can be self-cast. Cooldown is reduced by half when cast on someone else. (55s cooldown, 40m range.)"
     },
     {
       "name": "Diviner's Kevlar",
@@ -1343,7 +1436,8 @@
       "tags": [
         "tank",
         "spirit"
-      ]
+      ],
+      "desc": "Casting your ultimate grants a 1000 Barrier and +40 Spirit Power for 20s (40s cooldown). Also grants +15% Ability Duration and +10% Ultimate Cooldown Reduction."
     },
     {
       "name": "Healing Tempo",
@@ -1352,7 +1446,8 @@
       "cost": 6400,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Healing yourself or an ally grants them +35% Fire Rate and +1.25m Move Speed for 7s (does not trigger from regen or lifesteal). Also grants +25% Outgoing Healing, +10% Spirit Resist, +6 Health Regen and +4 Out of Combat Regen."
     },
     {
       "name": "Indomitable",
@@ -1361,7 +1456,8 @@
       "cost": 6400,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "The next Stun, Chain, Immobilize, Sleep, Silence or Fear on you is automatically cleansed; when it happens you gain a 325 Barrier for 10s and all your ability cooldowns are reduced by 20% (55s cooldown). Also grants +10% Bullet Resist, +10% Spirit Resist and +2 Out of Combat Regen."
     },
     {
       "name": "Infuser",
@@ -1371,7 +1467,8 @@
       "tags": [
         "heal",
         "spirit"
-      ]
+      ],
+      "desc": "Gain Spirit Lifesteal and Spirit Power. (30s cooldown, 7s duration.)"
     },
     {
       "name": "Inhibitor",
@@ -1380,7 +1477,8 @@
       "cost": 6400,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Your bullets build up to reduce the target's outgoing damage by 30% and their Incoming Healing by 40% for 5s. Also grants +10% Weapon Damage and +150 Bonus Health."
     },
     {
       "name": "Juggernaut",
@@ -1390,7 +1488,8 @@
       "tags": [
         "tank",
         "cc"
-      ]
+      ],
+      "desc": "Enemies that shoot you have their Fire Rate slowed by 40% for 4s. Also grants +50% Slow Resist, +2.5m Move Speed, +25% Melee Resist and +15 Health Regen."
     },
     {
       "name": "Leech",
@@ -1399,7 +1498,8 @@
       "cost": 6400,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Heal for 30% of the weapon damage and 30% of the spirit damage you deal. Also grants +180 Bonus Health, +12% Weapon Damage and +12 Spirit Power."
     },
     {
       "name": "Phantom Strike",
@@ -1409,7 +1509,8 @@
       "tags": [
         "cc",
         "air"
-      ]
+      ],
+      "desc": "Teleport to an enemy target and pull them to the ground. Dealing damage, Move speed reduction and Disarm. (35s cooldown, 25m range.)"
     },
     {
       "name": "Plated Armor",
@@ -1418,7 +1519,8 @@
       "cost": 6400,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "30% chance to deflect incoming bullets (preventing all weapon damage) and a 50% chance to prevent all on-hit effects from bullets. Also grants +130 Bonus Health."
     },
     {
       "name": "Siphon Bullets",
@@ -1428,7 +1530,8 @@
       "tags": [
         "heal",
         "gun"
-      ]
+      ],
+      "desc": "Your bullets steal 2.5% of an enemy's Max HP for 17s, granting you the same amount of max HP (1.2s cooldown; enemies regain the stolen health when it expires). Also grants +15% Weapon Damage and +10% Bullet Resist."
     },
     {
       "name": "Spellbreaker",
@@ -1437,7 +1540,8 @@
       "cost": 6400,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "The next instance of spirit damage over 175 is reduced by 65% (9s cooldown). Also grants +18% Spirit Resist, +25% Debuff Resist and +90 Bonus Health."
     },
     {
       "name": "Unstoppable",
@@ -1446,7 +1550,8 @@
       "cost": 6400,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Temporarily suppress negative status effects and become immune to Stun, Silence, Sleep, Root, and Disarm. Cannot be used while Stunned or Slept. (60s cooldown, 5.5s duration.)"
     },
     {
       "name": "Vampiric Burst",
@@ -1456,7 +1561,8 @@
       "tags": [
         "heal",
         "gun"
-      ]
+      ],
+      "desc": "Grants Lifesteal, Fire Rate, and Ammo. This added Ammo is not limited by your max magazine size. (30s cooldown, 5s duration.)"
     },
     {
       "name": "Witchmail",
@@ -1465,7 +1571,8 @@
       "cost": 6400,
       "tags": [
         "tank"
-      ]
+      ],
+      "desc": "Taking a hit of 75 or more spirit damage reduces a random ability's cooldown by 4s (1s cooldown). Also grants +22% Spirit Resist and +14 Spirit Power."
     },
     {
       "name": "Extra Charge",
@@ -1474,7 +1581,8 @@
       "cost": 800,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+1 charge for your charged abilities and +7 Spirit Power for charged abilities."
     },
     {
       "name": "Extra Spirit",
@@ -1483,14 +1591,16 @@
       "cost": 800,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+10 Spirit Power."
     },
     {
       "name": "Golden Goose Egg",
       "category": "Spirit",
       "tier": 1,
       "cost": 800,
-      "tags": []
+      "tags": [],
+      "desc": "Hatch the egg, gaining souls and permanent buffs. The value of the egg grows the longer you hold onto it. Gain a permanent buff per 80 Souls accrued when hatched. Gain souls over time, as long as you are alive."
     },
     {
       "name": "Mystic Burst",
@@ -1499,7 +1609,8 @@
       "cost": 800,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Charges up over 14s; your next ability dealing more than 80 damage deals +40 bonus spirit damage."
     },
     {
       "name": "Mystic Expansion",
@@ -1508,7 +1619,8 @@
       "cost": 800,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Imbue an ability with +20% range and effect radius."
     },
     {
       "name": "Mystic Regeneration",
@@ -1517,7 +1629,8 @@
       "cost": 800,
       "tags": [
         "heal"
-      ]
+      ],
+      "desc": "Dealing spirit damage to enemy heroes grants you 4 HP/s regeneration for 7s (stacks across different heroes). Also grants +50 Bonus Health."
     },
     {
       "name": "Rusted Barrel",
@@ -1526,7 +1639,8 @@
       "cost": 800,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Target an enemy to reduce their Fire Rate and Bullet Resistance. (16s cooldown, 5s duration, 32m range.)"
     },
     {
       "name": "Spirit Strike",
@@ -1536,7 +1650,8 @@
       "tags": [
         "spirit",
         "melee"
-      ]
+      ],
+      "desc": "Your melee attacks against heroes deal +40 bonus spirit damage and reduce their Spirit Resist by 6% for 6s (8s cooldown, 2x longer for light melee)."
     },
     {
       "name": "Arcane Surge",
@@ -1545,7 +1660,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "After a Dash-Jump, the next ability you cast within 7s gains +12% Ability Range, +15% Ability Duration and +20 Spirit Power. Also grants +1 Stamina and +12% Stamina Recovery."
     },
     {
       "name": "Bullet Resist Shredder",
@@ -1554,7 +1670,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Dealing spirit damage reduces the enemy's Bullet Resist by 10% for 8s. Also grants +9% Bullet Resist and +9% Weapon Damage."
     },
     {
       "name": "Cold Front",
@@ -1564,7 +1681,8 @@
       "tags": [
         "spirit",
         "cc"
-      ]
+      ],
+      "desc": "Release an expanding ice blast that deals spirit damage and Slows targets it hits. (25s cooldown, 4s duration, 10m range.)"
     },
     {
       "name": "Compress Cooldown",
@@ -1573,7 +1691,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Imbue an ability with +18% Ability Cooldown Reduction."
     },
     {
       "name": "Duration Extender",
@@ -1582,7 +1701,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Imbue an ability with +22% Ability Duration."
     },
     {
       "name": "Improved Spirit",
@@ -1591,7 +1711,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+18 Spirit Power and +1.5 Out of Combat Regen."
     },
     {
       "name": "Mystic Slow",
@@ -1601,7 +1722,8 @@
       "tags": [
         "spirit",
         "cc"
-      ]
+      ],
+      "desc": "Enemies that take spirit damage from you have their Move Speed reduced by 24% and Dash Distance by 12% for 2s. Also grants +50 Bonus Health and +0.75m Sprint Speed."
     },
     {
       "name": "Mystic Vulnerability",
@@ -1610,7 +1732,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Enemies that take spirit damage from you have their Spirit Resist reduced by 8% for 7s. Also grants +8% Spirit Resist."
     },
     {
       "name": "Quicksilver Reload",
@@ -1620,7 +1743,8 @@
       "tags": [
         "spirit",
         "mobility"
-      ]
+      ],
+      "desc": "Your imbued ability charges up over 18s; casting it deals +44 bonus spirit damage, grants +10% Fire Rate and fully reloads your weapon."
     },
     {
       "name": "Slowing Hex",
@@ -1630,7 +1754,8 @@
       "tags": [
         "cc",
         "mobility"
-      ]
+      ],
+      "desc": "Slows movement of enemy target. Also Silences their movement-based items and abilities. Increases the target's gravity. Does not affect target's stamina usage. (29s cooldown, 3.5s duration, 25m range.)"
     },
     {
       "name": "Spirit Sap",
@@ -1640,7 +1765,8 @@
       "tags": [
         "spirit",
         "cc"
-      ]
+      ],
+      "desc": "Target an enemy to reduce their Spirit Resist and Spirit Power. (22s cooldown, 12s duration, 35m range.)"
     },
     {
       "name": "Suppressor",
@@ -1649,7 +1775,8 @@
       "cost": 1600,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Dealing spirit damage also reduces the enemy's Fire Rate by 28% for 4.5s. Also grants +6 Spirit Power and +8% Bullet Resist."
     },
     {
       "name": "Decay",
@@ -1659,7 +1786,8 @@
       "tags": [
         "antiheal",
         "spirit"
-      ]
+      ],
+      "desc": "Inflict damage over time to a target, dealing damage based on their current health. Decay's damage is non-lethal and does not apply item procs. (30s cooldown, 12s duration, 20m range.)"
     },
     {
       "name": "Disarming Hex",
@@ -1668,7 +1796,8 @@
       "cost": 3200,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Disarms enemy target and reduces their Bullet Resist. (16s cooldown, 4.25s duration, 32m range.)"
     },
     {
       "name": "Greater Expansion",
@@ -1677,7 +1806,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Increases the range and effect radius of your abilities and items by 30%. Also grants +10% Spirit Resist."
     },
     {
       "name": "Knockdown",
@@ -1686,7 +1816,8 @@
       "cost": 3200,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Apply a Stun after 2s. Stun duration is increased against airborne targets. Increases the target's gravity for the duration of the stun. (35s cooldown, 45m range.)"
     },
     {
       "name": "Radiant Regeneration",
@@ -1696,7 +1827,8 @@
       "tags": [
         "heal",
         "spirit"
-      ]
+      ],
+      "desc": "Dealing spirit damage to enemy heroes grants +4 HP/s regeneration for 7s (stacks across different heroes). While in combat, casting an ability heals you for 40 and grants +1.75m Move Speed for 3s (6s cooldown). Also grants +90 Bonus Health."
     },
     {
       "name": "Rapid Recharge",
@@ -1705,7 +1837,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+2 charges for your charged abilities, +30% faster time between charges, +14% Cooldown Reduction for charged abilities and +14 Spirit Power for charged abilities."
     },
     {
       "name": "Silence Wave",
@@ -1715,7 +1848,8 @@
       "tags": [
         "cc",
         "spirit"
-      ]
+      ],
+      "desc": "Launch an expanding projectile which Silences enemies for a short duration and deals impact damage. Silence does not interrupt channeling abilities. (42s cooldown, 3s duration, 40m range.)"
     },
     {
       "name": "Spirit Snatch",
@@ -1725,7 +1859,8 @@
       "tags": [
         "spirit",
         "melee"
-      ]
+      ],
+      "desc": "Your melee attacks against a hero deal +50 bonus spirit damage and steal 12% Spirit Resist and 25 Spirit Power for 10s (6s cooldown; effects reduced by 30% for light melee). Also grants +7% Melee Damage and +75 Bonus Health."
     },
     {
       "name": "Superior Cooldown",
@@ -1734,7 +1869,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+20% Ability Cooldown Reduction. Also grants +4 Out of Combat Regen."
     },
     {
       "name": "Superior Duration",
@@ -1743,7 +1879,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Increases the duration of your abilities and items by 28%. Also grants +8% Bullet Resist."
     },
     {
       "name": "Surge of Power",
@@ -1752,7 +1889,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Imbue an ability with +28 Spirit Power. Using that ability grants +20% Fire Rate and +1.75m Move Speed for 8s (14s cooldown)."
     },
     {
       "name": "Tankbuster",
@@ -1761,7 +1899,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Charges up over 14s; abilities dealing more than 165 damage deal +40 bonus spirit damage plus 7.5% of the target's current health, ignoring Spirit Resistance. Also grants +50 Bonus Health."
     },
     {
       "name": "Torment Pulse",
@@ -1770,7 +1909,8 @@
       "cost": 3200,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Every 1.4s, deals 25 spirit damage to the two closest enemies within 9m. Also grants +100 Bonus Health and +22% Melee Resist."
     },
     {
       "name": "Arctic Blast",
@@ -1780,7 +1920,8 @@
       "tags": [
         "spirit",
         "cc"
-      ]
+      ],
+      "desc": "Release an expanding ice blast that deals spirit damage, Freezing and then Slowing targets it hits. Slowed targets have their stamina regen frozen. (24s cooldown, 16m range.)"
     },
     {
       "name": "Boundless Spirit",
@@ -1789,7 +1930,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+30 Spirit Power plus 15% of your current Spirit Power, +75 Bonus Health and +4 Out of Combat Regen."
     },
     {
       "name": "Cursed Relic",
@@ -1798,7 +1940,8 @@
       "cost": 6400,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Curses an enemy - interrupting, Silencing, Disarming, and preventing item usage. Removes all non-ultimate buffs. Your own Damage Output is reduced for the duration. (55s cooldown, 3.25s duration, 20m range.)"
     },
     {
       "name": "Echo Shard",
@@ -1807,7 +1950,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Reset the cooldown of the imbued non-ultimate ability. This item's cooldown is increased by the cooldown of the imbued ability. (30s cooldown.)"
     },
     {
       "name": "Escalating Exposure",
@@ -1816,7 +1960,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Dealing spirit damage applies a stacking Spirit Amp: +4.5% spirit damage to that target per stack (up to 12 stacks, 12s duration). Also grants +17% Spirit Resist; your spirit damage also reduces the target's Spirit Resist by 8%."
     },
     {
       "name": "Ethereal Shift",
@@ -1825,7 +1970,8 @@
       "cost": 6400,
       "tags": [
         "mobility"
-      ]
+      ],
+      "desc": "Instantly enter a void state and become Invulnerable for a short duration. (37s cooldown, 4s duration.)"
     },
     {
       "name": "Focus Lens",
@@ -1835,7 +1981,8 @@
       "tags": [
         "cc",
         "spirit"
-      ]
+      ],
+      "desc": "Target an enemy to Silence them. A portion of all damage dealt during the silence gets applied to the target when the silence wears off. (40s cooldown, 4.5s duration, 25m range.)"
     },
     {
       "name": "Lightning Scroll",
@@ -1845,7 +1992,8 @@
       "tags": [
         "spirit",
         "cc"
-      ]
+      ],
+      "desc": "Damage from your ultimate stuns the target for 0.75s and deals 150 bonus spirit damage after a 3s delay (once per target per ultimate). Your spirit damage also slows enemies by 24% Move Speed and 12% Dash Distance. Also grants +50 Bonus Health and +0.75m Sprint Speed."
     },
     {
       "name": "Magic Carpet",
@@ -1855,7 +2003,8 @@
       "tags": [
         "mobility",
         "air"
-      ]
+      ],
+      "desc": "Summon a Magic Carpet that will fly you away. While flying you are immune to slows and doing any action will dismiss the carpet. Cannot use abilities while the carpet is being summoned. (32s cooldown, 12s duration.)"
     },
     {
       "name": "Mercurial Magnum",
@@ -1865,7 +2014,8 @@
       "tags": [
         "spirit",
         "gun"
-      ]
+      ],
+      "desc": "Your imbued ability charges up over 14s; on use it deals +60 bonus spirit damage, grants +22% Fire Rate and reloads your weapon, and until your next reload your bullets deal bonus spirit damage equal to 20% of base bullet damage. Also grants +20% Max Ammo and +7 Spirit Power."
     },
     {
       "name": "Mystic Reverb",
@@ -1874,7 +2024,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Imbue an ability with +22% Lifesteal: hitting an enemy marks them, and after 3s an explosion deals 50% of the damage dealt to enemies within 16m and slows them by 32% (6.25s cooldown). Also grants +8% Spirit Lifesteal."
     },
     {
       "name": "Refresher",
@@ -1883,7 +2034,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Reset the cooldown of all your abilities and restore all your charges. (300s cooldown.)"
     },
     {
       "name": "Scourge",
@@ -1892,7 +2044,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "Apply Spirit Resist, Debuff Resist and an aura on a friendly target that deals damage to enemies proportional to their max health. Existing debuffs on the target are reduced. Can be self cast. (35s cooldown, 10s duration, 35m range.)"
     },
     {
       "name": "Spirit Burn",
@@ -1902,7 +2055,8 @@
       "tags": [
         "antiheal",
         "spirit"
-      ]
+      ],
+      "desc": "Dealing 500 spirit damage to an enemy within 5s triggers an explosion for 50 damage and a burn dealing 24 spirit damage per second and reducing their Incoming Healing by 70% for 7s (20s immunity per target). Also grants +6% Ability Range."
     },
     {
       "name": "Transcendent Cooldown",
@@ -1911,7 +2065,8 @@
       "cost": 6400,
       "tags": [
         "spirit"
-      ]
+      ],
+      "desc": "+25% Ability Cooldown Reduction and +25% Item Cooldown Reduction. Also grants +4 Out of Combat Regen."
     },
     {
       "name": "Vortex Web",
@@ -1920,7 +2075,8 @@
       "cost": 6400,
       "tags": [
         "cc"
-      ]
+      ],
+      "desc": "Throw a vacuum grenade, pulling all enemies into a small area and applying Slowing Hex. Alt Cast to Target Unit Directly. (42s cooldown, 4s duration, 30m range.)"
     }
   ],
   "counters": {
