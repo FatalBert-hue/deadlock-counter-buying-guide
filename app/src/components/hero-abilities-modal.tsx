@@ -112,7 +112,11 @@ const styles = StyleSheet.create({
   panel: {
     width: '100%',
     maxWidth: 420,
-    maxHeight: '85%',
+    // Definite height, not maxHeight: the ScrollView below uses
+    // flex: 1, and flex has nothing to fill inside a parent whose
+    // height is only capped. With maxHeight the list collapsed to
+    // zero height and the abilities vanished entirely.
+    height: '85%',
     backgroundColor: SHOP_PANEL,
     borderWidth: 2,
     borderColor: SHOP_LINE,
@@ -163,9 +167,8 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   scroll: {
-    // flex: 1 gives the list a real bounded height inside the panel
-    // (header + divider take the rest), so it scrolls instead of
-    // sizing to its content and overflowing the modal.
+    // flex: 1 fills the panel's fixed height minus header/divider,
+    // so the list gets a real bounded height and scrolls within it.
     flex: 1,
   },
   scrollContent: {
