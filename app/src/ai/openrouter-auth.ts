@@ -15,8 +15,12 @@
 // exchange-authorization-code-for-api-key): POST
 // https://openrouter.ai/api/v1/auth/keys with
 // { code, code_challenge_method: "S256", code_verifier } returns
-// { key }. The SHA-256 / base64url pieces live in ./sha256.ts —
-// pure JS, so this whole flow ships over the air (no native module).
+// { key }. The SHA-256 / base64url pieces live in ./sha256.ts
+// (pure JS, verified against the RFC vectors); the random bytes
+// come from expo-crypto's native generator. That native dependency
+// is why this flow ships in a full APK build (0.1.12), not over the
+// air: the 0.1.11 APK was built before expo-crypto was added, and
+// an over-the-air update cannot add native code.
 //
 // The pending verifier lives in AsyncStorage only until the exchange
 // (it is a single-use proof, not a credential that spends money),
@@ -25,9 +29,10 @@
 // redirect, only the first exchange runs and the second is a
 // harmless no-op.
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 
 import { saveApiKey, hasApiKey } from '@/ai/secure-key';
-import { pkceChallenge, randomBase64Url } from '@/ai/sha256';
+import { base64UrlEncode, pkceChallenge } from '@/ai/sha256';
 
 const PENDING_KEY = 'counter-buy:openrouter-oauth:v1';
 
@@ -45,10 +50,14 @@ interface PendingSignIn {
 }
 
 /** Build the authorization URL and store the pending verifier/state.
-    Call this, then open the returned URL in the browser. */
+    Call this, then open the returned URL in the browser. Randomness
+    comes from expo-crypto's native generator: Hermes does not expose
+    globalThis.crypto.getRandomValues on this build, so the first
+    version of this flow failed on Mikel's phone with "this phone
+    can't generate a secure sign-in code". */
 export async function startOpenRouterSignIn(): Promise<{ authUrl: string; redirectUrl: string }> {
-  const verifier = randomBase64Url(32);
-  const state = randomBase64Url(16);
+  const verifier = base64UrlEncode(await Crypto.getRandomBytesAsync(32));
+  const state = base64UrlEncode(await Crypto.getRandomBytesAsync(16));
   const challenge = pkceChallenge(verifier);
   const pending: PendingSignIn = { verifier, state, createdAt: Date.now() };
   await AsyncStorage.setItem(PENDING_KEY, JSON.stringify(pending));

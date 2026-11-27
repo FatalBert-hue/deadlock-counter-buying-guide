@@ -1,15 +1,18 @@
 // Pure-JavaScript SHA-256 (FIPS 180-4) plus base64url helpers.
 //
-// Why hand-rolled instead of expo-crypto: expo-crypto is a native
-// module, and adding a native module means the change cannot ship as
-// an over-the-air update — it would need a whole new APK build. This
-// file has no dependencies at all, so the OpenRouter sign-in ships
-// over the air like everything else.
+// Why hand-rolled instead of expo-crypto's digest: the SHA-256 here
+// was verified against the RFC test vectors before shipping, and it
+// has no dependencies at all. The randomness, on the other hand,
+// DOES come from expo-crypto (see openrouter-auth.ts): the first
+// version of this file generated the PKCE verifier from
+// globalThis.crypto.getRandomValues, but that is not exposed by
+// Hermes on Mikel's phone — the sign-in failed with "this phone
+// can't generate a secure sign-in code". So random bytes now come
+// from expo-crypto's native getRandomBytesAsync, and only the hash
+// stays hand-rolled.
 //
-// Only used for the OpenRouter OAuth PKCE handshake: the verifier is
-// random base64url (32 bytes), the challenge is base64url(SHA-256
-// (verifier)). The verifier is ASCII by construction, so the hash
-// below only handles ASCII input — that is all PKCE ever needs.
+// The verifier is ASCII by construction, so the hash below only
+// handles ASCII input — that is all PKCE ever needs.
 //
 // Test vector (RFC 7636 §4.2): the verifier
 // "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk" must give the
@@ -138,18 +141,4 @@ export function base64UrlEncode(bytes: Uint8Array): string {
 /** PKCE S256 code challenge for a verifier: base64url(SHA-256(verifier)). */
 export function pkceChallenge(verifier: string): string {
   return base64UrlEncode(sha256Bytes(verifier));
-}
-
-/** `byteCount` cryptographically random bytes, base64url-encoded.
-    Uses the platform's secure random generator (Hermes exposes
-    globalThis.crypto.getRandomValues). Throws instead of falling
-    back to Math.random — a PKCE verifier must be unpredictable. */
-export function randomBase64Url(byteCount: number): string {
-  const cryptoObj = (globalThis as unknown as { crypto?: Crypto }).crypto;
-  if (!cryptoObj?.getRandomValues) {
-    throw new Error('This phone cannot generate a secure sign-in code — paste an OpenRouter key instead.');
-  }
-  const bytes = new Uint8Array(byteCount);
-  cryptoObj.getRandomValues(bytes);
-  return base64UrlEncode(bytes);
 }
